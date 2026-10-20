@@ -27,6 +27,7 @@ turned the maintenance robots into weapons.
 |---|---|
 | WASD / Mouse | Move / look |
 | LMB / R | Shoot / reload |
+| Q / 1, 2, 3, 4 / Wheel | Switch weapons (Mist Rifle, Mist Shotgun, Mist Revolver, Mist SMG) |
 | Shift / Ctrl or C | Sprint (loud) / crouch (quiet, beats drone sonar) |
 | E (hold for kill switch) | Use doors, card reader, kill switch |
 | F, then LMB | Pick up a crate or canister, then throw it (a thrown crate makes noise and lures drones) |
