@@ -544,6 +544,30 @@ namespace MistProtocol.EditorTools
             cam.backgroundColor = FogColor;
             PrefabUtility.RecordPrefabInstancePropertyModifications(cam);
 
+            // Opening vehicle: starts beyond the broken south gate and drives up to the yard.
+            var jeep = PrefabFactory.Model("GlenmistJeep", _gameplay, MaterialFactory.Glow);
+            jeep.name = "GlenmistJeep";
+            jeep.transform.SetPositionAndRotation(new Vector3(-20f, 0.02f, -25f), Quaternion.identity);
+            var wheels = new System.Collections.Generic.List<Transform>();
+            foreach (var name in new[] { "Jeep_Wheel_FL", "Jeep_Wheel_FR", "Jeep_Wheel_RL", "Jeep_Wheel_RR" })
+            {
+                var wheel = jeep.transform.FindDeep(name);
+                if (wheel != null) wheels.Add(wheel);
+            }
+            jeep.AddComponent<VehicleArrival>().Configure(new Vector3(-20f, 0.02f, -8.5f), wheels.ToArray());
+            foreach (var x in new[] { -0.56f, 0.56f })
+            {
+                var headlamp = new GameObject("JeepHeadlamp").AddComponent<Light>();
+                headlamp.transform.SetParent(jeep.transform, false);
+                headlamp.transform.localPosition = new Vector3(x, 0.82f, 2.05f);
+                headlamp.type = LightType.Spot;
+                headlamp.color = new Color(1f, 0.82f, 0.5f);
+                headlamp.intensity = 7f;
+                headlamp.range = 26f;
+                headlamp.spotAngle = 38f;
+                headlamp.shadows = LightShadows.None;
+            }
+
             // ---- objectives
             var keycard = Place(PrefabFactory.Keycard, new Vector3(-27.0f, 0.9f, 33.4f), 20f, _gameplay);
             var reader = Block("KeycardReader", new Vector3(9.72f, 1.3f, 7.7f), new Vector3(0.12f, 0.35f, 0.25f), MaterialFactory.DarkMetal, 1f, _gameplay, true, false);

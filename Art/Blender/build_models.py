@@ -387,6 +387,25 @@ def model_smg():
     return "MistSMG"
 
 
+def model_glenmist_jeep():
+    """Low-poly hill-country 4x4 used by the opening arrival."""
+    root = part("GlenmistJeep", merge(
+        box((1.72, 3.65, 0.48), (0, 0, 0.72), 0.08),
+        box((1.55, 1.55, 0.72), (0, -0.38, 1.24), 0.06),
+        box((1.80, 0.22, 0.36), (0, FWD * 1.90, 0.72), 0.03),
+    ), "tea_dark")
+    part("Jeep_Hood", box((1.58, 1.10, 0.24), (0, FWD * 0.90, 1.06), 0.04), "tea", root)
+    part("Jeep_Windscreen", box((1.40, 0.06, 0.55), (0, FWD * 0.28, 1.62)), "metal_light", root)
+    part("Jeep_Roof", box((1.60, 1.48, 0.12), (0, -FWD * 0.45, 1.76), 0.04), "metal_dark", root)
+    part("Jeep_Bumper", box((1.86, 0.16, 0.18), (0, FWD * 2.02, 0.49), 0.02), "metal", root)
+    part("Jeep_Headlight_L", box((0.27, 0.06, 0.20), (-0.56, FWD * 2.06, 0.82)), "hazard", root)
+    part("Jeep_Headlight_R", box((0.27, 0.06, 0.20), (0.56, FWD * 2.06, 0.82)), "hazard", root)
+    for name, x, y in (("FL", -0.91, 1.22), ("FR", 0.91, 1.22), ("RL", -0.91, -1.25), ("RR", 0.91, -1.25)):
+        wheel = part("Jeep_Wheel_" + name, cyl(0.42, 0.28, 10, (0, 0, 0), rot=("Y", 90)), "rubber", root, (x, y, 0.43))
+        part("Jeep_Hub_" + name, cyl(0.19, 0.30, 10, (0, 0, 0), rot=("Y", 90)), "metal", wheel)
+    return "GlenmistJeep"
+
+
 def model_tea_crate():
     slats = [box((0.82, 0.82, 0.10), (0, 0, z)) for z in (0.05, 0.40, 0.75)]
     part("TeaCrate", box((0.76, 0.76, 0.80), (0, 0, 0.40)), "wood", None)
@@ -454,6 +473,7 @@ MODELS = [
     (model_shotgun, "MistShotgun.fbx"),
     (model_revolver, "MistRevolver.fbx"),
     (model_smg, "MistSMG.fbx"),
+    (model_glenmist_jeep, "GlenmistJeep.fbx"),
     (model_tea_crate, "TeaCrate.fbx"),
     (model_gas_canister, "GasCanister.fbx"),
     (model_rolling_machine, "TeaRollingMachine.fbx"),

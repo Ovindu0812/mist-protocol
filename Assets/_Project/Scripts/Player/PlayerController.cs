@@ -137,6 +137,15 @@ namespace MistProtocol.Player
 
         public void AddShake(float amount) => _shake = Mathf.Min(1f, _shake + amount);
 
+        public void SetCinematicPose(Vector3 position, float yaw)
+        {
+            transform.position = position;
+            _yaw = yaw;
+            _pitch = 0f;
+            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            if (cameraPivot != null) cameraPivot.localRotation = Quaternion.identity;
+        }
+
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
             var rb = hit.collider.attachedRigidbody;

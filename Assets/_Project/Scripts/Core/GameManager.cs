@@ -1,6 +1,8 @@
 using MistProtocol.AI.Director;
 using MistProtocol.Interaction;
 using MistProtocol.Player;
+using MistProtocol.World;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -52,6 +54,7 @@ namespace MistProtocol.Core
             "Press ANY KEY or CLICK to begin";
 
         private PlayerController _player;
+        private VehicleArrival _arrivalVehicle;
 
         public void SetObjectiveTargets(Transform[] targets) => objectiveTargets = targets;
 
@@ -64,6 +67,7 @@ namespace MistProtocol.Core
         private void Start()
         {
             _player = FindAnyObjectByType<PlayerController>();
+            _arrivalVehicle = FindAnyObjectByType<VehicleArrival>();
             if (_player != null)
             {
                 _player.InputEnabled = false;
@@ -109,7 +113,31 @@ namespace MistProtocol.Core
             StartTime = Time.time;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            if (_player != null) _player.InputEnabled = true;
+            if (_arrivalVehicle == null)
+            {
+                if (_player != null) _player.InputEnabled = true;
+                GameEvents.Objective(ObjectiveText[0]);
+                GameEvents.Overseer("OVERSEER: Unauthorised heat signature at the front gate. Welcome home, Nila.");
+                return;
+            }
+
+            if (_player != null)
+            {
+                _player.InputEnabled = false;
+                _player.SetCinematicPose(new Vector3(-20f, 0.05f, -3f), 180f);
+            }
+            _arrivalVehicle.DriveIn();
+            StartCoroutine(FinishArrival());
+        }
+
+        private IEnumerator FinishArrival()
+        {
+            yield return new WaitForSecondsRealtime(5.15f);
+            if (_player != null)
+            {
+                _player.SetCinematicPose(new Vector3(-20f, 0.05f, -5.5f), 0f);
+                _player.InputEnabled = true;
+            }
             GameEvents.Objective(ObjectiveText[0]);
             GameEvents.Overseer("OVERSEER: Unauthorised heat signature at the front gate. Welcome home, Nila.");
         }
