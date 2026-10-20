@@ -34,7 +34,7 @@ namespace MistProtocol.AI.Sentinel
         private GoapAction _current;
         private int _planIndex;
         private GoapGoal _goal;
-        [System.NonSerialized] private Fact _state; // ulong enum: runtime-only, Unity cannot serialize it
+        [System.NonSerialized] private Fact _state;
         [System.NonSerialized] private Fact _lastSalient;
         private int _patrolIndex;
         private bool _alerted;

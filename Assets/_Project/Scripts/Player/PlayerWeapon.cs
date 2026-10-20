@@ -90,6 +90,7 @@ namespace MistProtocol.Player
                 _cam = _player.GetComponentInChildren<Camera>();
 
             InitializeWeapons();
+            Debug.Log($"[PW] Awake: weapons={weapons.Count}, activeIndex={activeIndex}, cam={(_cam != null ? _cam.name : "NULL")}, player={(_player != null ? "OK" : "NULL")}");
 
             // Salvaged ammo from destroyed robots distributes to all weapons
             GameEvents.AgentKilled += (kind, pos) =>
@@ -337,11 +338,15 @@ namespace MistProtocol.Player
 
         private void HandleWeaponSwitching(Keyboard kb, Mouse mouse)
         {
-            if (IsReloading) return;
+            if (IsReloading) { return; }
 
             int targetIndex = activeIndex;
 
-            if (kb.qKey.wasPressedThisFrame) targetIndex = (activeIndex + 1) % weapons.Count;
+            if (kb.qKey.wasPressedThisFrame)
+            {
+                targetIndex = (activeIndex + 1) % weapons.Count;
+                Debug.Log($"[PW] Q pressed → targetIndex={targetIndex}, weapons.Count={weapons.Count}");
+            }
             else if (kb.digit1Key.wasPressedThisFrame) targetIndex = 0;
             else if (kb.digit2Key.wasPressedThisFrame) targetIndex = 1;
             else if (kb.digit3Key.wasPressedThisFrame) targetIndex = 2;
@@ -356,13 +361,15 @@ namespace MistProtocol.Player
 
             if (targetIndex != activeIndex && targetIndex >= 0 && targetIndex < weapons.Count)
                 SwitchWeapon(targetIndex);
+            else if (targetIndex != activeIndex)
+                Debug.Log($"[PW] Switch BLOCKED: targetIndex={targetIndex} activeIndex={activeIndex} count={weapons.Count}");
         }
 
         public void SwitchWeapon(int newIndex)
         {
-            if (weapons == null || weapons.Count == 0) return;
-            if (newIndex < 0 || newIndex >= weapons.Count) return;
-            if (newIndex == activeIndex && weapons[activeIndex].viewModel != null && weapons[activeIndex].viewModel.gameObject.activeSelf) return;
+            if (weapons == null || weapons.Count == 0) { Debug.Log("[PW] SwitchWeapon BLOCKED: weapons null/empty"); return; }
+            if (newIndex < 0 || newIndex >= weapons.Count) { Debug.Log($"[PW] SwitchWeapon BLOCKED: newIndex={newIndex} out of range count={weapons.Count}"); return; }
+            if (newIndex == activeIndex && weapons[activeIndex].viewModel != null && weapons[activeIndex].viewModel.gameObject.activeSelf) { Debug.Log($"[PW] SwitchWeapon BLOCKED: already on index {newIndex}"); return; }
 
             if (_reloadRoutine != null)
             {

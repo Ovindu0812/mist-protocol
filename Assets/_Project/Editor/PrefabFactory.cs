@@ -163,6 +163,33 @@ namespace MistProtocol.EditorTools
             }
             var muzzle = rifle.transform.FindDeep("Muzzle");
 
+            var shotgun = Model("MistShotgun", camGo.transform, MaterialFactory.Glow, "Shotgun_Light");
+            shotgun.transform.localPosition = new Vector3(0.2f, -0.26f, 0.48f);
+            foreach (var r in shotgun.GetComponentsInChildren<MeshRenderer>())
+            {
+                r.shadowCastingMode = ShadowCastingMode.Off;
+                if (r.name == "Muzzle") r.enabled = false;
+            }
+            shotgun.SetActive(false);
+
+            var revolver = Model("MistRevolver", camGo.transform, MaterialFactory.Glow, "Revolver_Light");
+            revolver.transform.localPosition = new Vector3(0.18f, -0.22f, 0.42f);
+            foreach (var r in revolver.GetComponentsInChildren<MeshRenderer>())
+            {
+                r.shadowCastingMode = ShadowCastingMode.Off;
+                if (r.name == "Muzzle") r.enabled = false;
+            }
+            revolver.SetActive(false);
+
+            var smg = Model("MistSMG", camGo.transform, MaterialFactory.Glow, "SMG_PowerCell");
+            smg.transform.localPosition = new Vector3(0.2f, -0.25f, 0.46f);
+            foreach (var r in smg.GetComponentsInChildren<MeshRenderer>())
+            {
+                r.shadowCastingMode = ShadowCastingMode.Off;
+                if (r.name == "Muzzle") r.enabled = false;
+            }
+            smg.SetActive(false);
+
             var weapon = camGo.AddComponent<PlayerWeapon>();
             Set(weapon, "viewModel", rifle.transform);
             Set(weapon, "muzzle", muzzle);

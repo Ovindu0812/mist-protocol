@@ -331,6 +331,62 @@ def model_rifle():
     return "MistRifle"
 
 
+def model_shotgun():
+    root = part("MistShotgun", merge(
+        box((0.055, 0.32, 0.09), (0, 0, 0), 0.008),
+        box((0.048, 0.22, 0.10), (0, -FWD * 0.22, -0.02), 0.01),
+    ), "metal_dark")
+    part("Shotgun_Barrel_L", cyl(0.019, 0.44, 8, (-0.016, FWD * 0.38, 0.02), rot=("X", 90)), "metal", root)
+    part("Shotgun_Barrel_R", cyl(0.019, 0.44, 8, (0.016, FWD * 0.38, 0.02), rot=("X", 90)), "metal", root)
+    part("Shotgun_Tube", cyl(0.018, 0.36, 8, (0, FWD * 0.34, -0.018), rot=("X", 90)), "metal_dark", root)
+    part("Shotgun_Pump", box((0.065, 0.15, 0.065), (0, FWD * 0.28, -0.018), 0.008), "wood", root)
+    part("Shotgun_Grip", box((0.045, 0.07, 0.12), (0, -FWD * 0.09, -0.10), 0.006), "rubber", root)
+    part("Shotgun_Guard", box((0.062, 0.14, 0.03), (0, FWD * 0.22, 0.036)), "tea", root)
+    part("Shotgun_Sight", box((0.012, 0.02, 0.02), (0, FWD * 0.58, 0.045)), "brass", root)
+    part("Shotgun_Light", box((0.018, 0.02, 0.018), (0, FWD * 0.06, 0.06)), "glow_cyan", root)
+    part("Muzzle", box((0.01, 0.01, 0.01), (0, 0, 0)), "metal", root, (0, FWD * 0.62, 0.02))
+    return "MistShotgun"
+
+
+def model_revolver():
+    root = part("MistRevolver", merge(
+        box((0.042, 0.14, 0.07), (0, 0, 0.01), 0.006),
+        box((0.038, 0.06, 0.08), (0, -FWD * 0.08, 0.02), 0.006),
+    ), "metal_dark")
+    part("Revolver_Cylinder", cyl(0.034, 0.09, 6, (0, FWD * 0.02, 0.01), rot=("X", 90)), "metal_light", root)
+    part("Revolver_Barrel", merge(
+        cyl(0.017, 0.26, 8, (0, FWD * 0.20, 0.025), rot=("X", 90)),
+        box((0.036, 0.24, 0.03), (0, FWD * 0.19, 0.04)),
+        box((0.032, 0.16, 0.03), (0, FWD * 0.15, -0.01))
+    ), "metal", root)
+    part("Revolver_Grip", box((0.038, 0.07, 0.13), (0, -FWD * 0.06, -0.08), 0.01), "wood_dark", root)
+    part("Revolver_TriggerGuard", box((0.024, 0.07, 0.04), (0, FWD * 0.01, -0.03)), "brass", root)
+    part("Revolver_Sight", box((0.008, 0.02, 0.02), (0, FWD * 0.32, 0.065)), "red", root)
+    part("Revolver_Light", box((0.016, 0.016, 0.016), (0, -FWD * 0.06, 0.05)), "glow_cyan", root)
+    part("Muzzle", box((0.01, 0.01, 0.01), (0, 0, 0)), "metal", root, (0, FWD * 0.35, 0.025))
+    return "MistRevolver"
+
+
+def model_smg():
+    root = part("MistSMG", merge(
+        box((0.046, 0.26, 0.08), (0, 0, 0.01), 0.006),
+        box((0.042, 0.18, 0.06), (0, -FWD * 0.03, -0.04), 0.006),
+    ), "metal_dark")
+    part("SMG_Barrel", cyl(0.015, 0.18, 8, (0, FWD * 0.22, 0.02), rot=("X", 90)), "metal", root)
+    part("SMG_Shroud", cyl(0.028, 0.12, 8, (0, FWD * 0.18, 0.02), rot=("X", 90)), "metal_light", root)
+    part("SMG_Mag", box((0.032, 0.05, 0.18), (0, FWD * 0.04, -0.13), 0.006), "tea_dark", root)
+    part("SMG_Grip", box((0.038, 0.055, 0.11), (0, -FWD * 0.08, -0.09), 0.006), "rubber", root)
+    part("SMG_Foregrip", box((0.034, 0.04, 0.09), (0, FWD * 0.12, -0.06), 0.006), "rubber", root)
+    part("SMG_Sight", merge(
+        box((0.03, 0.18, 0.02), (0, 0, 0.06)),
+        box((0.026, 0.05, 0.035), (0, FWD * 0.02, 0.085))
+    ), "metal", root)
+    part("SMG_PowerCell", box((0.015, 0.08, 0.03), (0.026, -FWD * 0.02, 0.02)), "glow_cyan", root)
+    part("SMG_WireStock", box((0.036, 0.14, 0.04), (0, -FWD * 0.20, 0.01), 0.004), "metal", root)
+    part("Muzzle", box((0.01, 0.01, 0.01), (0, 0, 0)), "metal", root, (0, FWD * 0.33, 0.02))
+    return "MistSMG"
+
+
 def model_tea_crate():
     slats = [box((0.82, 0.82, 0.10), (0, 0, z)) for z in (0.05, 0.40, 0.75)]
     part("TeaCrate", box((0.76, 0.76, 0.80), (0, 0, 0.40)), "wood", None)
@@ -395,6 +451,9 @@ MODELS = [
     (model_sentinel, "SentinelBot.fbx"),
     (model_saboteur, "SaboteurBot.fbx"),
     (model_rifle, "MistRifle.fbx"),
+    (model_shotgun, "MistShotgun.fbx"),
+    (model_revolver, "MistRevolver.fbx"),
+    (model_smg, "MistSMG.fbx"),
     (model_tea_crate, "TeaCrate.fbx"),
     (model_gas_canister, "GasCanister.fbx"),
     (model_rolling_machine, "TeaRollingMachine.fbx"),

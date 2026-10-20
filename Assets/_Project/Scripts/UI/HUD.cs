@@ -103,7 +103,10 @@ namespace MistProtocol.UI
                 _healthFill.color = Color.Lerp(new Color(0.9f, 0.2f, 0.15f, 0.9f), new Color(0.35f, 0.85f, 0.45f, 0.9f), h.Normalized);
             }
             if (_weapon != null)
-                _ammo.text = _weapon.IsReloading ? "RELOADING" : $"{_weapon.InMagazine} / {_weapon.Reserve}";
+            {
+                string status = _weapon.IsReloading ? "RELOADING" : $"{_weapon.InMagazine} / {_weapon.Reserve}";
+                _ammo.text = $"{_weapon.ActiveWeaponName}\n{status}";
+            }
             if (_weapon != null)
             {
                 float since = Time.time - _weapon.LastHitTime;

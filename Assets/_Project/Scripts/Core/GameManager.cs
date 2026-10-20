@@ -49,7 +49,7 @@ namespace MistProtocol.Core
             "WASD move  -  Mouse look  -  LMB shoot  -  R reload  -  Shift sprint  -  Ctrl/C crouch (quiet)\n" +
             "E use  -  F pick up / drop  -  LMB while holding = throw  -  walk into big crates to push them\n" +
             "F1 AI debug overlay\n\n" +
-            "Press ENTER to begin";
+            "Press ANY KEY or CLICK to begin";
 
         private PlayerController _player;
 
@@ -79,7 +79,11 @@ namespace MistProtocol.Core
             switch (State)
             {
                 case Flow.Intro:
-                    if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame) Begin();
+                    // Start on any key so macOS Return/Enter layout differences cannot
+                    // leave the title screen stuck. A Game-view click is a fallback.
+                    bool startPressed = kb.anyKey.wasPressedThisFrame ||
+                                        (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame);
+                    if (startPressed) Begin();
                     break;
                 case Flow.Playing:
                     if (kb.escapeKey.wasPressedThisFrame) Cursor.lockState = CursorLockMode.None;

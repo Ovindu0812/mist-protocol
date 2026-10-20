@@ -18,6 +18,9 @@ namespace MistProtocol.Core
             c = name switch
             {
                 "rifle" => Noise(0.18f, 18f, 0.9f, 900f),
+                "shotgun" => Noise(0.32f, 9f, 1.3f, 480f),
+                "revolver" => Noise(0.24f, 12f, 1.15f, 720f),
+                "smg" => Noise(0.11f, 28f, 0.75f, 1400f),
                 "enemyShot" => Noise(0.15f, 22f, 0.6f, 1600f),
                 "explosion" => Noise(1.1f, 4f, 1f, 250f),
                 "impact" => Noise(0.08f, 40f, 0.5f, 600f),

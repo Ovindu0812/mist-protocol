@@ -4,9 +4,9 @@ using MistProtocol.AI.Navigation;
 
 namespace MistProtocol.AI.Sentinel
 {
-    /// <summary>World-state facts as bits of a ulong, so states hash and compare in O(1).</summary>
+    /// <summary>World-state facts as bits of an int, so states hash and compare in O(1).</summary>
     [Flags]
-    public enum Fact : ulong
+    public enum Fact : int
     {
         None = 0,
         KnowsPlayer = 1 << 0,
@@ -49,7 +49,7 @@ namespace MistProtocol.AI.Sentinel
         public bool SatisfiedBy(Fact s) => (s & Want) == Want && (s & WantFalse) == 0;
         public int Unsatisfied(Fact s)
         {
-            ulong miss = ((ulong)Want & ~(ulong)s) | ((ulong)WantFalse & (ulong)s);
+            uint miss = ((uint)Want & ~(uint)s) | ((uint)WantFalse & (uint)s);
             int c = 0;
             while (miss != 0) { miss &= miss - 1; c++; }
             return c;
