@@ -209,23 +209,36 @@ namespace MistProtocol.EditorTools
             Block("Wall_S_GateLintel", new Vector3(-20f, (H + 3.2f) * 0.5f, 0), new Vector3(3.8f, H - 3.2f, T), MaterialFactory.Corrugated, 2f);
             Exterior("Wall_N", new Vector3(0, 0, 36f), new Vector3(60.4f, H, T));
             Exterior("Wall_W", new Vector3(-30f, 0, 18f), new Vector3(T, H, 36.4f));
-            Exterior("Wall_E", new Vector3(30f, 0, 18f), new Vector3(T, H, 36.4f));
+
+            // Control room exterior east wall (z=24 to 36)
+            Exterior("Wall_E_Control", new Vector3(30f, 0, 30f), new Vector3(T, H, 12.4f));
+
+            // Sector E (Containment Vault) shell from x=30 to x=54, z=0 to z=24
+            Block("Floor_Containment", new Vector3(42f, -0.1f, 12f), new Vector3(24.4f, 0.2f, 24.4f), MaterialFactory.Floor, 4f);
+            Exterior("Wall_S_Containment", new Vector3(42f, 0, 0f), new Vector3(24.4f, H, T));
+            Exterior("Wall_E_Containment", new Vector3(54f, 0, 12f), new Vector3(T, H, 24.4f));
+            Exterior("Wall_N_Containment", new Vector3(42f, 0, 24f), new Vector3(24.4f, H, T));
 
             // interior partitions (lime-washed)
             WallZ("Wall_AB", -10f, 0f, 36f, MaterialFactory.Wall, (18f, DoorGap));
             WallZ("Wall_BC", 10f, 0f, 36f, MaterialFactory.Wall, (6f, DoorGap));
             WallX("Wall_CD", 24f, 10f, 30f, MaterialFactory.Wall, (20f, DoorGap));
+            // Partition between Drying Chamber (C) and Containment Vault (E) at x=30, z=0 to 24 with door at z=14
+            WallZ("Wall_CE", 30f, 0f, 24f, MaterialFactory.Wall, (14f, DoorGap));
 
-            // roof: corrugated sheets, loft roof has two skylight strips for moon shafts through the mist
+            // roof: corrugated sheets
             Block("Roof_A1", new Vector3(-20f, H + 0.1f, 4.5f), new Vector3(20.4f, 0.2f, 9.4f), MaterialFactory.Corrugated, 2f);
             Block("Roof_A2", new Vector3(-20f, H + 0.1f, 17.75f), new Vector3(20.4f, 0.2f, 13.5f), MaterialFactory.Corrugated, 2f);
             Block("Roof_A3", new Vector3(-20f, H + 0.1f, 31.25f), new Vector3(20.4f, 0.2f, 9.5f), MaterialFactory.Corrugated, 2f);
             Block("Roof_BCD", new Vector3(10f, H + 0.1f, 18f), new Vector3(40.4f, 0.2f, 36.4f), MaterialFactory.Corrugated, 2f);
-            foreach (var r in new[] { "Roof_A1", "Roof_A2", "Roof_A3", "Roof_BCD" })
+            Block("Roof_E", new Vector3(42f, H + 0.1f, 12f), new Vector3(24.4f, 0.2f, 24.4f), MaterialFactory.Corrugated, 2f);
+            foreach (var r in new[] { "Roof_A1", "Roof_A2", "Roof_A3", "Roof_BCD", "Roof_E" })
                 GameObject.Find(r).AddComponent<NavMeshModifier>().ignoreFromBuild = true;
             // roof trusses
             for (float x = -28f; x <= 28f; x += 4f)
                 Block($"Truss_{x:0}", new Vector3(x, H - 0.35f, 18f), new Vector3(0.18f, 0.35f, 36f), MaterialFactory.DarkMetal, 1f, null, false);
+            for (float x = 32f; x <= 52f; x += 4f)
+                Block($"Truss_E_{x:0}", new Vector3(x, H - 0.35f, 12f), new Vector3(0.18f, 0.35f, 24f), MaterialFactory.DarkMetal, 1f, null, false);
         }
 
         // ================================================================== zones
@@ -347,6 +360,7 @@ namespace MistProtocol.EditorTools
             d["AB"] = Make("Door_Loft_Rolling", new Vector3(-10f, 0f, 18f - off), -90f, false);
             d["BC"] = Make("Gate_DryingChamber", new Vector3(10f, 0f, 6f - off), -90f, true);
             d["CD"] = Make("Door_ControlRoom", new Vector3(20f - off, 0f, 24f), 0f, false);
+            d["CE"] = Make("Door_Containment", new Vector3(30f, 0f, 14f - off), -90f, false);
             return d;
         }
 
@@ -518,7 +532,7 @@ namespace MistProtocol.EditorTools
             sys.SetParent(_gameplay);
             var grid = new GameObject("NavGrid").AddComponent<NavGrid>();
             grid.transform.SetParent(sys);
-            grid.Configure(new Vector3(-32f, 0f, -10f), 128, 96, 0.5f);
+            grid.Configure(new Vector3(-32f, 0f, -10f), 176, 96, 0.5f);
             EditorUtility.SetDirty(grid);
             new GameObject("SoundSystem").AddComponent<SoundSystem>().transform.SetParent(sys);
             var vfx = new GameObject("VfxLibrary").AddComponent<VfxLibrary>();
@@ -580,6 +594,15 @@ namespace MistProtocol.EditorTools
             gm.SetObjectiveTargets(new[] { keycard.transform, reader.transform, doors["CD"].transform, killSwitch });
             EditorUtility.SetDirty(gm);
 
+            // ---- Appa's Clue Trail (leads across Drying Chamber to Sector E door)
+            var boot = Place(PrefabFactory.AppaBoot, new Vector3(13.5f, 0.02f, 7.2f), 35f, _gameplay);
+            var phone = Place(PrefabFactory.AppaPhone, new Vector3(21.5f, 0.02f, 13.5f), -15f, _gameplay);
+            var badge = Place(PrefabFactory.AppaBadge, new Vector3(29.2f, 0.02f, 14.0f), 10f, _gameplay);
+
+            boot.GetComponent<FatherClue>().Configure(FatherClueType.DroppedBoot, phone.transform);
+            phone.GetComponent<FatherClue>().Configure(FatherClueType.BrokenPhone, badge.transform);
+            badge.GetComponent<FatherClue>().Configure(FatherClueType.SupervisorID, doors["CE"].transform);
+
             // ---- zones
             Zone("THE FRONT GATE", new Vector3(-20, 1.5f, -4), new Vector3(20, 3, 8), "");
             Zone("WITHERING LOFT", new Vector3(-20, 1.5f, 18), new Vector3(19.5f, 3, 35.5f),
@@ -590,6 +613,8 @@ namespace MistProtocol.EditorTools
                 "OVERSEER: Careful. The dryers run on pressurised gas. One spark...");
             Zone("CONTROL ROOM", new Vector3(20, 1.5f, 30), new Vector3(19.5f, 3, 11.5f),
                 "OVERSEER: You should not be in here.", true);
+            Zone("CONTAINMENT VAULT", new Vector3(42, 1.5f, 12), new Vector3(23.5f, 3, 23.5f),
+                "OVERSEER: Welcome to Sector 04, Nila. Heavy Containment is online.");
 
             // ---- physics props
             foreach (var p in new[] { new Vector3(-12.2f, 0, 15.5f), new Vector3(-12.2f, 0, 20.5f), new Vector3(-20f, 0, 9.6f), new Vector3(-20f, 0, 23.5f) })
@@ -607,6 +632,9 @@ namespace MistProtocol.EditorTools
                 Place(PrefabFactory.Canister, p + Vector3.up * 0.02f, 0f);
             foreach (var p in new[] { new Vector3(-28f, 0.8f, 8f), new Vector3(8.5f, 0.8f, 33f), new Vector3(28f, 0.8f, 2f), new Vector3(12f, 0.8f, 18f) })
                 Place(PrefabFactory.Flask, p, 0f);
+
+            // ---- Sector E Containment Arena (Hiding Crates, Pillars, Trap Trigger, Titan Boss)
+            ZoneContainment(doors);
 
             // ---- spawn vents (face into the room)
             void Vent(string name, Vector3 p, float yaw) { Place(PrefabFactory.Vent, p, yaw, _gameplay).name = "Vent_" + name; }
@@ -641,6 +669,87 @@ namespace MistProtocol.EditorTools
             Place(PrefabFactory.Drone, new Vector3(20f, 2.4f, 20f), 180f, _gameplay);
             Place(PrefabFactory.Saboteur, new Vector3(-6f, 0, 32f), 180f, _gameplay);
             Place(PrefabFactory.Saboteur, new Vector3(26f, 0, 9f), -90f, _gameplay);
+        }
+
+        private static void ZoneContainment(Dictionary<string, PhysicsDoor> doors)
+        {
+            // 4 heavy concrete pillars in the arena
+            foreach (float x in new[] { 36f, 48f })
+            foreach (float z in new[] { 6f, 18f })
+                Block($"Pillar_E_{x:0}_{z:0}", new Vector3(x, H * 0.5f, z), new Vector3(0.8f, H, 0.8f), MaterialFactory.Concrete, 1.5f);
+
+            // Stacked tea crate barricades creating crouching cover and stealth hiding spots
+            Place(PrefabFactory.Barricade, new Vector3(34f, 0, 10.5f), 15f);
+            Place(PrefabFactory.Barricade, new Vector3(34.8f, 0, 10.5f), 0f);
+            Place(PrefabFactory.Barricade, new Vector3(34.4f, 0.8f, 10.5f), 5f);
+
+            Place(PrefabFactory.Barricade, new Vector3(35f, 0, 19.5f), -10f);
+            Place(PrefabFactory.Barricade, new Vector3(35.9f, 0, 19.5f), 0f);
+            Place(PrefabFactory.Barricade, new Vector3(35.5f, 0.8f, 19.5f), 0f);
+
+            Place(PrefabFactory.Barricade, new Vector3(42f, 0, 12f), 45f);
+            Place(PrefabFactory.Barricade, new Vector3(42.7f, 0, 12.7f), 45f);
+            Place(PrefabFactory.Barricade, new Vector3(42.3f, 0.8f, 12.3f), 45f);
+
+            Place(PrefabFactory.Barricade, new Vector3(50f, 0, 7f), 0f);
+            Place(PrefabFactory.Barricade, new Vector3(50.8f, 0, 7f), 10f);
+            Place(PrefabFactory.Barricade, new Vector3(50f, 0, 17f), -15f);
+            Place(PrefabFactory.Barricade, new Vector3(50.8f, 0, 17f), 0f);
+
+            // Small crates to throw and make noise to lure the Titan away
+            Place(PrefabFactory.SmallCrate, new Vector3(33f, 0.02f, 16f), 20f);
+            Place(PrefabFactory.SmallCrate, new Vector3(45f, 0.02f, 5f), -30f);
+            Place(PrefabFactory.SmallCrate, new Vector3(51f, 0.02f, 12f), 10f);
+
+            // Strategic explosive canisters to stagger/damage the Titan
+            Place(PrefabFactory.Canister, new Vector3(36.5f, 0.02f, 6f), 0f);
+            Place(PrefabFactory.Canister, new Vector3(48.5f, 0.02f, 6f), 0f);
+            Place(PrefabFactory.Canister, new Vector3(36.5f, 0.02f, 18f), 0f);
+            Place(PrefabFactory.Canister, new Vector3(48.5f, 0.02f, 18f), 0f);
+
+            // Health flask in far corner
+            Place(PrefabFactory.Flask, new Vector3(51.5f, 0.8f, 21.5f), 0f);
+
+            // Steam/Mist clouds in Sector E
+            Cloud("Mist_Containment", new Vector3(42f, 0.8f, 12f), new Vector3(22f, 1.4f, 22f), 0.18f, 45);
+
+            // Ominous overhead lighting
+            Lamp(new Vector3(36f, 3.8f, 12f), new Color(1f, 0.45f, 0.15f), 7f, 14f, MaterialFactory.LampOrange, true);
+            Lamp(new Vector3(48f, 3.8f, 12f), new Color(1f, 0.45f, 0.15f), 7f, 14f, MaterialFactory.LampOrange);
+
+            // Red emergency strobe lights for the trap
+            var em1 = new GameObject("EmergencyLight_1").AddComponent<Light>();
+            em1.transform.SetParent(_lights);
+            em1.transform.position = new Vector3(32f, 3.8f, 14f);
+            em1.type = LightType.Point; em1.range = 15f; em1.intensity = 0f; em1.color = new Color(1f, 0.1f, 0.05f); em1.enabled = false;
+
+            var em2 = new GameObject("EmergencyLight_2").AddComponent<Light>();
+            em2.transform.SetParent(_lights);
+            em2.transform.position = new Vector3(44f, 3.8f, 12f);
+            em2.type = LightType.Point; em2.range = 22f; em2.intensity = 0f; em2.color = new Color(1f, 0.1f, 0.05f); em2.enabled = false;
+
+            Transform[] pts = new[]
+            {
+                Waypoint("PatrolTitan_0", new Vector3(46f, 0, 7f)),
+                Waypoint("PatrolTitan_1", new Vector3(38f, 0, 7f)),
+                Waypoint("PatrolTitan_2", new Vector3(38f, 0, 17f)),
+                Waypoint("PatrolTitan_3", new Vector3(48f, 0, 17f))
+            };
+
+            var titan = Place(PrefabFactory.TitanBoss, new Vector3(46f, 0f, 12f), -90f, _gameplay);
+            titan.name = "Titan_Enforcer_Unit94";
+            var titanBrain = titan.GetComponent<TitanBossBrain>();
+            titanBrain.SetPatrolPoints(pts);
+
+            // Trap trigger at the doorway
+            var trapGo = new GameObject("Trigger_ContainmentTrap");
+            trapGo.transform.SetParent(_gameplay);
+            trapGo.transform.position = new Vector3(31.8f, 1.5f, 14f);
+            var col = trapGo.AddComponent<BoxCollider>();
+            col.isTrigger = true;
+            col.size = new Vector3(2.5f, 3.5f, 3f);
+            var trap = trapGo.AddComponent<BossChamberTrap>();
+            trap.Bind(doors["CE"], new[] { em1, em2 }, titanBrain);
         }
     }
 }

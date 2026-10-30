@@ -23,7 +23,8 @@ namespace MistProtocol.EditorTools
         public const string Dir = "Assets/_Project/Prefabs";
         private const string Models = "Assets/_Project/Art/Models";
 
-        public static GameObject Player, Drone, Sentinel, Saboteur, Barricade, SmallCrate, Canister, Door, Flask, Keycard, Vent;
+        public static GameObject Player, Drone, Sentinel, Saboteur, Barricade, SmallCrate, Canister, Door, Flask, Keycard, Vent,
+            AppaBoot, AppaPhone, AppaBadge, TitanBoss;
 
         public static void CreateAll()
         {
@@ -39,6 +40,10 @@ namespace MistProtocol.EditorTools
             Flask = Save(BuildFlask(), "TeaFlask_Health");
             Keycard = Save(BuildKeycard(), "Keycard");
             Vent = Save(BuildVent(), "SpawnVent");
+            AppaBoot = Save(BuildAppaBoot(), "Clue_AppaBoot");
+            AppaPhone = Save(BuildAppaPhone(), "Clue_AppaPhone");
+            AppaBadge = Save(BuildAppaBadge(), "Clue_AppaBadge");
+            TitanBoss = Save(BuildTitanBoss(), "Agent_TitanBoss");
         }
 
         // ------------------------------------------------------------------ helpers
@@ -404,6 +409,199 @@ namespace MistProtocol.EditorTools
             stripe.AddComponent<MeshFilter>().sharedMesh = MeshFactory.Box(new Vector3(1.5f, 0.15f, 0.12f), 0.5f);
             stripe.AddComponent<MeshRenderer>().sharedMaterial = MaterialFactory.Hazard;
             root.AddComponent<SpawnPoint>();
+            return root;
+        }
+
+        private static GameObject BuildAppaBoot()
+        {
+            var root = new GameObject("Clue_AppaBoot");
+            var sole = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            sole.name = "Sole";
+            sole.transform.SetParent(root.transform, false);
+            sole.transform.localScale = new Vector3(0.18f, 0.05f, 0.36f);
+            sole.GetComponent<Renderer>().sharedMaterial = MaterialFactory.DarkMetal;
+            Object.DestroyImmediate(sole.GetComponent<Collider>());
+
+            var upper = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            upper.name = "Upper";
+            upper.transform.SetParent(root.transform, false);
+            upper.transform.localPosition = new Vector3(0f, 0.08f, -0.04f);
+            upper.transform.localScale = new Vector3(0.16f, 0.14f, 0.22f);
+            upper.GetComponent<Renderer>().sharedMaterial = MaterialFactory.Wood;
+            Object.DestroyImmediate(upper.GetComponent<Collider>());
+
+            var col = root.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.9f, 0.9f, 0.9f);
+            col.center = new Vector3(0f, 0.1f, 0f);
+
+            var glow = new GameObject("Glow").AddComponent<Light>();
+            glow.transform.SetParent(root.transform, false);
+            glow.transform.localPosition = Vector3.up * 0.25f;
+            glow.type = LightType.Point;
+            glow.range = 2.5f;
+            glow.intensity = 1.8f;
+            glow.color = new Color(1f, 0.75f, 0.3f);
+            glow.shadows = LightShadows.None;
+
+            var clue = root.AddComponent<FatherClue>();
+            clue.Configure(FatherClueType.DroppedBoot);
+            Ignore(root);
+            return root;
+        }
+
+        private static GameObject BuildAppaPhone()
+        {
+            var root = new GameObject("Clue_AppaPhone");
+            var body = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            body.name = "Body";
+            body.transform.SetParent(root.transform, false);
+            body.transform.localScale = new Vector3(0.12f, 0.03f, 0.22f);
+            body.GetComponent<Renderer>().sharedMaterial = MaterialFactory.DarkMetal;
+            Object.DestroyImmediate(body.GetComponent<Collider>());
+
+            var screen = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            screen.name = "Screen";
+            screen.transform.SetParent(root.transform, false);
+            screen.transform.localPosition = new Vector3(0f, 0.02f, 0.02f);
+            screen.transform.localScale = new Vector3(0.09f, 0.015f, 0.14f);
+            screen.GetComponent<Renderer>().sharedMaterial = MaterialFactory.LampCyan;
+            Object.DestroyImmediate(screen.GetComponent<Collider>());
+
+            var col = root.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.9f, 0.9f, 0.9f);
+            col.center = new Vector3(0f, 0.1f, 0f);
+
+            var glow = new GameObject("Glow").AddComponent<Light>();
+            glow.transform.SetParent(root.transform, false);
+            glow.transform.localPosition = Vector3.up * 0.25f;
+            glow.type = LightType.Point;
+            glow.range = 2.5f;
+            glow.intensity = 2f;
+            glow.color = new Color(0.3f, 0.9f, 1f);
+            glow.shadows = LightShadows.None;
+
+            var clue = root.AddComponent<FatherClue>();
+            clue.Configure(FatherClueType.BrokenPhone);
+            Ignore(root);
+            return root;
+        }
+
+        private static GameObject BuildAppaBadge()
+        {
+            var root = new GameObject("Clue_AppaBadge");
+            var card = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            card.name = "BadgeCard";
+            card.transform.SetParent(root.transform, false);
+            card.transform.localScale = new Vector3(0.16f, 0.015f, 0.24f);
+            card.GetComponent<Renderer>().sharedMaterial = MaterialFactory.Keycard;
+            Object.DestroyImmediate(card.GetComponent<Collider>());
+
+            var clip = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            clip.name = "Clip";
+            clip.transform.SetParent(root.transform, false);
+            clip.transform.localPosition = new Vector3(0f, 0.02f, 0.12f);
+            clip.transform.localScale = new Vector3(0.06f, 0.02f, 0.04f);
+            clip.GetComponent<Renderer>().sharedMaterial = MaterialFactory.DarkMetal;
+            Object.DestroyImmediate(clip.GetComponent<Collider>());
+
+            var col = root.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.9f, 0.9f, 0.9f);
+            col.center = new Vector3(0f, 0.1f, 0f);
+
+            var glow = new GameObject("Glow").AddComponent<Light>();
+            glow.transform.SetParent(root.transform, false);
+            glow.transform.localPosition = Vector3.up * 0.25f;
+            glow.type = LightType.Point;
+            glow.range = 2.5f;
+            glow.intensity = 2f;
+            glow.color = new Color(1f, 0.85f, 0.4f);
+            glow.shadows = LightShadows.None;
+
+            var clue = root.AddComponent<FatherClue>();
+            clue.Configure(FatherClueType.SupervisorID);
+            Ignore(root);
+            return root;
+        }
+
+        private static GameObject BuildTitanBoss()
+        {
+            var root = new GameObject("Agent_TitanBoss");
+            var model = Model("SentinelBot", root.transform, MaterialFactory.LampOrange, "Visor");
+            model.transform.localScale = Vector3.one * 1.8f;
+
+            // Extra heavy armor plates on shoulders
+            var armorL = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            armorL.name = "Armor_Plate_L";
+            armorL.transform.SetParent(model.transform, false);
+            armorL.transform.localPosition = new Vector3(-0.45f, 1.4f, 0f);
+            armorL.transform.localScale = new Vector3(0.35f, 0.45f, 0.45f);
+            armorL.GetComponent<Renderer>().sharedMaterial = MaterialFactory.DarkMetal;
+            Object.DestroyImmediate(armorL.GetComponent<Collider>());
+
+            var armorR = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            armorR.name = "Armor_Plate_R";
+            armorR.transform.SetParent(model.transform, false);
+            armorR.transform.localPosition = new Vector3(0.45f, 1.4f, 0f);
+            armorR.transform.localScale = new Vector3(0.35f, 0.45f, 0.45f);
+            armorR.GetComponent<Renderer>().sharedMaterial = MaterialFactory.DarkMetal;
+            Object.DestroyImmediate(armorR.GetComponent<Collider>());
+
+            // Reinforced chest plate
+            var chest = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            chest.name = "Armor_Chest";
+            chest.transform.SetParent(model.transform, false);
+            chest.transform.localPosition = new Vector3(0f, 1.25f, 0.25f);
+            chest.transform.localScale = new Vector3(0.6f, 0.5f, 0.2f);
+            chest.GetComponent<Renderer>().sharedMaterial = MaterialFactory.Hazard;
+            Object.DestroyImmediate(chest.GetComponent<Collider>());
+
+            // Heavy Armored Health (1200 HP)
+            var h = root.AddComponent<ArmoredBossHealth>();
+            Set(h, "maxHealth", 1200f);
+
+            var motor = root.AddComponent<AgentMotor>();
+            Set(motor, "maxSpeed", 3.8f);
+            Set(motor, "acceleration", 8f);
+            Set(motor, "hoverHeight", 0f);
+
+            root.AddComponent<VisionSensor>();
+            KinematicBody(root);
+            Ignore(root);
+
+            var col = root.AddComponent<CapsuleCollider>();
+            col.height = 3.3f; col.radius = 0.75f; col.center = new Vector3(0, 1.65f, 0);
+
+            var anim = root.AddComponent<WalkerAnimator>();
+            Set(anim, "strideLength", 1.8f);
+            SetArray(anim, "glowRenderers", Renderers(model, "Visor"));
+
+            // Searchlight
+            var lightGo = new GameObject("Searchlight");
+            lightGo.transform.SetParent(root.transform, false);
+            lightGo.transform.localPosition = new Vector3(0f, 2.7f, 0.4f);
+            var sl = lightGo.AddComponent<Light>();
+            sl.type = LightType.Spot;
+            sl.spotAngle = 55f;
+            sl.innerSpotAngle = 20f;
+            sl.range = 30f;
+            sl.intensity = 5f;
+            sl.color = new Color(1f, 0.15f, 0.1f);
+            sl.shadows = LightShadows.Soft;
+
+            var gun = model.transform.FindDeep("Gun");
+            var muzzle = Child(gun != null ? gun : model.transform, "Muzzle", new Vector3(0, 0.02f, 0.64f));
+            var w = root.AddComponent<EnemyWeapon>();
+            Set(w, "muzzle", muzzle);
+            Set(w, "damage", 12f);
+            Set(w, "fireInterval", 0.18f);
+            Set(w, "magazine", 30);
+            Set(w, "reloadTime", 2.8f);
+            Set(w, "loudness", 36f);
+            Set(w, "tracerColor", new Color(1f, 0.15f, 0.1f, 1f));
+
+            var brain = root.AddComponent<TitanBossBrain>();
+            Set(brain, "searchlight", sl);
+
             return root;
         }
     }

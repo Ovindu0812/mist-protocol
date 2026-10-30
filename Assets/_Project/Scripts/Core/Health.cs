@@ -25,7 +25,7 @@ namespace MistProtocol.Core
             if (refill) Current = value;
         }
 
-        public void TakeDamage(float amount, Vector3 fromPosition)
+        public virtual void TakeDamage(float amount, Vector3 fromPosition)
         {
             if (IsDead || amount <= 0f) return;
             Current = Mathf.Max(0f, Current - amount);

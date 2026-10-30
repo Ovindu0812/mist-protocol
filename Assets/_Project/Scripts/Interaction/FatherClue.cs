@@ -1,0 +1,108 @@
+using MistProtocol.Core;
+using UnityEngine;
+
+namespace MistProtocol.Interaction
+{
+    public enum FatherClueType
+    {
+        DroppedBoot,
+        BrokenPhone,
+        SupervisorID
+    }
+
+    /// <summary>
+    /// Personal items dropped by Nila's father (Appa) marking the path to where he was taken.
+    /// </summary>
+    public class FatherClue : MonoBehaviour, IInteractable
+    {
+        [SerializeField] private FatherClueType clueType;
+        [SerializeField] private Transform nextObjectiveTarget;
+        [SerializeField] private float bobSpeed = 2.5f;
+        [SerializeField] private float bobHeight = 0.04f;
+
+        private Vector3 _startPos;
+        private bool _inspected;
+        private Light _glowLight;
+
+        public bool CanInteract => !_inspected;
+
+        public string Prompt => clueType switch
+        {
+            FatherClueType.DroppedBoot => "[E] Inspect Appa's dropped boot",
+            FatherClueType.BrokenPhone => "[E] Inspect cracked radio-phone",
+            FatherClueType.SupervisorID => "[E] Inspect Supervisor ID badge",
+            _ => "[E] Inspect clue"
+        };
+
+        public void Configure(FatherClueType type, Transform nextTarget = null)
+        {
+            clueType = type;
+            nextObjectiveTarget = nextTarget;
+        }
+
+        private void Awake()
+        {
+            _startPos = transform.position;
+            _glowLight = GetComponentInChildren<Light>();
+        }
+
+        private void Update()
+        {
+            if (_inspected) return;
+
+            // Gentle hover/pulse to draw attention in the dark
+            float t = Time.time * bobSpeed;
+            transform.position = _startPos + Vector3.up * (Mathf.Sin(t) * bobHeight);
+            if (_glowLight != null)
+            {
+                _glowLight.intensity = 1.6f + Mathf.Sin(t * 1.8f) * 0.6f;
+            }
+        }
+
+        public void Interact()
+        {
+            if (_inspected) return;
+            _inspected = true;
+
+            ProceduralAudio.PlayAt("pickup", transform.position, 0.7f, 1.2f);
+            if (clueType == FatherClueType.BrokenPhone)
+            {
+                ProceduralAudio.PlayAt("zap", transform.position, 0.5f, 1.5f);
+            }
+
+            string dialogue = "";
+            string objective = "";
+
+            switch (clueType)
+            {
+                case FatherClueType.DroppedBoot:
+                    dialogue = "NILA: Appa's work boot... It was torn off in a struggle. He was dragged further down this corridor. He's alive!";
+                    objective = "Follow Appa's trail: Search the corridor for further signs";
+                    break;
+
+                case FatherClueType.BrokenPhone:
+                    dialogue = "NILA: Appa's radio-phone! The screen is shattered, but the last outgoing call was to me. The trail continues north-east towards Sector 04!";
+                    objective = "Follow Appa's trail: Head toward the heavy containment wing";
+                    break;
+
+                case FatherClueType.SupervisorID:
+                    dialogue = "NILA: His Glenmist Supervisor ID badge! He deliberately threw it down here at this heavy door to mark where they dragged him. Appa must be in this room!";
+                    objective = "Investigate the Heavy Containment Vault ahead";
+                    break;
+            }
+
+            // Broadcast dialogue and objective
+            GameEvents.Overseer(dialogue);
+            GameEvents.Objective(objective);
+
+            if (_glowLight != null)
+                _glowLight.color = new Color(0.2f, 0.8f, 0.4f); // Turn soft green when inspected
+
+            // Direct next objective if GameManager is listening
+            if (nextObjectiveTarget != null && GameManager.Instance != null)
+            {
+                // We keep the player guided along the trail
+            }
+        }
+    }
+}
