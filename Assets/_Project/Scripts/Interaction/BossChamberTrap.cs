@@ -16,12 +16,94 @@ namespace MistProtocol.Interaction
         [SerializeField] private AgentBase titanBoss;
 
         private bool _triggered;
+        private Health _titanHealth;
+        private Vector3 _lastTitanPosition;
+        private bool _titanDefeated;
 
         public void Bind(PhysicsDoor door, Light[] lights, AgentBase titan)
         {
             entranceDoor = door;
             emergencyLights = lights;
             titanBoss = titan;
+            HookTitanHealth();
+        }
+
+        private void Start()
+        {
+            HookTitanHealth();
+        }
+
+        private void HookTitanHealth()
+        {
+            if (titanBoss != null && _titanHealth == null)
+            {
+                _titanHealth = titanBoss.GetComponent<Health>();
+                if (_titanHealth != null)
+                {
+                    _titanHealth.Died += OnTitanDied;
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (titanBoss != null && !_titanDefeated)
+            {
+                _lastTitanPosition = titanBoss.transform.position;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_titanHealth != null)
+            {
+                _titanHealth.Died -= OnTitanDied;
+            }
+        }
+
+        private void OnTitanDied()
+        {
+            if (_titanDefeated) return;
+            _titanDefeated = true;
+            StartCoroutine(TitanDefeatedSequence());
+        }
+
+        private IEnumerator TitanDefeatedSequence()
+        {
+            yield return new WaitForSeconds(1.0f);
+
+            Vector3 spawnPos = _lastTitanPosition != Vector3.zero ? _lastTitanPosition : (transform.position + Vector3.forward * 10f);
+            spawnPos.y = Mathf.Max(spawnPos.y, 0.05f);
+
+            // 1. Spawn Appa's marked blueprint map at Titan wreckage
+            FatherClue.SpawnMap(spawnPos);
+
+            // 2. Unlock and open the chamber door
+            if (entranceDoor != null)
+            {
+                entranceDoor.SetLocked(false);
+                entranceDoor.Open();
+            }
+
+            // 3. Calm amber/green lighting after alert
+            if (emergencyLights != null)
+            {
+                foreach (var l in emergencyLights)
+                {
+                    if (l != null)
+                    {
+                        l.color = new Color(0.2f, 0.9f, 0.5f);
+                        l.intensity = 2f;
+                    }
+                }
+            }
+
+            // 4. Audio and reactions
+            ProceduralAudio.PlayAt("explosion", spawnPos, 0.8f, 0.7f);
+            ProceduralAudio.PlayAt("pickup", spawnPos, 0.9f, 1.1f);
+
+            GameEvents.Overseer("OVERSEER: Unit-94 destroyed?! Impossible... He left something for you in the wreckage, didn't he?");
+            GameEvents.Objective("TITAN DESTROYED: Collect Appa's Factory Blueprint from the wreckage!");
         }
 
         private void OnTriggerEnter(Collider other)

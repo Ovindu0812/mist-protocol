@@ -10,11 +10,12 @@ namespace MistProtocol.UI
     public class HUD : MonoBehaviour
     {
         private Font _font;
-        private Text _health, _ammo, _objective, _prompt, _overseer, _zone, _center, _hitmarker;
-        private Image _healthFill, _damage, _holdFill, _holdBack, _panel;
+        private Text _health, _ammo, _objective, _prompt, _overseer, _zone, _center, _hitmarker, _bossTitle;
+        private Image _healthFill, _damage, _holdFill, _holdBack, _panel, _bossBarBack, _bossBarFill;
         private PlayerController _player;
         private PlayerWeapon _weapon;
         private PlayerInteractor _interactor;
+        private Health _titanBossHealth;
         private float _overseerUntil, _damageAlpha;
         private readonly Queue<string> _overseerQueue = new();
 
@@ -50,6 +51,12 @@ namespace MistProtocol.UI
             _prompt = MakeText(root, "Prompt", "", 30, Cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.42f), new Vector2(900, 50), Vector2.zero);
             _holdBack = MakeImage(root, "HoldBack", new Color(0, 0, 0, 0.6f), new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(-200, -8), new Vector2(200, 8));
             _holdFill = MakeImage(root, "HoldFill", Cyan, new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(-198, -6), new Vector2(198, 6));
+
+            // Titan Boss Health Bar (Top Center)
+            _bossBarBack = MakeImage(root, "BossBarBack", new Color(0, 0, 0, 0.75f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-320, -90), new Vector2(320, -56));
+            _bossBarFill = MakeImage(root, "BossBarFill", new Color(1f, 0.22f, 0.15f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-316, -86), new Vector2(316, -60));
+            _bossTitle = MakeText(root, "BossTitle", "TITAN ENFORCER - UNIT 94", 20, new Color(1f, 0.8f, 0.35f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(640, 26), new Vector2(0, -38));
+            _bossBarBack.enabled = _bossBarFill.enabled = _bossTitle.enabled = false;
 
             _panel = MakeImage(root, "Panel", new Color(0.02f, 0.04f, 0.05f, 0.92f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             _center = MakeText(_panel.transform, "PanelText", "", 30, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(1500, 950), Vector2.zero);
@@ -121,6 +128,27 @@ namespace MistProtocol.UI
             {
                 var r = _holdFill.rectTransform;
                 r.offsetMax = new Vector2(-198 + 396 * _interactor.HoldProgress, r.offsetMax.y);
+            }
+
+            // Update Titan Boss Health Bar
+            if (_titanBossHealth == null)
+            {
+                var titan = FindAnyObjectByType<AI.Agents.TitanBossBrain>();
+                if (titan != null && titan.gameObject.activeInHierarchy)
+                {
+                    _titanBossHealth = titan.GetComponent<Health>();
+                }
+            }
+
+            bool showBossBar = _titanBossHealth != null && !_titanBossHealth.IsDead && _titanBossHealth.gameObject.activeInHierarchy;
+            if (_bossBarBack != null && _bossBarBack.enabled != showBossBar) _bossBarBack.enabled = showBossBar;
+            if (_bossBarFill != null && _bossBarFill.enabled != showBossBar) _bossBarFill.enabled = showBossBar;
+            if (_bossTitle != null && _bossTitle.enabled != showBossBar) _bossTitle.enabled = showBossBar;
+
+            if (showBossBar && _bossBarFill != null)
+            {
+                var r = _bossBarFill.rectTransform;
+                r.offsetMax = new Vector2(-316 + 632 * _titanBossHealth.Normalized, r.offsetMax.y);
             }
 
             _damageAlpha = Mathf.MoveTowards(_damageAlpha, 0f, dt * 0.8f);

@@ -24,7 +24,7 @@ namespace MistProtocol.EditorTools
         private const string Models = "Assets/_Project/Art/Models";
 
         public static GameObject Player, Drone, Sentinel, Saboteur, Barricade, SmallCrate, Canister, Door, Flask, Keycard, Vent,
-            AppaBoot, AppaPhone, AppaBadge, TitanBoss;
+            AppaBoot, AppaPhone, AppaBadge, AppaMap, TitanBoss;
 
         public static void CreateAll()
         {
@@ -43,6 +43,7 @@ namespace MistProtocol.EditorTools
             AppaBoot = Save(BuildAppaBoot(), "Clue_AppaBoot");
             AppaPhone = Save(BuildAppaPhone(), "Clue_AppaPhone");
             AppaBadge = Save(BuildAppaBadge(), "Clue_AppaBadge");
+            AppaMap = Save(BuildAppaMap(), "Clue_FactoryMap");
             TitanBoss = Save(BuildTitanBoss(), "Agent_TitanBoss");
         }
 
@@ -519,6 +520,43 @@ namespace MistProtocol.EditorTools
 
             var clue = root.AddComponent<FatherClue>();
             clue.Configure(FatherClueType.SupervisorID);
+            Ignore(root);
+            return root;
+        }
+
+        private static GameObject BuildAppaMap()
+        {
+            var root = new GameObject("Clue_FactoryMap");
+            var sheet = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            sheet.name = "BlueprintDoc";
+            sheet.transform.SetParent(root.transform, false);
+            sheet.transform.localScale = new Vector3(0.48f, 0.02f, 0.34f);
+            sheet.GetComponent<Renderer>().sharedMaterial = MaterialFactory.LampCyan;
+            Object.DestroyImmediate(sheet.GetComponent<Collider>());
+
+            var clip = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            clip.name = "Clip";
+            clip.transform.SetParent(root.transform, false);
+            clip.transform.localPosition = new Vector3(-0.2f, 0.025f, 0f);
+            clip.transform.localScale = new Vector3(0.08f, 0.035f, 0.36f);
+            clip.GetComponent<Renderer>().sharedMaterial = MaterialFactory.DarkMetal;
+            Object.DestroyImmediate(clip.GetComponent<Collider>());
+
+            var col = root.AddComponent<BoxCollider>();
+            col.size = new Vector3(1.4f, 1.2f, 1.4f);
+            col.center = new Vector3(0f, 0.2f, 0f);
+
+            var glow = new GameObject("Glow").AddComponent<Light>();
+            glow.transform.SetParent(root.transform, false);
+            glow.transform.localPosition = Vector3.up * 0.35f;
+            glow.type = LightType.Point;
+            glow.range = 4.5f;
+            glow.intensity = 3.5f;
+            glow.color = new Color(0.2f, 0.85f, 1f);
+            glow.shadows = LightShadows.None;
+
+            var clue = root.AddComponent<FatherClue>();
+            clue.Configure(FatherClueType.FactoryMap);
             Ignore(root);
             return root;
         }

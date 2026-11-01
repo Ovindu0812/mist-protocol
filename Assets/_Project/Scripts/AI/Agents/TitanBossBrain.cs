@@ -81,6 +81,22 @@ namespace MistProtocol.AI.Agents
             }
         }
 
+        protected override void OnDied()
+        {
+            // Massive mechanical explosion on boss destruction
+            Vfx.Burst(transform.position + Vector3.up * 1.5f, Vector3.up, new Color(1f, 0.45f, 0.15f), 45, 9f, 0.2f, 1.0f);
+            ProceduralAudio.PlayAt("explosion", transform.position, 1.2f, 0.6f);
+
+            // Screen shake for nearby player
+            if (PlayerLocator.Alive)
+            {
+                var pc = PlayerLocator.State.Root.GetComponent<PlayerController>();
+                if (pc != null) pc.RecoilPitch += 3.0f;
+            }
+
+            base.OnDied();
+        }
+
         protected override void Think()
         {
             if (Time.time < _staggerUntil) return;
