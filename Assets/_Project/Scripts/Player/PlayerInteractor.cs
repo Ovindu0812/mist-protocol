@@ -13,7 +13,7 @@ namespace MistProtocol.Player
     /// </summary>
     public class PlayerInteractor : MonoBehaviour
     {
-        [SerializeField] private float reach = 3f;
+        [SerializeField] private float reach = 4.2f;
         [SerializeField] private float holdDistance = 1.8f;
         [SerializeField] private float throwSpeed = 15f;
         [SerializeField] private float maxCarryMass = 25f;
@@ -21,6 +21,7 @@ namespace MistProtocol.Player
         private PlayerController _player;
         private Camera _cam;
         private Throwable _held;
+        private IHoldInteractable _activeHold;
 
         public bool IsHolding => _held != null || Time.time - _releasedAt < 0.25f;
         private float _releasedAt = -9f;
@@ -39,7 +40,12 @@ namespace MistProtocol.Player
             HoldProgress = -1f;
             var kb = Keyboard.current;
             var mouse = Mouse.current;
-            if (!_player.InputEnabled || _player.Health.IsDead || kb == null) { Drop(Vector3.zero); return; }
+            if (!_player.InputEnabled || _player.Health.IsDead || kb == null)
+            {
+                Drop(Vector3.zero);
+                _activeHold = null;
+                return;
+            }
 
             if (_held != null && _held.Body == null) _held = null;
             if (_held != null)
@@ -50,35 +56,97 @@ namespace MistProtocol.Player
                 return;
             }
 
-            if (!Physics.Raycast(_cam.transform.position, _cam.transform.forward, out var hit, reach, ~0, QueryTriggerInteraction.Ignore))
-                return;
+            // Continuous hold grace: Keep holding if E is pressed and player remains in range
+            if (_activeHold != null && kb.eKey.isPressed && _activeHold.CanInteract)
+            {
+                var comp = _activeHold as Component;
+                float dist = comp != null ? Vector3.Distance(_cam.transform.position, comp.transform.position) : 0f;
+                if (dist <= reach * 1.5f)
+                {
+                    Prompt = _activeHold.Prompt;
+                    HoldProgress = _activeHold.HoldProgress;
+                    _activeHold.Hold(Time.deltaTime);
+                    if (_activeHold.HoldProgress >= 1f)
+                    {
+                        _activeHold = null;
+                    }
+                    return;
+                }
+            }
+            _activeHold = null;
 
-            var interactable = hit.collider.GetComponentInParent<IInteractable>();
+            IInteractable interactable = null;
+            RaycastHit hit;
+
+            // 1. Precise direct raycast
+            if (Physics.Raycast(_cam.transform.position, _cam.transform.forward, out hit, reach, ~0, QueryTriggerInteraction.Ignore))
+            {
+                interactable = hit.collider.GetComponentInParent<IInteractable>();
+            }
+
+            // 2. Thick SphereCast fallback if direct ray narrowly missed
+            if (interactable == null && Physics.SphereCast(_cam.transform.position, 0.45f, _cam.transform.forward, out var sHit, reach, ~0, QueryTriggerInteraction.Ignore))
+            {
+                interactable = sHit.collider.GetComponentInParent<IInteractable>();
+                hit = sHit;
+            }
+
+            // 3. Proximity cone check: If player is standing right in front of the console/clue looking towards it
+            if (interactable == null)
+            {
+                var nearby = Physics.OverlapSphere(_cam.transform.position, 3.2f, ~0, QueryTriggerInteraction.Collide);
+                float bestDot = 0.4f; // wide cone ~66 degrees
+                foreach (var c in nearby)
+                {
+                    var cand = c.GetComponentInParent<IInteractable>();
+                    if (cand != null)
+                    {
+                        Vector3 dir = (c.bounds.center - _cam.transform.position).normalized;
+                        float dot = Vector3.Dot(_cam.transform.forward, dir);
+                        if (dot > bestDot)
+                        {
+                            bestDot = dot;
+                            interactable = cand;
+                        }
+                    }
+                }
+            }
+
             if (interactable != null)
             {
                 Prompt = interactable.Prompt;
                 if (interactable is IHoldInteractable hold)
                 {
                     HoldProgress = hold.HoldProgress;
-                    if (kb.eKey.isPressed && hold.CanInteract) hold.Hold(Time.deltaTime);
+                    if (kb.eKey.isPressed && hold.CanInteract)
+                    {
+                        _activeHold = hold;
+                        hold.Hold(Time.deltaTime);
+                    }
                 }
-                else if (kb.eKey.wasPressedThisFrame) interactable.Interact();
-                return;
-            }
-
-            var throwable = hit.collider.GetComponentInParent<Throwable>();
-            if (throwable != null && throwable.Body.mass <= maxCarryMass)
-            {
-                Prompt = "[F] Pick up";
-                if (kb.fKey.wasPressedThisFrame)
+                else if (kb.eKey.wasPressedThisFrame)
                 {
-                    _held = throwable;
-                    _held.OnPickedUp();
+                    interactable.Interact();
                 }
                 return;
             }
 
-            if (hit.collider.GetComponentInParent<Barricade>() != null) Prompt = "Walk into the crate to push it";
+            if (hit.collider != null)
+            {
+                var throwable = hit.collider.GetComponentInParent<Throwable>();
+                if (throwable != null && throwable.Body.mass <= maxCarryMass)
+                {
+                    Prompt = "[F] Pick up";
+                    if (kb.fKey.wasPressedThisFrame)
+                    {
+                        _held = throwable;
+                        _held.OnPickedUp();
+                    }
+                    return;
+                }
+
+                if (hit.collider.GetComponentInParent<Barricade>() != null) Prompt = "Walk into the crate to push it";
+            }
         }
 
         private void FixedUpdate()
