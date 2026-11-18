@@ -58,7 +58,19 @@ namespace MistProtocol.Player
             _weapon = GetComponentInChildren<PlayerWeapon>();
             _interactor = GetComponentInChildren<PlayerInteractor>();
             if (cameraPivot == null) cameraPivot = transform.Find("CameraPivot");
-            _standHeight = _cc.height;
+            if (cameraPivot == null)
+            {
+                var cam = GetComponentInChildren<Camera>();
+                if (cam != null) cameraPivot = cam.transform;
+            }
+            if (cameraPivot == null)
+            {
+                var pivGo = new GameObject("CameraPivot");
+                pivGo.transform.SetParent(transform, false);
+                pivGo.transform.localPosition = new Vector3(0f, 1.7f, 0f);
+                cameraPivot = pivGo.transform;
+            }
+            _standHeight = _cc != null ? _cc.height : 1.8f;
             _pivotHeight = cameraPivot.localPosition.y;
             _yaw = transform.eulerAngles.y;
             PlayerLocator.Register(this);
