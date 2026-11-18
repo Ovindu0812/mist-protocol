@@ -82,10 +82,11 @@ namespace MistProtocol.Player
             float dt = Time.deltaTime;
             var kb = Keyboard.current;
             var mouse = Mouse.current;
-            bool input = InputEnabled && !_health.IsDead && kb != null && mouse != null;
+            // Movement/action requires keyboard only; mouse look requires mouse + locked cursor.
+            bool input = InputEnabled && !_health.IsDead && kb != null;
 
-            // ---- look
-            if (input && Cursor.lockState == CursorLockMode.Locked)
+            // ---- look (requires mouse device present AND cursor locked)
+            if (input && mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 md = mouse.delta.ReadValue() * mouseSensitivity;
                 _yaw += md.x;
