@@ -149,7 +149,7 @@ namespace MistProtocol.AI.Agents
             }
         }
 
-        private bool CanSeePlayerWithStealthCheck(PlayerState player)
+        private bool CanSeePlayerWithStealthCheck(IPlayerState player)
         {
             if (player == null || !PlayerLocator.Alive) return false;
 
