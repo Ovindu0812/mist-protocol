@@ -14,6 +14,14 @@ namespace MistProtocol.EditorTools
     {
         public const string Dir = "Assets/_Project/Art/Textures/Generated";
 
+        [MenuItem("Mist Protocol/Regenerate Environment Textures")]
+        public static void GenerateAllMenu()
+        {
+            GenerateAll();
+            AssetDatabase.ImportAsset("Assets/_Project/Art/Textures", ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+            Debug.Log("[TextureFactory] Environment textures regenerated successfully!");
+        }
+
         public static void GenerateAll()
         {
             Directory.CreateDirectory(Dir);

@@ -18,10 +18,9 @@ namespace MistProtocol.EditorTools
         {
             Directory.CreateDirectory(Dir);
             Palette = Lit("M_MistPalette", Tex("Assets/_Project/Art/Textures/MistPalette.png"), null, Color.white, 0.25f, 0.2f);
-            Palette.EnableKeyword("_EMISSION");
-            Palette.SetTexture("_EmissionMap", Tex("Assets/_Project/Art/Textures/MistPalette_Emission.png"));
-            Palette.SetColor("_EmissionColor", Color.white * 1.5f);
-            Palette.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
+            Palette.DisableKeyword("_EMISSION");
+            Palette.SetColor("_EmissionColor", Color.black);
+            Palette.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
 
             Glow = Lit("M_Glow", null, null, new Color(0.05f, 0.05f, 0.05f), 0.8f, 0f);
             Glow.EnableKeyword("_EMISSION");
