@@ -134,7 +134,7 @@ namespace MistProtocol.EditorTools
             }
             var tri = UnityEngine.AI.NavMesh.CalculateTriangulation();
             Debug.Log($"[MistBuild] VERIFY navmesh verts={tri.vertices.Length} tris={tri.indices.Length / 3}");
-            Debug.Log($"[MistBuild] VERIFY renderers={Object.FindObjectsByType<MeshRenderer>().Length} lights={Object.FindObjectsByType<Light>().Length}");
+            Debug.Log($"[MistBuild] VERIFY renderers={Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None).Length} lights={Object.FindObjectsByType<Light>(FindObjectsSortMode.None).Length}");
         }
     }
 

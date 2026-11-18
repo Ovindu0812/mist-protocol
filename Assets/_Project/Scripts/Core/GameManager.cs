@@ -177,7 +177,7 @@ namespace MistProtocol.Core
             if (_player != null) _player.InputEnabled = false;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            foreach (var a in FindObjectsByType<AI.Agents.AgentBase>())
+            foreach (var a in FindObjectsByType<AI.Agents.AgentBase>(FindObjectsSortMode.None))
                 a.HealthComponent.TakeDamage(9999f, a.transform.position + Vector3.up);
         }
 
