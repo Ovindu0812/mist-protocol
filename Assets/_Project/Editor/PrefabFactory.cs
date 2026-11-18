@@ -86,17 +86,144 @@ namespace MistProtocol.EditorTools
         public static GameObject Model(string fbx, Transform parent, Material glowFor = null, params string[] glowParts)
         {
             var asset = AssetDatabase.LoadAssetAtPath<GameObject>($"{Models}/{fbx}.fbx");
-            if (asset == null) { Debug.LogError($"[MistBuild] Missing model {fbx}"); return new GameObject(fbx); }
-            var go = (GameObject)PrefabUtility.InstantiatePrefab(asset);
-            PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
-            go.name = fbx;
-            if (parent != null) go.transform.SetParent(parent, false);
-            foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
+            GameObject go;
+            if (asset != null && IsRealAsset(asset))
             {
-                bool glow = System.Array.IndexOf(glowParts, r.name) >= 0;
-                r.sharedMaterial = glow && glowFor != null ? glowFor : MaterialFactory.Palette;
+                go = (GameObject)PrefabUtility.InstantiatePrefab(asset);
+                PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                go.name = fbx;
+                if (parent != null) go.transform.SetParent(parent, false);
+                foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
+                {
+                    bool glow = System.Array.IndexOf(glowParts, r.name) >= 0;
+                    r.sharedMaterial = glow && glowFor != null ? glowFor : MaterialFactory.Palette;
+                }
+            }
+            else
+            {
+                // FBX is an LFS stub — build a recognisable placeholder shape so the
+                // agent/prop is still visible and playable in the editor.
+                Debug.LogWarning($"[MistBuild] {fbx}.fbx is an LFS stub – generating placeholder geometry.");
+                go = BuildPlaceholder(fbx, parent, glowFor, glowParts);
             }
             return go;
+        }
+
+        /// <summary>Returns false when the loaded asset is an LFS pointer stub (< 512 bytes on disk).</summary>
+        private static bool IsRealAsset(GameObject asset)
+        {
+            var path = AssetDatabase.GetAssetPath(asset);
+            if (string.IsNullOrEmpty(path)) return true;
+            var info = new System.IO.FileInfo(path);
+            return info.Exists && info.Length > 512;
+        }
+
+        /// <summary>Procedural stand-in geometry when the FBX is not available.</summary>
+        private static GameObject BuildPlaceholder(string fbx, Transform parent, Material glowFor, string[] glowParts)
+        {
+            var root = new GameObject(fbx);
+            if (parent != null) root.transform.SetParent(parent, false);
+            Material mat = MaterialFactory.Palette;
+
+            // Per-asset silhouettes so agents/props look distinct
+            switch (fbx)
+            {
+                case "SentinelBot":
+                {
+                    // Upright bipedal robot: torso + head + visor + 2 legs + 2 arms + gun barrel
+                    AddBox(root, "Torso",   new Vector3(0, 0.95f,  0),    new Vector3(0.52f, 0.72f, 0.38f), mat);
+                    AddBox(root, "Visor",   new Vector3(0, 1.52f,  0.05f),new Vector3(0.36f, 0.3f,  0.28f), glowFor ?? mat);
+                    AddBox(root, "LegL",    new Vector3(-0.14f,0.42f, 0), new Vector3(0.18f, 0.84f, 0.22f), mat);
+                    AddBox(root, "LegR",    new Vector3( 0.14f,0.42f, 0), new Vector3(0.18f, 0.84f, 0.22f), mat);
+                    AddBox(root, "ArmL",    new Vector3(-0.38f,0.95f, 0), new Vector3(0.14f, 0.56f, 0.18f), mat);
+                    AddBox(root, "ArmR",    new Vector3( 0.38f,0.95f, 0), new Vector3(0.14f, 0.56f, 0.18f), mat);
+                    var gun = AddBox(root, "Gun", new Vector3(0.38f,1.0f, 0.28f), new Vector3(0.1f, 0.1f, 0.52f), mat);
+                    AddBox(gun,  "Muzzle",  new Vector3(0, 0, 0.26f),     new Vector3(0.06f, 0.06f, 0.04f), mat);
+                    break;
+                }
+                case "SaboteurBot":
+                {
+                    // Low spider-like body + 4 legs + eye
+                    AddBox(root, "Body",  new Vector3(0, 0.38f, 0),  new Vector3(0.65f, 0.3f, 0.72f), mat);
+                    AddBox(root, "Eye",   new Vector3(0, 0.56f, 0.3f), new Vector3(0.18f, 0.18f, 0.12f), glowFor ?? mat);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        float sx = (i < 2 ? -1f : 1f) * 0.42f;
+                        float sz = (i % 2 == 0 ? -1f : 1f) * 0.28f;
+                        AddBox(root, $"Leg{i}", new Vector3(sx, 0.14f, sz), new Vector3(0.1f, 0.28f, 0.1f), mat);
+                    }
+                    break;
+                }
+                case "HunterDrone":
+                {
+                    // Hovering disc + eye dome + 4 rotor stubs
+                    AddBox(root, "Hull", new Vector3(0, 0, 0),  new Vector3(0.72f, 0.22f, 0.72f), mat);
+                    AddBox(root, "Eye",  new Vector3(0,-0.14f, 0.18f), new Vector3(0.2f, 0.2f, 0.2f), glowFor ?? mat);
+                    var gun = AddBox(root, "Gun", new Vector3(0,-0.14f, 0.3f), new Vector3(0.08f, 0.08f, 0.3f), mat);
+                    AddBox(gun, "Muzzle", new Vector3(0,0,0.15f), new Vector3(0.05f,0.05f,0.04f), mat);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        float a = i * 90f * Mathf.Deg2Rad;
+                        AddBox(root, $"Rotor{i}", new Vector3(Mathf.Cos(a)*0.42f, 0.06f, Mathf.Sin(a)*0.42f),
+                            new Vector3(0.32f, 0.04f, 0.08f), mat);
+                    }
+                    break;
+                }
+                case "MistRifle":
+                    AddBox(root, "Body",    new Vector3(0, 0, 0),      new Vector3(0.06f, 0.08f, 0.44f), mat);
+                    AddBox(root, "Stock",   new Vector3(0, -0.03f,-0.18f),new Vector3(0.05f,0.1f, 0.18f), mat);
+                    AddBox(root, "Muzzle",  new Vector3(0, 0,  0.22f), new Vector3(0.03f, 0.03f, 0.04f), mat);
+                    break;
+                case "MistShotgun":
+                    AddBox(root, "Body",    new Vector3(0, 0, 0),      new Vector3(0.08f, 0.1f,  0.5f),  mat);
+                    AddBox(root, "Muzzle",  new Vector3(0, 0,  0.26f), new Vector3(0.05f, 0.05f, 0.04f), mat);
+                    break;
+                case "MistRevolver":
+                    AddBox(root, "Body",    new Vector3(0, 0, 0),      new Vector3(0.06f, 0.12f, 0.28f), mat);
+                    AddBox(root, "Barrel",  new Vector3(0, 0.05f,0.1f),new Vector3(0.04f, 0.04f, 0.24f), mat);
+                    AddBox(root, "Muzzle",  new Vector3(0, 0.05f,0.22f),new Vector3(0.03f,0.03f, 0.03f), mat);
+                    break;
+                case "MistSMG":
+                    AddBox(root, "Body",    new Vector3(0, 0, 0),      new Vector3(0.06f, 0.09f, 0.34f), mat);
+                    AddBox(root, "Muzzle",  new Vector3(0, 0,  0.18f), new Vector3(0.04f, 0.04f, 0.03f), mat);
+                    break;
+                case "TeaCrate":
+                    AddBox(root, "Crate",   new Vector3(0, 0.4f, 0),   new Vector3(0.78f, 0.78f, 0.78f), mat);
+                    break;
+                case "GasCanister":
+                    AddBox(root, "Tank",    new Vector3(0, 0.37f, 0),  new Vector3(0.34f, 0.72f, 0.34f), mat);
+                    break;
+                case "GlenmistJeep":
+                    AddBox(root, "Body",    new Vector3(0, 0.55f, 0),  new Vector3(1.9f, 0.6f, 4.2f), mat);
+                    AddBox(root, "Cabin",   new Vector3(0, 1.1f,-0.4f),new Vector3(1.6f, 0.7f, 2.0f), mat);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        string wn = new[]{"Jeep_Wheel_FL","Jeep_Wheel_FR","Jeep_Wheel_RL","Jeep_Wheel_RR"}[i];
+                        float wx = (i%2==0?-1f:1f)*0.9f, wz = (i<2? 1.3f:-1.3f);
+                        AddBox(root, wn, new Vector3(wx,0.32f,wz), new Vector3(0.22f,0.64f,0.64f), mat);
+                    }
+                    break;
+                default:
+                    AddBox(root, "Body", new Vector3(0, 0.5f, 0), new Vector3(0.6f, 1f, 0.6f), mat);
+                    break;
+            }
+            return root;
+        }
+
+        private static GameObject AddBox(GameObject parent, string name, Vector3 localPos, Vector3 size, Material mat)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent.transform, false);
+            go.transform.localPosition = localPos;
+            go.AddComponent<MeshFilter>().sharedMesh = MeshFactory.Box(size, 1f);
+            go.AddComponent<MeshRenderer>().sharedMaterial = mat ?? MaterialFactory.Palette;
+            return go;
+        }
+
+        private static GameObject AddBox(GameObject parent, string name, Vector3 localPos, Vector3 size, Material mat, out GameObject result)
+        {
+            result = AddBox(parent, name, localPos, size, mat);
+            return result;
         }
 
         private static void Ignore(GameObject go) => go.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
