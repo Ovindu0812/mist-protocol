@@ -82,7 +82,7 @@ namespace MistProtocol.Interaction
             if (entranceDoor != null)
             {
                 entranceDoor.SetLocked(false);
-                entranceDoor.Open();
+                entranceDoor.OpenAwayFrom(transform.position);
             }
 
             // 3. Calm amber/green lighting after alert

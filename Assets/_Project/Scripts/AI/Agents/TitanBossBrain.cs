@@ -112,7 +112,8 @@ namespace MistProtocol.AI.Agents
 
                 // Aim and fire heavy bursts
                 if (_walker != null) _walker.AimPoint = player.Root.position + Vector3.up * 1.2f;
-                Motor.MoveTo(_lastKnownPlayerPos, chaseSpeed);
+                Motor.MaxSpeed = chaseSpeed;
+                Motor.MoveTo(_lastKnownPlayerPos);
 
                 float dist = Vector3.Distance(transform.position, player.Root.position);
                 if (dist < 20f && Weapon != null)
@@ -126,7 +127,8 @@ namespace MistProtocol.AI.Agents
                 if (_walker != null) _walker.AimPoint = null;
 
                 // Move toward last known point
-                Motor.MoveTo(_lastKnownPlayerPos, patrolSpeed * 1.3f);
+                Motor.MaxSpeed = patrolSpeed * 1.3f;
+                Motor.MoveTo(_lastKnownPlayerPos);
 
                 // Give up chase if lost sight for more than 4 seconds
                 if (_lostSightTime > 4.5f || Vector3.Distance(transform.position, _lastKnownPlayerPos) < 2f)
@@ -177,11 +179,7 @@ namespace MistProtocol.AI.Agents
             var pc = player.Root.GetComponent<PlayerController>();
             if (pc != null && pc.IsCrouching && dist > 7f)
             {
-                // Check if player is near cover
-                if (NavGrid.Instance != null && NavGrid.Instance.IsCoverCell(NavGrid.Instance.WorldToIndex(player.Root.position)))
-                {
-                    return false; // Safely hidden in cover
-                }
+                return false; // Safely crouching behind cover
             }
 
             return true;
@@ -192,7 +190,8 @@ namespace MistProtocol.AI.Agents
             if (patrolPoints == null || patrolPoints.Length == 0) return;
 
             Vector3 dest = patrolPoints[_patrolIndex].position;
-            Motor.MoveTo(dest, patrolSpeed);
+            Motor.MaxSpeed = patrolSpeed;
+            Motor.MoveTo(dest);
 
             if (Vector3.Distance(transform.position, dest) < 2.5f)
             {
