@@ -438,44 +438,45 @@ namespace MistProtocol.EditorTools
             Probe(new Vector3(20, 2.5f, 30), new Vector3(20, 5, 12));
         }
 
+        private static void CreateMistCloud(string name, Vector3 c, Vector3 size, float alpha, int max)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_lights);
+            go.transform.position = c;
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.duration = 20f; main.loop = true; main.prewarm = true;
+            main.startLifetime = 22f;
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.05f, 0.25f);
+            main.startSize = new ParticleSystem.MinMaxCurve(4f, 8f);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.startColor = new Color(0.78f, 0.84f, 0.88f, alpha);
+            main.maxParticles = max;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            var em = ps.emission; em.rateOverTime = max / 22f;
+            var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = size;
+            var col = ps.colorOverLifetime; col.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
+                      new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.3f), new GradientAlphaKey(1, 0.7f), new GradientAlphaKey(0, 1) });
+            col.color = g;
+            var rot = ps.rotationOverLifetime; rot.enabled = true; rot.z = new ParticleSystem.MinMaxCurve(-0.1f, 0.1f);
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            r.sharedMaterial = MaterialFactory.Mist;
+            r.maxParticleSize = 3f;
+            r.sortMode = ParticleSystemSortMode.Distance;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+        }
+
         private static void Mist()
         {
-            void Cloud(string name, Vector3 c, Vector3 size, float alpha, int max)
-            {
-                var go = new GameObject(name);
-                go.transform.SetParent(_lights);
-                go.transform.position = c;
-                var ps = go.AddComponent<ParticleSystem>();
-                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-                var main = ps.main;
-                main.duration = 20f; main.loop = true; main.prewarm = true;
-                main.startLifetime = 22f;
-                main.startSpeed = new ParticleSystem.MinMaxCurve(0.05f, 0.25f);
-                main.startSize = new ParticleSystem.MinMaxCurve(4f, 8f);
-                main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
-                main.startColor = new Color(0.78f, 0.84f, 0.88f, alpha);
-                main.maxParticles = max;
-                main.simulationSpace = ParticleSystemSimulationSpace.World;
-                var em = ps.emission; em.rateOverTime = max / 22f;
-                var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = size;
-                var col = ps.colorOverLifetime; col.enabled = true;
-                var g = new Gradient();
-                g.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
-                          new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.3f), new GradientAlphaKey(1, 0.7f), new GradientAlphaKey(0, 1) });
-                col.color = g;
-                var rot = ps.rotationOverLifetime; rot.enabled = true; rot.z = new ParticleSystem.MinMaxCurve(-0.1f, 0.1f);
-                var r = go.GetComponent<ParticleSystemRenderer>();
-                r.sharedMaterial = MaterialFactory.Mist;
-                r.maxParticleSize = 3f;
-                r.sortMode = ParticleSystemSortMode.Distance;
-                r.shadowCastingMode = ShadowCastingMode.Off;
-                r.receiveShadows = false;
-            }
-            Cloud("Mist_Yard", new Vector3(-20, 0.8f, -4), new Vector3(20, 1.2f, 8), 0.16f, 30);
-            Cloud("Mist_Estate", new Vector3(-10, 1.5f, -25), new Vector3(90, 3f, 25), 0.2f, 60);
-            Cloud("Mist_A", new Vector3(-20, 0.6f, 18), new Vector3(19, 1.0f, 35), 0.08f, 40);
-            Cloud("Mist_B", new Vector3(0, 0.6f, 18), new Vector3(19, 1.0f, 35), 0.06f, 35);
-            Cloud("Mist_C", new Vector3(20, 0.8f, 12), new Vector3(19, 1.4f, 23), 0.1f, 35);
+            CreateMistCloud("Mist_Yard", new Vector3(-20, 0.8f, -4), new Vector3(20, 1.2f, 8), 0.16f, 30);
+            CreateMistCloud("Mist_Estate", new Vector3(-10, 1.5f, -25), new Vector3(90, 3f, 25), 0.2f, 60);
+            CreateMistCloud("Mist_A", new Vector3(-20, 0.6f, 18), new Vector3(19, 1.0f, 35), 0.08f, 40);
+            CreateMistCloud("Mist_B", new Vector3(0, 0.6f, 18), new Vector3(19, 1.0f, 35), 0.06f, 35);
+            CreateMistCloud("Mist_C", new Vector3(20, 0.8f, 12), new Vector3(19, 1.4f, 23), 0.1f, 35);
         }
 
         private static void PostProcessing()
@@ -711,7 +712,7 @@ namespace MistProtocol.EditorTools
             Place(PrefabFactory.Flask, new Vector3(51.5f, 0.8f, 21.5f), 0f);
 
             // Steam/Mist clouds in Sector E
-            Cloud("Mist_Containment", new Vector3(42f, 0.8f, 12f), new Vector3(22f, 1.4f, 22f), 0.18f, 45);
+            CreateMistCloud("Mist_Containment", new Vector3(42f, 0.8f, 12f), new Vector3(22f, 1.4f, 22f), 0.18f, 45);
 
             // Ominous overhead lighting
             Lamp(new Vector3(36f, 3.8f, 12f), new Color(1f, 0.45f, 0.15f), 7f, 14f, MaterialFactory.LampOrange, true);

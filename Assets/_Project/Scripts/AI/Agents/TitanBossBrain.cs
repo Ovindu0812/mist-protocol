@@ -46,16 +46,11 @@ namespace MistProtocol.AI.Agents
         {
             base.Awake();
             _walker = GetComponent<WalkerAnimator>();
-
-            // Listen for heavy explosion stagger
-            if (HealthComponent != null)
-            {
-                HealthComponent.Damaged += OnDamaged;
-            }
         }
 
-        private void OnDamaged(float amount, Vector3 fromPos)
+        protected override void OnDamaged(float amount, Vector3 fromPos)
         {
+            base.OnDamaged(amount, fromPos);
             // If hit by massive explosion (gas canister)
             if (amount >= 50f)
             {
