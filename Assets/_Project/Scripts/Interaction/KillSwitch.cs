@@ -32,7 +32,7 @@ namespace MistProtocol.Interaction
         {
             get
             {
-                if (_done) return "OVERSEER offline";
+                if (_done) return "Power Core Drained - Grid Offline (5 min)";
                 if (GameManager.Instance != null && !GameManager.Instance.CanUseKillSwitch)
                     return "[Locked] Awaiting containment clearance";
                 return $"[Hold E] Pull the kill switch  {Mathf.RoundToInt(HoldProgress * 100)}%";

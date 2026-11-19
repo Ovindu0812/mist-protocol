@@ -39,7 +39,7 @@ namespace MistProtocol.AI.Director
         private readonly List<Vector3> _pathBuf = new();
         private PlayerProfile _profile;
         private InfluenceMap _influence;
-        private float _nextSpawn, _phaseTime, _nextTick, _nextTaunt;
+        private float _nextSpawn, _phaseTime, _nextTick, _nextTaunt, _pauseSpawnsUntil;
         private int _spawned;
         private bool _enabled;
 
@@ -48,6 +48,7 @@ namespace MistProtocol.AI.Director
         public PlayerProfile Profile => _profile;
         public string LastDecision { get; private set; } = "";
         public static OverseerDirector Instance { get; private set; }
+        public void PauseSpawns(float duration) => _pauseSpawnsUntil = Time.time + duration;
 
         public void Configure(AgentBase drone, AgentBase sentinel, AgentBase saboteur, GameObject health)
         {
@@ -116,7 +117,7 @@ namespace MistProtocol.AI.Director
 
         private void TrySpawn(float interval, int maxAlive, bool ignoreBudget = false)
         {
-            if (Time.time < _nextSpawn || AgentBase.Active.Count >= maxAlive) return;
+            if (Time.time < _pauseSpawnsUntil || Time.time < _nextSpawn || AgentBase.Active.Count >= maxAlive) return;
             if (!ignoreBudget && _spawned >= maxDirectorSpawns) return;
             _nextSpawn = Time.time + interval;
             var prefab = ChooseType(out string why);

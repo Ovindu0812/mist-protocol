@@ -69,9 +69,33 @@ namespace MistProtocol.AI.Agents
             SoundSystem.Unregister(this);
         }
 
+        public float DeactivatedUntil { get; private set; }
+        public bool IsDeactivated => Time.time < DeactivatedUntil;
+
+        public virtual void Deactivate(float duration)
+        {
+            DeactivatedUntil = Time.time + duration;
+            if (Motor != null) Motor.Stop();
+            if (Vision != null) Vision.Forget();
+            if (Anim != null) Anim.SetAlert(0f);
+            foreach (var l in GetComponentsInChildren<Light>())
+            {
+                l.enabled = false;
+            }
+            Vfx.Burst(transform.position + Vector3.up * 1.2f, Vector3.up, new Color(0.2f, 0.7f, 1f), 15, 3f, 0.08f, 0.4f);
+            ProceduralAudio.PlayAt("impact", transform.position, 0.6f, 0.5f);
+        }
+
         protected virtual void Update()
         {
             if (Health.IsDead) return;
+            if (IsDeactivated)
+            {
+                if (Motor != null) Motor.Stop();
+                DebugState = "OFFLINE (GRID FAILURE)";
+                DebugDetail = $"Rebooting in {Mathf.CeilToInt(DeactivatedUntil - Time.time)}s";
+                return;
+            }
             if (Anim != null) Anim.SetAlert(Vision.Awareness);
             if (Time.time >= _nextThink)
             {

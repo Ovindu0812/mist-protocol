@@ -23,6 +23,8 @@ namespace MistProtocol.Core
         public int Stage { get; private set; }
         public bool HasKeycard { get; private set; }
         public bool CanUseKillSwitch => Stage == 3;
+        public bool IsKillSwitchPulled { get; private set; }
+        public bool IsTitanDefeated { get; private set; }
         public int Kills { get; private set; }
         public float StartTime { get; private set; }
         public float EndTime { get; private set; }
@@ -171,13 +173,61 @@ namespace MistProtocol.Core
 
         public void OnKillSwitchCompleted()
         {
+            IsKillSwitchPulled = true;
+
+            // Check if Titan is already defeated
+            var titan = FindAnyObjectByType<AI.Agents.TitanBossBrain>(FindObjectsInactive.Exclude);
+            bool titanDead = titan == null || titan.HealthComponent.IsDead || IsTitanDefeated;
+
+            if (titanDead)
+            {
+                TriggerWin();
+                return;
+            }
+
+            // Broadcast emergency grid failure message
+            GameEvents.Overseer("OVERSEER: POWER CORE COLLAPSED! All factory robots and drones deactivated for 5 minutes! WARNING: TITAN Unit-94 operates on auxiliary power and remains ACTIVE!");
+            GameEvents.Objective("POWER GRID DRAINED: All standard robots deactivated for 5m! Destroy TITAN ENFORCER to save Appa!");
+
+            // Deactivate all standard robots for 5 minutes (300 seconds)
+            foreach (var a in FindObjectsByType<AI.Agents.AgentBase>(FindObjectsInactive.Exclude))
+            {
+                if (a is AI.Agents.TitanBossBrain) continue; // Titan is immune!
+                a.Deactivate(300f);
+            }
+
+            // Pause director spawns for 5 minutes
+            if (AI.Director.OverseerDirector.Instance != null)
+            {
+                AI.Director.OverseerDirector.Instance.PauseSpawns(300f);
+            }
+
+            // EMP audio feedback
+            ProceduralAudio.PlayAt("explosion", _player != null ? _player.transform.position : Vector3.zero, 1.2f, 0.4f);
+        }
+
+        public void OnTitanDefeated()
+        {
+            IsTitanDefeated = true;
+            if (IsKillSwitchPulled || Stage >= 3)
+            {
+                TriggerWin();
+            }
+            else
+            {
+                GameEvents.Objective("TITAN DESTROYED! Reach the Control Room and pull the Kill Switch to escape!");
+            }
+        }
+
+        private void TriggerWin()
+        {
             SetStage(4);
             State = Flow.Won;
             EndTime = Time.time;
             if (_player != null) _player.InputEnabled = false;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            foreach (var a in FindObjectsByType<AI.Agents.AgentBase>(FindObjectsSortMode.None))
+            foreach (var a in FindObjectsByType<AI.Agents.AgentBase>(FindObjectsInactive.Exclude))
                 a.HealthComponent.TakeDamage(9999f, a.transform.position + Vector3.up);
         }
 

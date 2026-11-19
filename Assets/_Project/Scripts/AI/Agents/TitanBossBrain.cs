@@ -76,6 +76,11 @@ namespace MistProtocol.AI.Agents
             }
         }
 
+        public override void Deactivate(float duration)
+        {
+            // Titan Boss operates on independent auxiliary nuclear reactor - immune to factory grid failure!
+        }
+
         protected override void OnDied()
         {
             // Massive mechanical explosion on boss destruction
@@ -87,6 +92,11 @@ namespace MistProtocol.AI.Agents
             {
                 var pc = PlayerLocator.State.Root.GetComponent<PlayerController>();
                 if (pc != null) pc.RecoilPitch += 3.0f;
+            }
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnTitanDefeated();
             }
 
             base.OnDied();

@@ -104,6 +104,11 @@ namespace MistProtocol.Interaction
 
             GameEvents.Overseer("OVERSEER: Unit-94 destroyed?! Impossible... He left something for you in the wreckage, didn't he?");
             GameEvents.Objective("TITAN DESTROYED: Collect Appa's Factory Blueprint from the wreckage!");
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnTitanDefeated();
+            }
         }
 
         private void OnTriggerEnter(Collider other)
