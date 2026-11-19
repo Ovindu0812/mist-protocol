@@ -19,6 +19,7 @@ namespace MistProtocol.Interaction
 
         public Rigidbody Body => _rb;
         public bool IsHeld { get; private set; }
+        public bool WasThrownByPlayer => Time.time - _thrownAt < 6f;
 
         private void Awake() => _rb = GetComponent<Rigidbody>();
 

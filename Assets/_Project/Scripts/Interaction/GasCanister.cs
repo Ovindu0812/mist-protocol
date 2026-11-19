@@ -30,7 +30,12 @@ namespace MistProtocol.Interaction
 
         protected override void OnImpact(float speed, Collision c)
         {
-            if (speed >= impactExplodeSpeed) Explode();
+            // Explode on impact when thrown by player, or when colliding with enemies/Titan, or exceeding speed threshold
+            bool hitEnemy = c != null && c.collider != null && c.collider.GetComponentInParent<MistProtocol.AI.Agents.AgentBase>() != null;
+            if (WasThrownByPlayer || hitEnemy || speed >= impactExplodeSpeed)
+            {
+                Explode();
+            }
         }
 
         public void Explode()
