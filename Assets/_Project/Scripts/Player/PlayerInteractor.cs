@@ -50,8 +50,10 @@ namespace MistProtocol.Player
             if (_held != null && _held.Body == null) _held = null;
             if (_held != null)
             {
-                Prompt = "[LMB] Throw   [F] Drop";
-                if (mouse.leftButton.wasPressedThisFrame) Drop(_cam.transform.forward * throwSpeed * _held.Body.mass);
+                Prompt = "[T / LMB] Throw   [F] Drop";
+                bool throwPressed = (kb.tKey != null && kb.tKey.wasPressedThisFrame) ||
+                                    (mouse != null && mouse.leftButton.wasPressedThisFrame);
+                if (throwPressed) Drop(_cam.transform.forward * throwSpeed * _held.Body.mass);
                 else if (kb.fKey.wasPressedThisFrame) Drop(Vector3.zero);
                 return;
             }

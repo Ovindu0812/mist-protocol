@@ -564,38 +564,11 @@ namespace MistProtocol.EditorTools
         private static GameObject BuildTitanBoss()
         {
             var root = new GameObject("Agent_TitanBoss");
-            var model = Model("SentinelBot", root.transform, MaterialFactory.LampOrange, "Visor");
-            model.transform.localScale = Vector3.one * 1.8f;
+            var model = Model("TitanBoss", root.transform, MaterialFactory.Glow, "Searchlight", "Core_Glow", "Visor");
 
-            // Extra heavy armor plates on shoulders
-            var armorL = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            armorL.name = "Armor_Plate_L";
-            armorL.transform.SetParent(model.transform, false);
-            armorL.transform.localPosition = new Vector3(-0.45f, 1.4f, 0f);
-            armorL.transform.localScale = new Vector3(0.35f, 0.45f, 0.45f);
-            armorL.GetComponent<Renderer>().sharedMaterial = MaterialFactory.DarkMetal;
-            Object.DestroyImmediate(armorL.GetComponent<Collider>());
-
-            var armorR = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            armorR.name = "Armor_Plate_R";
-            armorR.transform.SetParent(model.transform, false);
-            armorR.transform.localPosition = new Vector3(0.45f, 1.4f, 0f);
-            armorR.transform.localScale = new Vector3(0.35f, 0.45f, 0.45f);
-            armorR.GetComponent<Renderer>().sharedMaterial = MaterialFactory.DarkMetal;
-            Object.DestroyImmediate(armorR.GetComponent<Collider>());
-
-            // Reinforced chest plate
-            var chest = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            chest.name = "Armor_Chest";
-            chest.transform.SetParent(model.transform, false);
-            chest.transform.localPosition = new Vector3(0f, 1.25f, 0.25f);
-            chest.transform.localScale = new Vector3(0.6f, 0.5f, 0.2f);
-            chest.GetComponent<Renderer>().sharedMaterial = MaterialFactory.Hazard;
-            Object.DestroyImmediate(chest.GetComponent<Collider>());
-
-            // Heavy Armored Health (1200 HP)
+            // Heavy Armored Health (1400 HP - Main Boss Juggernaut)
             var h = root.AddComponent<ArmoredBossHealth>();
-            Set(h, "maxHealth", 1200f);
+            Set(h, "maxHealth", 1400f);
 
             var motor = root.AddComponent<AgentMotor>();
             Set(motor, "maxSpeed", 3.8f);
@@ -607,35 +580,36 @@ namespace MistProtocol.EditorTools
             Ignore(root);
 
             var col = root.AddComponent<CapsuleCollider>();
-            col.height = 3.3f; col.radius = 0.75f; col.center = new Vector3(0, 1.65f, 0);
+            col.height = 3.2f; col.radius = 0.85f; col.center = new Vector3(0, 1.6f, 0);
 
             var anim = root.AddComponent<WalkerAnimator>();
             Set(anim, "strideLength", 1.8f);
-            SetArray(anim, "glowRenderers", Renderers(model, "Visor"));
+            SetArray(anim, "glowRenderers", Renderers(model, "Searchlight", "Core_Glow", "Visor"));
 
-            // Searchlight
-            var lightGo = new GameObject("Searchlight");
+            // Searchlight Spot Light
+            var lightGo = new GameObject("Searchlight_Spot");
             lightGo.transform.SetParent(root.transform, false);
-            lightGo.transform.localPosition = new Vector3(0f, 2.7f, 0.4f);
+            lightGo.transform.localPosition = new Vector3(0f, 2.6f, 0.5f);
             var sl = lightGo.AddComponent<Light>();
             sl.type = LightType.Spot;
-            sl.spotAngle = 55f;
-            sl.innerSpotAngle = 20f;
-            sl.range = 30f;
-            sl.intensity = 5f;
+            sl.spotAngle = 60f;
+            sl.innerSpotAngle = 25f;
+            sl.range = 32f;
+            sl.intensity = 6f;
             sl.color = new Color(1f, 0.15f, 0.1f);
             sl.shadows = LightShadows.Soft;
 
             var gun = model.transform.FindDeep("Gun");
-            var muzzle = Child(gun != null ? gun : model.transform, "Muzzle", new Vector3(0, 0.02f, 0.64f));
+            var muzzle = model.transform.FindDeep("Muzzle");
+            if (muzzle == null) muzzle = Child(gun != null ? gun : model.transform, "Muzzle", new Vector3(0, 0.02f, 0.9f));
             var w = root.AddComponent<EnemyWeapon>();
             Set(w, "muzzle", muzzle);
-            Set(w, "damage", 12f);
-            Set(w, "fireInterval", 0.18f);
-            Set(w, "magazine", 30);
+            Set(w, "damage", 15f);
+            Set(w, "fireInterval", 0.15f);
+            Set(w, "magazine", 40);
             Set(w, "reloadTime", 2.8f);
-            Set(w, "loudness", 36f);
-            Set(w, "tracerColor", new Color(1f, 0.15f, 0.1f, 1f));
+            Set(w, "loudness", 38f);
+            Set(w, "tracerColor", new Color(1f, 0.2f, 0.1f, 1f));
 
             var brain = root.AddComponent<TitanBossBrain>();
             Set(brain, "searchlight", sl);

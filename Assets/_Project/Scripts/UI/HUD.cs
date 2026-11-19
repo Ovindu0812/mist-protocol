@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MistProtocol.Core;
 using MistProtocol.Player;
@@ -6,65 +7,143 @@ using UnityEngine.UI;
 
 namespace MistProtocol.UI
 {
-    /// <summary>Builds the whole uGUI HUD in code (no prefab/scene wiring needed) and listens to GameEvents.</summary>
+    /// <summary>
+    /// Tactical In-Game HUD:
+    /// - Top-Right: Glenmist Circular Tactical Minimap / Radar.
+    /// - Bottom-Left: Modern Military HP Gauge with live color transitions.
+    /// - Bottom-Right: Tactical Ammo counter & Reload status.
+    /// - Top-Left: Active Mission Objectives.
+    /// - Center: Crosshair & dynamic hitmarkers.
+    /// </summary>
     public class HUD : MonoBehaviour
     {
         private Font _font;
-        private Text _health, _ammo, _objective, _prompt, _overseer, _zone, _center, _hitmarker, _bossTitle;
-        private Image _healthFill, _damage, _holdFill, _holdBack, _panel, _bossBarBack, _bossBarFill;
+        private Text _health, _ammo, _objective, _prompt, _overseer, _zone, _center, _hitmarker;
+        private Image _healthFill, _damage, _holdFill, _holdBack, _panel;
         private PlayerController _player;
         private PlayerWeapon _weapon;
         private PlayerInteractor _interactor;
-        private Health _titanBossHealth;
         private float _overseerUntil, _damageAlpha;
         private readonly Queue<string> _overseerQueue = new();
 
-        private static readonly Color Cyan = new Color(0.55f, 0.95f, 1f);
-        private static readonly Color Amber = new Color(1f, 0.75f, 0.3f);
+        private static readonly Color Cyan = new Color(0.45f, 0.9f, 1f);
+        private static readonly Color Amber = new Color(1f, 0.78f, 0.25f);
 
         private void Awake()
         {
-            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            var canvasGo = new GameObject("HUDCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvasGo.transform.SetParent(transform, false);
-            var canvas = canvasGo.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 10;
-            var scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
-            var root = canvasGo.transform;
+            try
+            {
+                _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                var canvasGo = new GameObject("HUDCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                canvasGo.transform.SetParent(transform, false);
+                var canvas = canvasGo.GetComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = 100;
+                var scaler = canvasGo.GetComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920, 1080);
+                scaler.matchWidthOrHeight = 0.5f;
+                var root = canvasGo.transform;
 
-            _damage = MakeImage(root, "Damage", new Color(0.8f, 0f, 0f, 0f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            MakeText(root, "Crosshair", "+", 34, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(60, 60), Vector2.zero);
-            _hitmarker = MakeText(root, "Hit", "x", 30, new Color(1f, 0.3f, 0.2f, 0f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(60, 60), Vector2.zero);
+                // Damage vignette & Crosshairs
+                _damage = MakeImage(root, "Damage", new Color(0.8f, 0f, 0f, 0f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                MakeText(root, "Crosshair", "+", 34, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(60, 60), Vector2.zero, new Vector2(0.5f, 0.5f));
+                _hitmarker = MakeText(root, "Hit", "x", 30, new Color(1f, 0.3f, 0.2f, 0f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(60, 60), Vector2.zero, new Vector2(0.5f, 0.5f));
 
-            MakeImage(root, "HealthBack", new Color(0, 0, 0, 0.55f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(40, 40), new Vector2(420, 70));
-            _healthFill = MakeImage(root, "HealthFill", new Color(0.35f, 0.85f, 0.45f, 0.9f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(48, 48), new Vector2(412, 62));
-            _health = MakeText(root, "HealthText", "100", 30, Color.white, TextAnchor.MiddleLeft, new Vector2(0, 0), new Vector2(360, 30), new Vector2(230, 55));
-            _ammo = MakeText(root, "Ammo", "30 / 180", 44, Color.white, TextAnchor.LowerRight, new Vector2(1, 0), new Vector2(500, 70), new Vector2(-290, 70));
+                // =========================================================================
+                // FULLSCREEN GAME STATE PANEL (Intro / Win / Loss) - Kept behind HUD items
+                // =========================================================================
+                _panel = MakeImage(root, "Panel", new Color(0.02f, 0.04f, 0.05f, 0.92f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                _center = MakeText(_panel.transform, "PanelText", "", 32, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(1500, 950), Vector2.zero, new Vector2(0.5f, 0.5f));
+                _panel.enabled = false;
+                _center.enabled = false;
 
-            _objective = MakeText(root, "Objective", "", 28, Amber, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(1100, 80), new Vector2(590, -60));
-            _zone = MakeText(root, "Zone", "", 52, new Color(1, 1, 1, 0), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.75f), new Vector2(1400, 80), Vector2.zero);
-            _overseer = MakeText(root, "Overseer", "", 28, new Color(1f, 0.35f, 0.3f, 0f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(1500, 110), new Vector2(0, 190));
-            _prompt = MakeText(root, "Prompt", "", 30, Cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.42f), new Vector2(900, 50), Vector2.zero);
-            _holdBack = MakeImage(root, "HoldBack", new Color(0, 0, 0, 0.6f), new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(-200, -8), new Vector2(200, 8));
-            _holdFill = MakeImage(root, "HoldFill", Cyan, new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(-198, -6), new Vector2(198, 6));
+                // =========================================================================
+                // MODERN TACTICAL HEALTH BAR (Bottom-Left: Positioned safely above bottom edge)
+                // =========================================================================
+                var hpContainerGo = new GameObject("HP_Container", typeof(RectTransform));
+                hpContainerGo.transform.SetParent(root, false);
+                var hpContainer = hpContainerGo.GetComponent<RectTransform>();
+                hpContainer.anchorMin = hpContainer.anchorMax = new Vector2(0f, 0f);
+                hpContainer.pivot = new Vector2(0f, 0f);
+                hpContainer.anchoredPosition = new Vector2(50f, 85f); // 85px up from bottom edge so it is never cut off
+                hpContainer.sizeDelta = new Vector2(400f, 62f);
 
-            // Titan Boss Health Bar (Top Center)
-            _bossBarBack = MakeImage(root, "BossBarBack", new Color(0, 0, 0, 0.75f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-320, -90), new Vector2(320, -56));
-            _bossBarFill = MakeImage(root, "BossBarFill", new Color(1f, 0.22f, 0.15f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-316, -86), new Vector2(316, -60));
-            _bossTitle = MakeText(root, "BossTitle", "TITAN ENFORCER - UNIT 94", 20, new Color(1f, 0.8f, 0.35f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(640, 26), new Vector2(0, -38));
-            _bossBarBack.enabled = _bossBarFill.enabled = _bossTitle.enabled = false;
+                // 1. Glowing Cyan Outer Border
+                MakeImage(hpContainer, "HP_Border", new Color(0.3f, 0.85f, 1f, 0.9f), Vector2.zero, Vector2.one, new Vector2(-2, -2), new Vector2(2, 2));
 
-            _panel = MakeImage(root, "Panel", new Color(0.02f, 0.04f, 0.05f, 0.92f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            _center = MakeText(_panel.transform, "PanelText", "", 30, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(1500, 950), Vector2.zero);
+                // 2. Dark glass background
+                MakeImage(hpContainer, "HP_Back", new Color(0.03f, 0.06f, 0.1f, 0.95f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
-            GameEvents.ObjectiveChanged += t => _objective.text = "OBJECTIVE\n" + t;
-            GameEvents.OverseerMessage += line => _overseerQueue.Enqueue(line);
-            GameEvents.ZoneEntered += ShowZone;
-            GameEvents.PlayerDamaged += amt => _damageAlpha = Mathf.Min(0.55f, _damageAlpha + amt / 50f);
+                // 3. HP Badge
+                var badgeGo = new GameObject("HP_Badge", typeof(RectTransform), typeof(Image));
+                badgeGo.transform.SetParent(hpContainer, false);
+                var badgeRt = badgeGo.GetComponent<RectTransform>();
+                badgeRt.anchorMin = badgeRt.anchorMax = new Vector2(0f, 0.5f);
+                badgeRt.pivot = new Vector2(0f, 0.5f);
+                badgeRt.anchoredPosition = new Vector2(8f, 0f);
+                badgeRt.sizeDelta = new Vector2(50f, 44f);
+                badgeGo.GetComponent<Image>().color = new Color(0.12f, 0.45f, 0.65f, 0.95f);
+                var badgeText = MakeText(badgeGo.transform, "HP_Text", "HP", 22, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(50, 44), Vector2.zero, new Vector2(0.5f, 0.5f));
+                badgeText.fontStyle = FontStyle.Bold;
+
+                // 4. Bar Trough (Dark groove)
+                var troughGo = new GameObject("HP_Trough", typeof(RectTransform), typeof(Image));
+                troughGo.transform.SetParent(hpContainer, false);
+                var troughRt = troughGo.GetComponent<RectTransform>();
+                troughRt.anchorMin = troughRt.anchorMax = new Vector2(0f, 0.5f);
+                troughRt.pivot = new Vector2(0f, 0.5f);
+                troughRt.anchoredPosition = new Vector2(66f, 0f);
+                troughRt.sizeDelta = new Vector2(322f, 30f);
+                troughGo.GetComponent<Image>().color = new Color(0.02f, 0.04f, 0.06f, 0.95f);
+
+                // 5. Bar Fill (Vibrant green/amber/red indicator)
+                var fillGo = new GameObject("HP_Fill", typeof(RectTransform), typeof(Image));
+                fillGo.transform.SetParent(troughGo.transform, false);
+                var fillRt = fillGo.GetComponent<RectTransform>();
+                fillRt.anchorMin = fillRt.anchorMax = new Vector2(0f, 0.5f);
+                fillRt.pivot = new Vector2(0f, 0.5f);
+                fillRt.anchoredPosition = new Vector2(2f, 0f);
+                fillRt.sizeDelta = new Vector2(318f, 26f);
+                _healthFill = fillGo.GetComponent<Image>();
+                _healthFill.color = new Color(0.25f, 0.95f, 0.45f, 0.95f);
+                _healthFill.raycastTarget = false;
+
+                // 6. Numeric HP Readout overlaid on the bar
+                _health = MakeText(troughGo.transform, "HP_Number", "100 / 100", 18, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(318, 30), Vector2.zero, new Vector2(0.5f, 0.5f));
+                _health.fontStyle = FontStyle.Bold;
+
+                // =========================================================================
+                // AMMO COUNTER (Bottom-Right: Positioned safely above bottom edge)
+                // =========================================================================
+                _ammo = MakeText(root, "Ammo", "30 / 180", 40, Color.white, TextAnchor.LowerRight, new Vector2(1f, 0f), new Vector2(500, 70), new Vector2(-50f, 85f), new Vector2(1f, 0f));
+
+                // =========================================================================
+                // OBJECTIVES & OVERSEER (Top-Left & Center)
+                // =========================================================================
+                _objective = MakeText(root, "Objective", "", 26, Amber, TextAnchor.UpperLeft, new Vector2(0f, 1f), new Vector2(650, 90), new Vector2(40, -40), new Vector2(0f, 1f));
+                _zone = MakeText(root, "Zone", "", 52, new Color(1, 1, 1, 0), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.75f), new Vector2(1400, 80), Vector2.zero, new Vector2(0.5f, 0.5f));
+                _overseer = MakeText(root, "Overseer", "", 28, new Color(1f, 0.35f, 0.3f, 0f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(1500, 110), new Vector2(0, 200), new Vector2(0.5f, 0.5f));
+                _prompt = MakeText(root, "Prompt", "", 30, Cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.42f), new Vector2(900, 50), Vector2.zero, new Vector2(0.5f, 0.5f));
+                _holdBack = MakeImage(root, "HoldBack", new Color(0, 0, 0, 0.6f), new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(-200, -8), new Vector2(200, 8));
+                _holdFill = MakeImage(root, "HoldFill", Cyan, new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(-198, -6), new Vector2(198, 6));
+
+                // =========================================================================
+                // TOP-RIGHT CIRCULAR TACTICAL MINIMAP
+                // =========================================================================
+                gameObject.AddComponent<Minimap>().Initialize(root);
+
+                GameEvents.ObjectiveChanged += t => _objective.text = "OBJECTIVE\n" + t;
+                GameEvents.OverseerMessage += line => _overseerQueue.Enqueue(line);
+                GameEvents.ZoneEntered += ShowZone;
+                GameEvents.PlayerDamaged += amt => _damageAlpha = Mathf.Min(0.55f, _damageAlpha + amt / 50f);
+
+                Debug.Log("[HUD] Initialized successfully with Minimap and Health Bar.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("[HUD Awake Exception] " + ex);
+            }
         }
 
         public void ShowZone(string name)
@@ -75,7 +154,23 @@ namespace MistProtocol.UI
 
         private void Start()
         {
-            _player = FindAnyObjectByType<PlayerController>();
+            ResolvePlayerReferences();
+        }
+
+        private void ResolvePlayerReferences()
+        {
+            if (_player != null) return;
+
+            if (PlayerLocator.State != null && PlayerLocator.State.Root != null)
+            {
+                _player = PlayerLocator.State.Root.GetComponent<PlayerController>();
+            }
+
+            if (_player == null)
+            {
+                _player = FindAnyObjectByType<PlayerController>();
+            }
+
             if (_player != null)
             {
                 _weapon = _player.GetComponentInChildren<PlayerWeapon>();
@@ -86,83 +181,98 @@ namespace MistProtocol.UI
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
+
+            if (_player == null)
+            {
+                ResolvePlayerReferences();
+            }
+
             var gm = GameManager.Instance;
             if (gm != null)
             {
-                _panel.enabled = gm.State != GameManager.Flow.Playing;
-                _center.enabled = _panel.enabled;
-                if (gm.State == GameManager.Flow.Intro) _center.text = GameManager.IntroText;
-                else if (gm.State == GameManager.Flow.Won)
-                    _center.text = "THE MIST CLEARS\n\nThe kill switch slams down. Every machine in Glenmist falls silent at once.\n" +
-                                   "In the quiet, a radio crackles from the loft: \"...Nila? Is that you, duwa?\"\n\nAppa is alive.\n\n" +
-                                   $"Robots destroyed: {gm.Kills}     Time: {Mathf.FloorToInt((gm.EndTime - gm.StartTime) / 60)}m {Mathf.FloorToInt((gm.EndTime - gm.StartTime) % 60)}s\n\nPress ENTER to play again";
-                else if (gm.State == GameManager.Flow.Lost)
-                    _center.text = "SIGNAL LOST\n\nThe mist swallows the factory floor. OVERSEER resumes production.\n\n" +
-                                   $"Robots destroyed: {gm.Kills}\n\nPress ENTER to try again";
-            }
-
-            if (_player != null)
-            {
-                var h = _player.Health;
-                _health.text = Mathf.CeilToInt(h.Current).ToString();
-                var rt = _healthFill.rectTransform;
-                rt.offsetMax = new Vector2(48 + 364 * h.Normalized, rt.offsetMax.y);
-                _healthFill.color = Color.Lerp(new Color(0.9f, 0.2f, 0.15f, 0.9f), new Color(0.35f, 0.85f, 0.45f, 0.9f), h.Normalized);
-            }
-            if (_weapon != null)
-            {
-                string status = _weapon.IsReloading ? "RELOADING" : $"{_weapon.InMagazine} / {_weapon.Reserve}";
-                _ammo.text = $"{_weapon.ActiveWeaponName}\n{status}";
-            }
-            if (_weapon != null)
-            {
-                float since = Time.time - _weapon.LastHitTime;
-                _hitmarker.color = new Color(1f, 0.3f, 0.2f, Mathf.Clamp01(1f - since * 6f));
-            }
-
-            string prompt = _interactor != null ? _interactor.Prompt : null;
-            _prompt.text = prompt ?? "";
-            bool hold = _interactor != null && _interactor.HoldProgress >= 0f;
-            _holdBack.enabled = _holdFill.enabled = hold;
-            if (hold)
-            {
-                var r = _holdFill.rectTransform;
-                r.offsetMax = new Vector2(-198 + 396 * _interactor.HoldProgress, r.offsetMax.y);
-            }
-
-            // Update Titan Boss Health Bar
-            if (_titanBossHealth == null)
-            {
-                var titan = FindAnyObjectByType<AI.Agents.TitanBossBrain>();
-                if (titan != null && titan.gameObject.activeInHierarchy)
+                bool showPanel = gm.State != GameManager.Flow.Playing;
+                _panel.enabled = showPanel;
+                _center.enabled = showPanel;
+                if (showPanel)
                 {
-                    _titanBossHealth = titan.GetComponent<Health>();
+                    if (gm.State == GameManager.Flow.Intro) _center.text = GameManager.IntroText;
+                    else if (gm.State == GameManager.Flow.Won)
+                        _center.text = "THE MIST CLEARS\n\nThe kill switch slams down. Every machine in Glenmist falls silent at once.\n" +
+                                       "In the quiet, a radio crackles from the loft: \"...Nila? Is that you, duwa?\"\n\nAppa is alive.\n\n" +
+                                       $"Robots destroyed: {gm.Kills}     Time: {Mathf.FloorToInt((gm.EndTime - gm.StartTime) / 60)}m {Mathf.FloorToInt((gm.EndTime - gm.StartTime) % 60)}s\n\nPress ENTER to play again";
+                    else if (gm.State == GameManager.Flow.Lost)
+                        _center.text = "SIGNAL LOST\n\nThe mist swallows the factory floor. OVERSEER resumes production.\n\n" +
+                                       $"Robots destroyed: {gm.Kills}\n\nPress ENTER to try again";
                 }
             }
 
-            bool showBossBar = _titanBossHealth != null && !_titanBossHealth.IsDead && _titanBossHealth.gameObject.activeInHierarchy;
-            if (_bossBarBack != null && _bossBarBack.enabled != showBossBar) _bossBarBack.enabled = showBossBar;
-            if (_bossBarFill != null && _bossBarFill.enabled != showBossBar) _bossBarFill.enabled = showBossBar;
-            if (_bossTitle != null && _bossTitle.enabled != showBossBar) _bossTitle.enabled = showBossBar;
-
-            if (showBossBar && _bossBarFill != null)
+            // Update Player Health Bar
+            if (_player != null && _player.Health != null && _healthFill != null)
             {
-                var r = _bossBarFill.rectTransform;
-                r.offsetMax = new Vector2(-316 + 632 * _titanBossHealth.Normalized, r.offsetMax.y);
+                var h = _player.Health;
+                float norm = Mathf.Clamp01(h.Normalized);
+                if (_health != null) _health.text = $"{Mathf.CeilToInt(h.Current)} / {Mathf.CeilToInt(h.Max)}";
+
+                // Responsive width: 318px max fill
+                var rt = _healthFill.rectTransform;
+                rt.sizeDelta = new Vector2(318f * norm, 26f);
+
+                // Dynamic gradient color: Green (>50%) -> Amber (25-50%) -> Pulsing Red (<25%)
+                if (norm > 0.5f)
+                {
+                    _healthFill.color = Color.Lerp(new Color(1f, 0.85f, 0.2f, 0.95f), new Color(0.25f, 0.95f, 0.45f, 0.95f), (norm - 0.5f) * 2f);
+                }
+                else if (norm > 0.25f)
+                {
+                    _healthFill.color = Color.Lerp(new Color(1f, 0.25f, 0.15f, 0.95f), new Color(1f, 0.85f, 0.2f, 0.95f), (norm - 0.25f) * 4f);
+                }
+                else
+                {
+                    float flash = 0.65f + 0.35f * Mathf.Sin(Time.unscaledTime * 12f);
+                    _healthFill.color = new Color(1f, 0.15f, 0.1f, flash);
+                }
+            }
+
+            // Update Ammo Display
+            if (_weapon != null && _ammo != null)
+            {
+                string status = _weapon.IsReloading ? "RELOADING..." : $"{_weapon.InMagazine} / {_weapon.Reserve}";
+                _ammo.text = $"{_weapon.ActiveWeaponName}\n<size=26>{status}</size>";
+                float since = Time.time - _weapon.LastHitTime;
+                if (_hitmarker != null) _hitmarker.color = new Color(1f, 0.3f, 0.2f, Mathf.Clamp01(1f - since * 6f));
+            }
+
+            string prompt = _interactor != null ? _interactor.Prompt : null;
+            if (_prompt != null) _prompt.text = prompt ?? "";
+            bool hold = _interactor != null && _interactor.HoldProgress >= 0f;
+            if (_holdBack != null && _holdFill != null)
+            {
+                _holdBack.enabled = _holdFill.enabled = hold;
+                if (hold)
+                {
+                    var r = _holdFill.rectTransform;
+                    r.offsetMax = new Vector2(-198 + 396 * _interactor.HoldProgress, r.offsetMax.y);
+                }
             }
 
             _damageAlpha = Mathf.MoveTowards(_damageAlpha, 0f, dt * 0.8f);
-            _damage.color = new Color(0.7f, 0f, 0f, _damageAlpha);
-            var zc = _zone.color; zc.a = Mathf.MoveTowards(zc.a, 0f, dt * 0.4f); _zone.color = zc;
+            if (_damage != null) _damage.color = new Color(0.7f, 0f, 0f, _damageAlpha);
+            if (_zone != null)
+            {
+                var zc = _zone.color; zc.a = Mathf.MoveTowards(zc.a, 0f, dt * 0.4f); _zone.color = zc;
+            }
 
             if (Time.unscaledTime > _overseerUntil && _overseerQueue.Count > 0)
             {
-                _overseer.text = _overseerQueue.Dequeue();
+                if (_overseer != null) _overseer.text = _overseerQueue.Dequeue();
                 _overseerUntil = Time.unscaledTime + 5.5f;
                 ProceduralAudio.PlayAt("hum", _player != null ? _player.transform.position : Vector3.zero, 0.25f);
             }
-            float a = Mathf.Clamp01((_overseerUntil - Time.unscaledTime) / 0.8f);
-            _overseer.color = new Color(1f, 0.35f, 0.3f, a);
+            if (_overseer != null)
+            {
+                float a = Mathf.Clamp01((_overseerUntil - Time.unscaledTime) / 0.8f);
+                _overseer.color = new Color(1f, 0.35f, 0.3f, a);
+            }
         }
 
         private Image MakeImage(Transform parent, string name, Color c, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax)
@@ -177,12 +287,13 @@ namespace MistProtocol.UI
             return img;
         }
 
-        private Text MakeText(Transform parent, string name, string text, int size, Color c, TextAnchor align, Vector2 anchor, Vector2 sizeDelta, Vector2 pos)
+        private Text MakeText(Transform parent, string name, string text, int size, Color c, TextAnchor align, Vector2 anchor, Vector2 sizeDelta, Vector2 pos, Vector2? pivot = null)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Text), typeof(Shadow));
             go.transform.SetParent(parent, false);
             var rt = go.GetComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = anchor;
+            rt.pivot = pivot ?? anchor;
             rt.sizeDelta = sizeDelta;
             rt.anchoredPosition = pos;
             var t = go.GetComponent<Text>();
