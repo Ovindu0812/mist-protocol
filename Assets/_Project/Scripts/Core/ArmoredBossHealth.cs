@@ -16,8 +16,7 @@ namespace MistProtocol.Core
 
         public void BalanceBoss(float maxHp, float bulletMult)
         {
-            maxHealth = maxHp;
-            currentHealth = maxHp;
+            SetMax(maxHp, refill: true);
             bulletDamageMultiplier = bulletMult;
         }
 

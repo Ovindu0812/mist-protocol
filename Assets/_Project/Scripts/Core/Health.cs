@@ -6,7 +6,7 @@ namespace MistProtocol.Core
     /// <summary>Hit points for anything that can be damaged (player, agents, gas canisters).</summary>
     public class Health : MonoBehaviour
     {
-        [SerializeField] private float maxHealth = 100f;
+        [SerializeField] protected float maxHealth = 100f;
 
         public float Max => maxHealth;
         public float Current { get; private set; }
