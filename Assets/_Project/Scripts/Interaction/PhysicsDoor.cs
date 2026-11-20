@@ -150,10 +150,17 @@ namespace MistProtocol.Interaction
             }
 
             locked = value;
-            _rb.isKinematic = value;
+            if (_rb != null)
+            {
+                _rb.isKinematic = value;
+                if (!value) _rb.WakeUp();
+            }
             var grid = AI.Navigation.NavGrid.Instance;
-            if (grid != null) grid.RefreshArea(GetComponentInChildren<Collider>().bounds);
-            if (!value) _rb.WakeUp();
+            if (grid != null)
+            {
+                var col = GetComponentInChildren<Collider>();
+                if (col != null) grid.RefreshArea(col.bounds);
+            }
         }
     }
 }
