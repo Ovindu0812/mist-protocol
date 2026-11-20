@@ -31,6 +31,13 @@ namespace MistProtocol.AI.Agents
             muzzle = muzzlePoint; damage = dmg; fireInterval = interval; baseSpread = spread; magazine = mag;
         }
 
+        public void Balance(float dmg, float interval, float spread)
+        {
+            damage = dmg;
+            fireInterval = interval;
+            baseSpread = spread;
+        }
+
         private void Awake()
         {
             Ammo = magazine;

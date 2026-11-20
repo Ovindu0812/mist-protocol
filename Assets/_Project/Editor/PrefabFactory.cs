@@ -566,13 +566,13 @@ namespace MistProtocol.EditorTools
             var root = new GameObject("Agent_TitanBoss");
             var model = Model("TitanBoss", root.transform, MaterialFactory.Glow, "Searchlight", "Core_Glow", "Visor");
 
-            // Heavy Armored Health (1400 HP - Main Boss Juggernaut)
+            // Heavy Armored Health (650 HP - Balanced Boss Juggernaut)
             var h = root.AddComponent<ArmoredBossHealth>();
-            Set(h, "maxHealth", 1400f);
+            Set(h, "maxHealth", 650f);
 
             var motor = root.AddComponent<AgentMotor>();
-            Set(motor, "maxSpeed", 3.8f);
-            Set(motor, "acceleration", 8f);
+            Set(motor, "maxSpeed", 2.7f);
+            Set(motor, "acceleration", 7f);
             Set(motor, "hoverHeight", 0f);
 
             root.AddComponent<VisionSensor>();
@@ -604,10 +604,10 @@ namespace MistProtocol.EditorTools
             if (muzzle == null) muzzle = Child(gun != null ? gun : model.transform, "Muzzle", new Vector3(0, 0.02f, 0.9f));
             var w = root.AddComponent<EnemyWeapon>();
             Set(w, "muzzle", muzzle);
-            Set(w, "damage", 15f);
-            Set(w, "fireInterval", 0.15f);
-            Set(w, "magazine", 40);
-            Set(w, "reloadTime", 2.8f);
+            Set(w, "damage", 7.5f);
+            Set(w, "fireInterval", 0.22f);
+            Set(w, "magazine", 30);
+            Set(w, "reloadTime", 3.2f);
             Set(w, "loudness", 38f);
             Set(w, "tracerColor", new Color(1f, 0.2f, 0.1f, 1f));
 

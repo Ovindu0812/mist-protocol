@@ -25,12 +25,42 @@ namespace MistProtocol.Interaction
             entranceDoor = door;
             emergencyLights = lights;
             titanBoss = titan;
+            if (entranceDoor != null) entranceDoor.SetLocked(false);
             HookTitanHealth();
+        }
+
+        private void Awake()
+        {
+            EnsureDoorUnlocked();
         }
 
         private void Start()
         {
+            EnsureDoorUnlocked();
             HookTitanHealth();
+            EnsureHoldingCell();
+        }
+
+        private void EnsureHoldingCell()
+        {
+            if (HoldingCell.Instance == null && FindAnyObjectByType<HoldingCell>() == null)
+            {
+                var cellGo = new GameObject("HoldingCell_SectorE");
+                cellGo.AddComponent<HoldingCell>();
+            }
+        }
+
+        private void EnsureDoorUnlocked()
+        {
+            if (entranceDoor == null)
+            {
+                var d = GameObject.Find("Door_Containment");
+                if (d != null) entranceDoor = d.GetComponent<PhysicsDoor>();
+            }
+            if (entranceDoor != null && entranceDoor.Locked)
+            {
+                entranceDoor.SetLocked(false);
+            }
         }
 
         private void HookTitanHealth()
@@ -75,8 +105,9 @@ namespace MistProtocol.Interaction
             Vector3 spawnPos = _lastTitanPosition != Vector3.zero ? _lastTitanPosition : (transform.position + Vector3.forward * 10f);
             spawnPos.y = Mathf.Max(spawnPos.y, 0.05f);
 
-            // 1. Spawn Appa's marked blueprint map at Titan wreckage
-            FatherClue.SpawnMap(spawnPos);
+            // 1. Spawn Master Prison Cell Key and Appa's marked blueprint map at Titan wreckage
+            MasterCellKey.SpawnKey(spawnPos);
+            FatherClue.SpawnMap(spawnPos + Vector3.right * 0.8f);
 
             // 2. Unlock and open the chamber door
             if (entranceDoor != null)
@@ -102,9 +133,6 @@ namespace MistProtocol.Interaction
             ProceduralAudio.PlayAt("explosion", spawnPos, 0.8f, 0.7f);
             ProceduralAudio.PlayAt("pickup", spawnPos, 0.9f, 1.1f);
 
-            GameEvents.Overseer("OVERSEER: Unit-94 destroyed?! Impossible... He left something for you in the wreckage, didn't he?");
-            GameEvents.Objective("TITAN DESTROYED: Collect Appa's Factory Blueprint from the wreckage!");
-
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnTitanDefeated();
@@ -124,11 +152,10 @@ namespace MistProtocol.Interaction
         {
             yield return new WaitForSeconds(0.4f);
 
-            // 1. Slam the door shut and lock it
+            // 1. Keep the containment door unlocked so the player can enter/move freely
             if (entranceDoor != null)
             {
-                entranceDoor.Close();
-                entranceDoor.SetLocked(true);
+                entranceDoor.SetLocked(false);
             }
 
             ProceduralAudio.PlayAt("door", transform.position, 1f, 0.6f);

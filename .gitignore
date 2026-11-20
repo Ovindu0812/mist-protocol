@@ -9,6 +9,7 @@
 /[Rr]ecordings/
 *.csproj
 *.sln
+*.slnx
 *.suo
 *.user
 *.pidb

@@ -9,10 +9,17 @@ namespace MistProtocol.Core
     /// </summary>
     public class ArmoredBossHealth : Health
     {
-        [SerializeField] private float bulletDamageMultiplier = 0.22f; // Absorbs ~78% of bullet damage
-        [SerializeField] private float explosionThreshold = 60f;
+        [SerializeField] private float bulletDamageMultiplier = 0.45f; // Absorbs ~55% of bullet damage
+        [SerializeField] private float explosionThreshold = 40f;
 
         private float _lastRicochetTime;
+
+        public void BalanceBoss(float maxHp, float bulletMult)
+        {
+            maxHealth = maxHp;
+            currentHealth = maxHp;
+            bulletDamageMultiplier = bulletMult;
+        }
 
         public override void TakeDamage(float amount, Vector3 fromPosition)
         {

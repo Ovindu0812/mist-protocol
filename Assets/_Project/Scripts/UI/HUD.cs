@@ -10,6 +10,7 @@ namespace MistProtocol.UI
     /// <summary>
     /// Tactical In-Game HUD:
     /// - Top-Right: Glenmist Circular Tactical Minimap / Radar.
+    /// - Top-Center: Titan Boss Health Bar with live draining animation (engages in combat).
     /// - Bottom-Left: Modern Military HP Gauge with live color transitions.
     /// - Bottom-Right: Tactical Ammo counter & Reload status.
     /// - Top-Left: Active Mission Objectives.
@@ -25,6 +26,13 @@ namespace MistProtocol.UI
         private PlayerInteractor _interactor;
         private float _overseerUntil, _damageAlpha;
         private readonly Queue<string> _overseerQueue = new();
+
+        // Titan Boss Health Bar elements
+        private GameObject _bossContainerGo;
+        private Image _bossBarFill;
+        private Text _bossHpText;
+        private Health _titanHealth;
+        private float _displayedBossNorm = 1f;
 
         private static readonly Color Cyan = new Color(0.45f, 0.9f, 1f);
         private static readonly Color Amber = new Color(1f, 0.78f, 0.25f);
@@ -59,6 +67,55 @@ namespace MistProtocol.UI
                 _center.enabled = false;
 
                 // =========================================================================
+                // TITAN BOSS HEALTH BAR (Top-Center) - Engages when near or attacking Titan
+                // =========================================================================
+                _bossContainerGo = new GameObject("Boss_Container", typeof(RectTransform));
+                _bossContainerGo.transform.SetParent(root, false);
+                var bossRt = _bossContainerGo.GetComponent<RectTransform>();
+                bossRt.anchorMin = bossRt.anchorMax = new Vector2(0.5f, 1f);
+                bossRt.pivot = new Vector2(0.5f, 1f);
+                bossRt.anchoredPosition = new Vector2(0f, -28f);
+                bossRt.sizeDelta = new Vector2(580f, 54f);
+
+                // 1. Glowing crimson outer border
+                MakeImage(_bossContainerGo.transform, "Boss_Border", new Color(1f, 0.35f, 0.15f, 0.9f), Vector2.zero, Vector2.one, new Vector2(-2, -2), new Vector2(2, 2));
+
+                // 2. Dark armored metal backing
+                MakeImage(_bossContainerGo.transform, "Boss_Back", new Color(0.04f, 0.05f, 0.08f, 0.95f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+                // 3. Boss Title
+                var bossTitleText = MakeText(_bossContainerGo.transform, "Boss_Title", "TITAN ENFORCER - UNIT 94", 17, new Color(1f, 0.85f, 0.35f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(560, 22), new Vector2(0, -10), new Vector2(0.5f, 1f));
+                bossTitleText.fontStyle = FontStyle.Bold;
+
+                // 4. Boss Bar Trough
+                var bossTroughGo = new GameObject("Boss_Trough", typeof(RectTransform), typeof(Image));
+                bossTroughGo.transform.SetParent(_bossContainerGo.transform, false);
+                var bossTroughRt = bossTroughGo.GetComponent<RectTransform>();
+                bossTroughRt.anchorMin = bossTroughRt.anchorMax = new Vector2(0.5f, 0f);
+                bossTroughRt.pivot = new Vector2(0.5f, 0f);
+                bossTroughRt.anchoredPosition = new Vector2(0f, 6f);
+                bossTroughRt.sizeDelta = new Vector2(550f, 20f);
+                bossTroughGo.GetComponent<Image>().color = new Color(0.02f, 0.03f, 0.05f, 0.98f);
+
+                // 5. Boss Bar Fill
+                var bossFillGo = new GameObject("Boss_Fill", typeof(RectTransform), typeof(Image));
+                bossFillGo.transform.SetParent(bossTroughGo.transform, false);
+                var bossFillRt = bossFillGo.GetComponent<RectTransform>();
+                bossFillRt.anchorMin = bossFillRt.anchorMax = new Vector2(0f, 0.5f);
+                bossFillRt.pivot = new Vector2(0f, 0.5f);
+                bossFillRt.anchoredPosition = new Vector2(2f, 0f);
+                bossFillRt.sizeDelta = new Vector2(546f, 16f);
+                _bossBarFill = bossFillGo.GetComponent<Image>();
+                _bossBarFill.color = new Color(1f, 0.22f, 0.15f, 0.98f);
+                _bossBarFill.raycastTarget = false;
+
+                // 6. Boss HP Numeric Text
+                _bossHpText = MakeText(bossTroughGo.transform, "Boss_HP_Number", "650 / 650 HP", 14, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(540, 20), Vector2.zero, new Vector2(0.5f, 0.5f));
+                _bossHpText.fontStyle = FontStyle.Bold;
+
+                _bossContainerGo.SetActive(false);
+
+                // =========================================================================
                 // MODERN TACTICAL HEALTH BAR (Bottom-Left: Positioned safely above bottom edge)
                 // =========================================================================
                 var hpContainerGo = new GameObject("HP_Container", typeof(RectTransform));
@@ -66,7 +123,7 @@ namespace MistProtocol.UI
                 var hpContainer = hpContainerGo.GetComponent<RectTransform>();
                 hpContainer.anchorMin = hpContainer.anchorMax = new Vector2(0f, 0f);
                 hpContainer.pivot = new Vector2(0f, 0f);
-                hpContainer.anchoredPosition = new Vector2(50f, 85f); // 85px up from bottom edge so it is never cut off
+                hpContainer.anchoredPosition = new Vector2(50f, 85f);
                 hpContainer.sizeDelta = new Vector2(400f, 62f);
 
                 // 1. Glowing Cyan Outer Border
@@ -197,9 +254,15 @@ namespace MistProtocol.UI
                 {
                     if (gm.State == GameManager.Flow.Intro) _center.text = GameManager.IntroText;
                     else if (gm.State == GameManager.Flow.Won)
-                        _center.text = "THE MIST CLEARS\n\nThe kill switch slams down. Every machine in Glenmist falls silent at once.\n" +
-                                       "In the quiet, a radio crackles from the loft: \"...Nila? Is that you, duwa?\"\n\nAppa is alive.\n\n" +
+                    {
+                        string title = gm.IsAppaRescued ? "FAMILY REUNITED" : "THE MIST CLEARS";
+                        string story = gm.IsAppaRescued
+                            ? "With the Master Key in hand, Nila unlocks the heavy containment cell.\nAppa embraces her with tears in his eyes: \"...Nila, my brave duwa. You saved me.\"\nTogether, hand in hand, they step out into the clearing morning mist."
+                            : "The kill switch slams down. Every machine in Glenmist falls silent at once.\nIn the quiet, a radio crackles from the loft: \"...Nila? Is that you, duwa?\"\nAppa is alive.";
+
+                        _center.text = $"{title}\n\n{story}\n\n" +
                                        $"Robots destroyed: {gm.Kills}     Time: {Mathf.FloorToInt((gm.EndTime - gm.StartTime) / 60)}m {Mathf.FloorToInt((gm.EndTime - gm.StartTime) % 60)}s\n\nPress ENTER to play again";
+                    }
                     else if (gm.State == GameManager.Flow.Lost)
                         _center.text = "SIGNAL LOST\n\nThe mist swallows the factory floor. OVERSEER resumes production.\n\n" +
                                        $"Robots destroyed: {gm.Kills}\n\nPress ENTER to try again";
@@ -232,6 +295,9 @@ namespace MistProtocol.UI
                     _healthFill.color = new Color(1f, 0.15f, 0.1f, flash);
                 }
             }
+
+            // Update Titan Boss Health Bar
+            UpdateBossHealthBar(dt);
 
             // Update Ammo Display
             if (_weapon != null && _ammo != null)
@@ -272,6 +338,51 @@ namespace MistProtocol.UI
             {
                 float a = Mathf.Clamp01((_overseerUntil - Time.unscaledTime) / 0.8f);
                 _overseer.color = new Color(1f, 0.35f, 0.3f, a);
+            }
+        }
+
+        private void UpdateBossHealthBar(float dt)
+        {
+            if (_titanHealth == null)
+            {
+                var titan = FindAnyObjectByType<AI.Agents.TitanBossBrain>(FindObjectsInactive.Exclude);
+                if (titan != null)
+                {
+                    _titanHealth = titan.GetComponent<Health>();
+                }
+            }
+
+            bool showBossBar = false;
+            if (_titanHealth != null && !_titanHealth.IsDead && _titanHealth.gameObject.activeInHierarchy)
+            {
+                float dist = _player != null ? Vector3.Distance(_player.transform.position, _titanHealth.transform.position) : 999f;
+                bool isEngaged = _titanHealth.Current < _titanHealth.Max || dist < 32f || (GameManager.Instance != null && GameManager.Instance.IsKillSwitchPulled);
+                showBossBar = isEngaged;
+            }
+
+            if (_bossContainerGo != null && _bossContainerGo.activeSelf != showBossBar)
+            {
+                _bossContainerGo.SetActive(showBossBar);
+            }
+
+            if (showBossBar && _bossBarFill != null && _titanHealth != null)
+            {
+                float targetNorm = Mathf.Clamp01(_titanHealth.Normalized);
+                _displayedBossNorm = Mathf.MoveTowards(_displayedBossNorm, targetNorm, dt * 1.5f);
+
+                var rt = _bossBarFill.rectTransform;
+                rt.sizeDelta = new Vector2(546f * _displayedBossNorm, 16f);
+
+                // Color gradient: Vibrant orange-crimson -> Blood red when low
+                if (_displayedBossNorm > 0.45f)
+                    _bossBarFill.color = Color.Lerp(new Color(1f, 0.55f, 0.1f, 0.98f), new Color(1f, 0.22f, 0.15f, 0.98f), (1f - _displayedBossNorm) * 1.8f);
+                else
+                    _bossBarFill.color = Color.Lerp(new Color(0.85f, 0.1f, 0.1f, 0.98f), new Color(1f, 0.55f, 0.1f, 0.98f), _displayedBossNorm * 2.2f);
+
+                if (_bossHpText != null)
+                {
+                    _bossHpText.text = $"{Mathf.CeilToInt(_titanHealth.Current)} / {Mathf.CeilToInt(_titanHealth.Max)} HP";
+                }
             }
         }
 

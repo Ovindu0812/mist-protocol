@@ -42,12 +42,60 @@ namespace MistProtocol.Interaction
             _hinge = GetComponent<HingeJoint>();
             _hinge.useSpring = true;
             _hinge.useLimits = true;
+
+            bool isContainmentDoor = gameObject.name == "Door_Containment" || gameObject.name.Contains("Containment");
+            if (isContainmentDoor)
+            {
+                openAngle = 135f;
+                locked = false;
+            }
+
             _hinge.limits = new JointLimits { min = -openAngle, max = openAngle };
-            SetTarget(0f);
+            SetTarget(isContainmentDoor ? 120f : 0f);
+
             _rb.isKinematic = locked;
         }
 
         private void Start()
+        {
+            SetupNavGridCells();
+            SetupPlayerCollision();
+
+            // Containment door starts wide open so the player can enter freely
+            if (gameObject.name == "Door_Containment" || gameObject.name.Contains("Containment"))
+            {
+                SetTarget(120f);
+            }
+        }
+
+        private void SetupPlayerCollision()
+        {
+            // Door_Containment must never physically block the player from entering
+            if (gameObject.name == "Door_Containment" || gameObject.name.Contains("Containment"))
+            {
+                var pc = FindAnyObjectByType<Player.PlayerController>();
+                if (pc != null)
+                {
+                    var cc = pc.GetComponent<CharacterController>();
+                    var leafCol = GetComponentInChildren<Collider>();
+                    if (cc != null && leafCol != null)
+                    {
+                        Physics.IgnoreCollision(leafCol, cc, true);
+                    }
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (gameObject.name == "Door_Containment" || gameObject.name.Contains("Containment"))
+            {
+                // Ensure player collision is continuously ignored even after player respawn/scene load
+                SetupPlayerCollision();
+            }
+        }
+
+        private void SetupNavGridCells()
         {
             var grid = AI.Navigation.NavGrid.Instance;
             if (grid == null) return;
@@ -78,7 +126,7 @@ namespace MistProtocol.Interaction
         /// <summary>Swing the leaf away from whoever is pushing through.</summary>
         public void OpenAwayFrom(Vector3 pusher)
         {
-            if (locked || Mathf.Abs(_target) > 1f) return;
+            if (locked) return;
             float side = Vector3.Dot(pusher - transform.position, transform.forward);
             SetTarget(side > 0f ? openAngle * 0.95f : -openAngle * 0.95f);
             ProceduralAudio.PlayAt("door", transform.position, 0.6f);
@@ -87,7 +135,7 @@ namespace MistProtocol.Interaction
 
         public void Close()
         {
-            if (locked || Mathf.Abs(_target) < 1f) return;
+            if (locked) return;
             SetTarget(0f);
             ProceduralAudio.PlayAt("door", transform.position, 0.6f, 0.8f);
             AI.Perception.SoundSystem.Emit(transform.position, 10f, AI.Perception.SoundType.Door, false);
@@ -95,6 +143,12 @@ namespace MistProtocol.Interaction
 
         public void SetLocked(bool value)
         {
+            // Door_Containment must never be locked against the player
+            if (value && (gameObject.name == "Door_Containment" || gameObject.name.Contains("Containment")))
+            {
+                value = false;
+            }
+
             locked = value;
             _rb.isKinematic = value;
             var grid = AI.Navigation.NavGrid.Instance;

@@ -22,6 +22,8 @@ namespace MistProtocol.Core
         /// <summary>0 find keycard, 1 unlock gate, 2 reach control room, 3 kill switch, 4 done.</summary>
         public int Stage { get; private set; }
         public bool HasKeycard { get; private set; }
+        public bool HasMasterCellKey { get; private set; }
+        public bool IsAppaRescued { get; private set; }
         public bool CanUseKillSwitch => Stage == 3;
         public bool IsKillSwitchPulled { get; private set; }
         public bool IsTitanDefeated { get; private set; }
@@ -29,9 +31,21 @@ namespace MistProtocol.Core
         public float StartTime { get; private set; }
         public float EndTime { get; private set; }
 
+        private Transform _customObjectiveTarget;
+
+        public void SetCustomObjective(Transform target, string text = null)
+        {
+            _customObjectiveTarget = target;
+            if (!string.IsNullOrEmpty(text))
+            {
+                GameEvents.Objective(text);
+            }
+        }
+
         public Vector3 CurrentObjectivePosition =>
-            objectiveTargets != null && Stage < objectiveTargets.Length && objectiveTargets[Stage] != null
-                ? objectiveTargets[Stage].position : transform.position;
+            _customObjectiveTarget != null ? _customObjectiveTarget.position :
+            (objectiveTargets != null && Stage < objectiveTargets.Length && objectiveTargets[Stage] != null
+                ? objectiveTargets[Stage].position : transform.position);
 
         public static readonly string[] ObjectiveText =
         {
@@ -181,8 +195,23 @@ namespace MistProtocol.Core
 
             if (titanDead)
             {
-                TriggerWin();
-                return;
+                if (IsAppaRescued)
+                {
+                    TriggerWin();
+                    return;
+                }
+                else
+                {
+                    // Deactivate all remaining robots - Titan is already gone
+                    foreach (var a in FindObjectsByType<AI.Agents.AgentBase>(FindObjectsInactive.Exclude))
+                        a.Deactivate(600f);
+                    if (AI.Director.OverseerDirector.Instance != null)
+                        AI.Director.OverseerDirector.Instance.PauseSpawns(600f);
+                    ProceduralAudio.PlayAt("explosion", _player != null ? _player.transform.position : Vector3.zero, 1.2f, 0.4f);
+                    GameEvents.Overseer("OVERSEER: POWER CORE DRAINED! All units offline. But she still hasn't found him...");
+                    GameEvents.Objective("POWER CORE DRAINED! Go to Sector E, use the Master Key, and rescue Appa!");
+                    return;
+                }
             }
 
             // Broadcast emergency grid failure message
@@ -209,14 +238,19 @@ namespace MistProtocol.Core
         public void OnTitanDefeated()
         {
             IsTitanDefeated = true;
-            if (IsKillSwitchPulled || Stage >= 3)
-            {
-                TriggerWin();
-            }
-            else
-            {
-                GameEvents.Objective("TITAN DESTROYED! Reach the Control Room and pull the Kill Switch to escape!");
-            }
+            GameEvents.Overseer("OVERSEER: Unit-94 DESTROYED?! Security mainframe breached... The Master Prison Cell Key has dropped from its core!");
+            GameEvents.Objective("TITAN DESTROYED: Pick up the Master Cell Key from Titan's wreckage!");
+        }
+
+        public void OnMasterCellKeyCollected()
+        {
+            HasMasterCellKey = true;
+        }
+
+        public void OnAppaRescued()
+        {
+            IsAppaRescued = true;
+            TriggerWin();
         }
 
         private void TriggerWin()

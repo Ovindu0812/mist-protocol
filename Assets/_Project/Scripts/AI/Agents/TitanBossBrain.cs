@@ -21,9 +21,9 @@ namespace MistProtocol.AI.Agents
     {
         [Header("Patrol & Search")]
         [SerializeField] private Transform[] patrolPoints;
-        [SerializeField] private float patrolSpeed = 2.2f;
-        [SerializeField] private float chaseSpeed = 3.6f;
-        [SerializeField] private float stompInterval = 0.85f;
+        [SerializeField] private float patrolSpeed = 1.8f;
+        [SerializeField] private float chaseSpeed = 2.7f;
+        [SerializeField] private float stompInterval = 0.95f;
 
         [Header("Sensors & Weapon")]
         [SerializeField] private Light searchlight;
@@ -48,13 +48,27 @@ namespace MistProtocol.AI.Agents
             _walker = GetComponent<WalkerAnimator>();
         }
 
+        private void Start()
+        {
+            // Balance Titan stats so the fight is thrilling, fair, and fun
+            var bossHealth = GetComponent<ArmoredBossHealth>();
+            if (bossHealth != null)
+            {
+                bossHealth.BalanceBoss(650f, 0.45f);
+            }
+            if (Weapon != null)
+            {
+                Weapon.Balance(7.5f, 0.22f, 3.2f);
+            }
+        }
+
         protected override void OnDamaged(float amount, Vector3 fromPos)
         {
             base.OnDamaged(amount, fromPos);
-            // If hit by massive explosion (gas canister)
-            if (amount >= 50f)
+            // If hit by massive explosion (gas canister) or heavy damage
+            if (amount >= 35f)
             {
-                _staggerUntil = Time.time + 2.5f;
+                _staggerUntil = Time.time + 3.5f;
                 Motor.Stop();
                 if (_walker != null) _walker.AimPoint = null;
                 GameEvents.Overseer("OVERSEER: Heavy containment armor breached! Hydraulic stabilizers recalibrating!");

@@ -628,8 +628,8 @@ namespace MistProtocol.EditorTools
                                       new Vector3(-2f, 0, 3f), new Vector3(3f, 0, 30.5f), new Vector3(-7.5f, 0, 12f), new Vector3(14f, 0, 2f), new Vector3(26f, 0, 22f) })
                 Place(PrefabFactory.SmallCrate, p + Vector3.up * 0.02f, Random.Range(0f, 90f));
             foreach (var p in new[] { new Vector3(-28.5f, 0, 16f), new Vector3(-11f, 0, 8f), new Vector3(-3f, 0, 21f), new Vector3(8.5f, 0, 28f),
-                                      new Vector3(13f, 0, 9f), new Vector3(13f, 0, 10f), new Vector3(20f, 0, 9.5f), new Vector3(27.8f, 0, 13f),
-                                      new Vector3(27.8f, 0, 14f), new Vector3(20.5f, 0, 18.5f) })
+                                      new Vector3(13f, 0, 9f), new Vector3(13f, 0, 10f), new Vector3(20f, 0, 9.5f), new Vector3(27.8f, 0, 10.5f),
+                                      new Vector3(27.8f, 0, 17.5f), new Vector3(20.5f, 0, 18.5f) })
                 Place(PrefabFactory.Canister, p + Vector3.up * 0.02f, 0f);
             foreach (var p in new[] { new Vector3(-28f, 0.8f, 8f), new Vector3(8.5f, 0.8f, 33f), new Vector3(28f, 0.8f, 2f), new Vector3(12f, 0.8f, 18f) })
                 Place(PrefabFactory.Flask, p, 0f);
@@ -742,15 +742,22 @@ namespace MistProtocol.EditorTools
             var titanBrain = titan.GetComponent<TitanBossBrain>();
             titanBrain.SetPatrolPoints(pts);
 
-            // Trap trigger at the doorway
+            // Trap trigger inside the chamber
             var trapGo = new GameObject("Trigger_ContainmentTrap");
             trapGo.transform.SetParent(_gameplay);
-            trapGo.transform.position = new Vector3(31.8f, 1.5f, 14f);
+            trapGo.transform.position = new Vector3(36f, 1.5f, 12f);
             var col = trapGo.AddComponent<BoxCollider>();
             col.isTrigger = true;
-            col.size = new Vector3(2.5f, 3.5f, 3f);
+            col.size = new Vector3(6f, 3.5f, 12f);
             var trap = trapGo.AddComponent<BossChamberTrap>();
             trap.Bind(doors["CE"], new[] { em1, em2 }, titanBrain);
+
+            // Appa's Holding Cell (Prison Cell) in Sector E
+            var cellGo = new GameObject("HoldingCell_SectorE");
+            cellGo.transform.SetParent(_gameplay);
+            cellGo.transform.position = new Vector3(51.5f, 0f, 12f);
+            var holdingCell = cellGo.AddComponent<HoldingCell>();
+            holdingCell.BuildCellIfMissing();
         }
     }
 }

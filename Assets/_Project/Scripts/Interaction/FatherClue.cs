@@ -46,6 +46,8 @@ namespace MistProtocol.Interaction
         {
             _startPos = transform.position;
             _glowLight = GetComponentInChildren<Light>();
+            var col = GetComponent<Collider>();
+            if (col != null) col.isTrigger = true; // Clues must never physically block player walking
         }
 
         private void Update()
@@ -90,6 +92,18 @@ namespace MistProtocol.Interaction
                 case FatherClueType.SupervisorID:
                     dialogue = "NILA: His Glenmist Supervisor ID badge! He deliberately threw it down here at this heavy door to mark where they dragged him. Appa must be in this room!";
                     objective = "Investigate the Heavy Containment Vault ahead";
+
+                    // Ensure Sector E Containment door unlocks and swings open
+                    var contDoor = GameObject.Find("Door_Containment");
+                    if (contDoor != null)
+                    {
+                        var pd = contDoor.GetComponent<PhysicsDoor>();
+                        if (pd != null)
+                        {
+                            pd.SetLocked(false);
+                            pd.OpenAwayFrom(transform.position);
+                        }
+                    }
                     break;
 
                 case FatherClueType.FactoryMap:
