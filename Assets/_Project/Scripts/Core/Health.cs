@@ -12,9 +12,11 @@ namespace MistProtocol.Core
         public float Current { get; private set; }
         public float Normalized => maxHealth > 0f ? Current / maxHealth : 0f;
         public bool IsDead => Current <= 0f;
+        public bool IsFullHealth => Current >= maxHealth;
 
         /// <summary>amount, world position the damage came from.</summary>
         public event Action<float, Vector3> Damaged;
+        public event Action<float> Healed;
         public event Action Died;
 
         private void Awake() => Current = maxHealth;
@@ -35,8 +37,11 @@ namespace MistProtocol.Core
 
         public void Heal(float amount)
         {
-            if (IsDead) return;
+            if (IsDead || amount <= 0f) return;
+            float previous = Current;
             Current = Mathf.Min(maxHealth, Current + amount);
+            float actualHealed = Current - previous;
+            if (actualHealed > 0f) Healed?.Invoke(actualHealed);
         }
     }
 }
