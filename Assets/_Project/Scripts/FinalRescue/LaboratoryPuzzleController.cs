@@ -7,7 +7,8 @@ namespace MistProtocol.FinalRescue
 {
     /// <summary>
     /// Evaluates the Secret Laboratory switch sequence puzzle.
-    /// Correct Sequence: Blue -> Green -> Red.
+    /// Correct Sequence: Blue -> Yellow -> Green -> Red.
+    /// (Glenmist Lore: Cold Mist -> Morning Sun -> Fresh Leaf -> Kiln Fire)
     /// If incorrect: plays alarm sound, flashes red warning lights, displays alert, resets switches.
     /// If correct: disables the energy barrier.
     /// </summary>
@@ -16,6 +17,7 @@ namespace MistProtocol.FinalRescue
         public static LaboratoryPuzzleController Instance { get; private set; }
 
         [SerializeField] private LaboratorySwitch blueSwitch;
+        [SerializeField] private LaboratorySwitch yellowSwitch;
         [SerializeField] private LaboratorySwitch greenSwitch;
         [SerializeField] private LaboratorySwitch redSwitch;
         [SerializeField] private EnergyBarrier energyBarrier;
@@ -24,6 +26,7 @@ namespace MistProtocol.FinalRescue
         private readonly List<SwitchColor> _correctSequence = new()
         {
             SwitchColor.Blue,
+            SwitchColor.Yellow,
             SwitchColor.Green,
             SwitchColor.Red
         };
@@ -33,9 +36,10 @@ namespace MistProtocol.FinalRescue
 
         public bool IsSolved { get; private set; }
 
-        public void Bind(LaboratorySwitch b, LaboratorySwitch g, LaboratorySwitch r, EnergyBarrier barrier, Light[] lights = null)
+        public void Bind(LaboratorySwitch b, LaboratorySwitch y, LaboratorySwitch g, LaboratorySwitch r, EnergyBarrier barrier, Light[] lights = null)
         {
             blueSwitch = b;
+            yellowSwitch = y;
             greenSwitch = g;
             redSwitch = r;
             energyBarrier = barrier;
@@ -111,6 +115,7 @@ namespace MistProtocol.FinalRescue
 
             // 3. Reset switches to inactive
             if (blueSwitch != null) blueSwitch.SetInactive();
+            if (yellowSwitch != null) yellowSwitch.SetInactive();
             if (greenSwitch != null) greenSwitch.SetInactive();
             if (redSwitch != null) redSwitch.SetInactive();
 
@@ -129,6 +134,7 @@ namespace MistProtocol.FinalRescue
 
             // 2. Set all switches to stable green glow
             if (blueSwitch != null) blueSwitch.SetSolved();
+            if (yellowSwitch != null) yellowSwitch.SetSolved();
             if (greenSwitch != null) greenSwitch.SetSolved();
             if (redSwitch != null) redSwitch.SetSolved();
 
