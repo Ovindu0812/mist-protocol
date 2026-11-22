@@ -1,6 +1,9 @@
 using System;
 using MistProtocol.Core;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -11,8 +14,8 @@ namespace MistProtocol.FinalRescue
     /// - Clue reading popup and progress tracker ("Clues Found: X/3")
     /// - Puzzle feedback and warning banners
     /// - Emergency evacuation 60-second countdown display
-    /// - Mission Complete victory screen with Restart and Main Menu buttons
-    /// - Mission Failed screen with Retry and Main Menu buttons
+    /// - Mission Complete victory screen with interactive buttons & keyboard hotkeys
+    /// - Mission Failed screen with interactive buttons & keyboard hotkeys
     /// </summary>
     public class FinalRescueUI : MonoBehaviour
     {
@@ -51,6 +54,10 @@ namespace MistProtocol.FinalRescue
         private Text _victoryStatsText;
         private Button _victoryRestartBtn;
         private Button _victoryMenuBtn;
+        private RectTransform _victoryRestartRt;
+        private RectTransform _victoryMenuRt;
+        private Image _victoryRestartImg;
+        private Image _victoryMenuImg;
 
         // Mission Failed Screen
         private GameObject _failedPanelGo;
@@ -58,11 +65,42 @@ namespace MistProtocol.FinalRescue
         private Text _failedSubtitleText;
         private Button _failedRetryBtn;
         private Button _failedMenuBtn;
+        private RectTransform _failedRetryRt;
+        private RectTransform _failedMenuRt;
+        private Image _failedRetryImg;
+        private Image _failedMenuImg;
+
+        private static readonly Color NormalBtnColor = new Color(0.12f, 0.42f, 0.78f, 0.95f);
+        private static readonly Color HoverBtnColor = new Color(0.22f, 0.65f, 0.98f, 1f);
+        private static readonly Color PressedBtnColor = new Color(0.08f, 0.28f, 0.55f, 1f);
 
         private void Awake()
         {
             Instance = this;
+            EnsureEventSystem();
             BuildUI();
+        }
+
+        private void Start()
+        {
+            EnsureEventSystem();
+        }
+
+        private void EnsureEventSystem()
+        {
+            var es = FindAnyObjectByType<EventSystem>();
+            if (es == null)
+            {
+                var esGo = new GameObject("EventSystem", typeof(EventSystem));
+                esGo.AddComponent<InputSystemUIInputModule>();
+            }
+            else
+            {
+                if (es.GetComponent<InputSystemUIInputModule>() == null && es.GetComponent<BaseInputModule>() == null)
+                {
+                    es.gameObject.AddComponent<InputSystemUIInputModule>();
+                }
+            }
         }
 
         private void BuildUI()
@@ -102,9 +140,7 @@ namespace MistProtocol.FinalRescue
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.sizeDelta = new Vector2(760f, 210f);
 
-            // Border
             MakeImage(_clueModalGo.transform, "Border", new Color(0.2f, 0.75f, 1f, 0.95f), Vector2.zero, Vector2.one, new Vector2(-2, -2), new Vector2(2, 2));
-            // Backing
             MakeImage(_clueModalGo.transform, "Backing", new Color(0.04f, 0.08f, 0.12f, 0.96f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             _clueTitleText = MakeText(_clueModalGo.transform, "Title", "CLUE DISCOVERED", 22, new Color(1f, 0.85f, 0.3f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(720, 36), new Vector2(0, -18), new Vector2(0.5f, 1f));
@@ -119,7 +155,7 @@ namespace MistProtocol.FinalRescue
         }
 
         // =========================================================================
-        // 2. CLUE HUD TRACKER (Top-Left under objective)
+        // 2. CLUE HUD TRACKER
         // =========================================================================
         private void BuildClueHudTracker(Transform root)
         {
@@ -138,7 +174,7 @@ namespace MistProtocol.FinalRescue
         }
 
         // =========================================================================
-        // 3. PUZZLE ALERT BANNER (Center Screen)
+        // 3. PUZZLE ALERT BANNER
         // =========================================================================
         private void BuildPuzzleAlertBanner(Transform root)
         {
@@ -157,7 +193,7 @@ namespace MistProtocol.FinalRescue
         }
 
         // =========================================================================
-        // 4. EMERGENCY COUNTDOWN TIMER HUD (Top-Center)
+        // 4. EMERGENCY COUNTDOWN TIMER HUD
         // =========================================================================
         private void BuildEmergencyTimerHUD(Transform root)
         {
@@ -169,7 +205,6 @@ namespace MistProtocol.FinalRescue
             rt.anchoredPosition = new Vector2(0f, -24f);
             rt.sizeDelta = new Vector2(520f, 95f);
 
-            // Crimson Glowing Backing
             MakeImage(_timerContainerGo.transform, "Border", new Color(1f, 0.2f, 0.15f, 0.95f), Vector2.zero, Vector2.one, new Vector2(-2, -2), new Vector2(2, 2));
             MakeImage(_timerContainerGo.transform, "Back", new Color(0.08f, 0.02f, 0.02f, 0.95f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
@@ -213,10 +248,10 @@ namespace MistProtocol.FinalRescue
             rt.anchorMax = Vector2.one;
             rt.sizeDelta = Vector2.zero;
 
-            // Fullscreen dark backdrop
-            MakeImage(_victoryPanelGo.transform, "Backdrop", new Color(0.02f, 0.04f, 0.06f, 0.94f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            // Fullscreen dark backdrop - raycastTarget true to block clicks behind
+            var backdrop = MakeImage(_victoryPanelGo.transform, "Backdrop", new Color(0.02f, 0.04f, 0.06f, 0.94f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            backdrop.raycastTarget = true;
 
-            // Dialog Frame
             var frameGo = new GameObject("Frame", typeof(RectTransform));
             frameGo.transform.SetParent(_victoryPanelGo.transform, false);
             var frameRt = frameGo.GetComponent<RectTransform>();
@@ -225,7 +260,8 @@ namespace MistProtocol.FinalRescue
             frameRt.sizeDelta = new Vector2(960f, 620f);
 
             MakeImage(frameGo.transform, "Border", new Color(0.95f, 0.78f, 0.25f, 0.9f), Vector2.zero, Vector2.one, new Vector2(-2, -2), new Vector2(2, 2));
-            MakeImage(frameGo.transform, "Background", new Color(0.04f, 0.06f, 0.09f, 0.98f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var frameBg = MakeImage(frameGo.transform, "Background", new Color(0.04f, 0.06f, 0.09f, 0.98f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            frameBg.raycastTarget = true;
 
             _victoryTitleText = MakeText(frameGo.transform, "Title", "MISSION COMPLETE", 48, new Color(1f, 0.84f, 0.25f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(900, 60), new Vector2(0, -60), new Vector2(0.5f, 1f));
             _victoryTitleText.fontStyle = FontStyle.Bold;
@@ -240,11 +276,12 @@ namespace MistProtocol.FinalRescue
 
             MakeText(frameGo.transform, "Story", story, 20, new Color(0.85f, 0.9f, 0.95f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(840, 150), new Vector2(0, 20), new Vector2(0.5f, 0.5f));
 
-            _victoryStatsText = MakeText(frameGo.transform, "Stats", "Robots Destroyed: --   Time: --", 18, new Color(0.7f, 0.8f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(800, 30), new Vector2(0, 130), new Vector2(0.5f, 0f));
+            _victoryStatsText = MakeText(frameGo.transform, "Stats", "Robots Destroyed: --   Time: --", 18, new Color(0.7f, 0.8f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(800, 30), new Vector2(0, 150), new Vector2(0.5f, 0f));
 
-            // Buttons
-            _victoryRestartBtn = CreateButton(frameGo.transform, "RestartBtn", "PLAY AGAIN", new Vector2(-150f, 65f), () => RestartMission());
-            _victoryMenuBtn = CreateButton(frameGo.transform, "MenuBtn", "MAIN MENU", new Vector2(150f, 65f), () => LoadMainMenu());
+            MakeText(frameGo.transform, "Hotkeys", "[ Click button, or press ENTER / SPACE to Play Again | ESC for Menu ]", 15, new Color(0.5f, 0.7f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(800, 25), new Vector2(0, 25), new Vector2(0.5f, 0f));
+
+            _victoryRestartBtn = CreateButton(frameGo.transform, "RestartBtn", "PLAY AGAIN", new Vector2(-155f, 75f), () => RestartMission(), out _victoryRestartRt, out _victoryRestartImg);
+            _victoryMenuBtn = CreateButton(frameGo.transform, "MenuBtn", "MAIN MENU", new Vector2(155f, 75f), () => LoadMainMenu(), out _victoryMenuRt, out _victoryMenuImg);
 
             _victoryPanelGo.SetActive(false);
         }
@@ -261,17 +298,19 @@ namespace MistProtocol.FinalRescue
             rt.anchorMax = Vector2.one;
             rt.sizeDelta = Vector2.zero;
 
-            MakeImage(_failedPanelGo.transform, "Backdrop", new Color(0.12f, 0.02f, 0.02f, 0.95f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var backdrop = MakeImage(_failedPanelGo.transform, "Backdrop", new Color(0.12f, 0.02f, 0.02f, 0.95f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            backdrop.raycastTarget = true;
 
             var frameGo = new GameObject("Frame", typeof(RectTransform));
             frameGo.transform.SetParent(_failedPanelGo.transform, false);
             var frameRt = frameGo.GetComponent<RectTransform>();
             frameRt.anchorMin = frameRt.anchorMax = new Vector2(0.5f, 0.5f);
             frameRt.pivot = new Vector2(0.5f, 0.5f);
-            frameRt.sizeDelta = new Vector2(880f, 480f);
+            frameRt.sizeDelta = new Vector2(880f, 500f);
 
             MakeImage(frameGo.transform, "Border", new Color(1f, 0.2f, 0.15f, 0.9f), Vector2.zero, Vector2.one, new Vector2(-2, -2), new Vector2(2, 2));
-            MakeImage(frameGo.transform, "Background", new Color(0.06f, 0.03f, 0.03f, 0.98f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var frameBg = MakeImage(frameGo.transform, "Background", new Color(0.06f, 0.03f, 0.03f, 0.98f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            frameBg.raycastTarget = true;
 
             _failedTitleText = MakeText(frameGo.transform, "Title", "MISSION FAILED", 46, new Color(1f, 0.25f, 0.2f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(800, 60), new Vector2(0, -60), new Vector2(0.5f, 1f));
             _failedTitleText.fontStyle = FontStyle.Bold;
@@ -279,10 +318,12 @@ namespace MistProtocol.FinalRescue
             _failedSubtitleText = MakeText(frameGo.transform, "Subtitle", "Facility Collapsed Before Evacuation", 24, new Color(1f, 0.7f, 0.6f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(800, 40), new Vector2(0, -125), new Vector2(0.5f, 1f));
 
             string failMsg = "The facility structural integrity reached 0%. You failed to reach the escape point before the blast locks sealed.\nTry again to rescue your father!";
-            MakeText(frameGo.transform, "Desc", failMsg, 20, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(760, 100), new Vector2(0, 10), new Vector2(0.5f, 0.5f));
+            MakeText(frameGo.transform, "Desc", failMsg, 20, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(760, 100), new Vector2(0, 15), new Vector2(0.5f, 0.5f));
 
-            _failedRetryBtn = CreateButton(frameGo.transform, "RetryBtn", "RETRY MISSION", new Vector2(-150f, 65f), () => RestartMission());
-            _failedMenuBtn = CreateButton(frameGo.transform, "MenuBtn", "MAIN MENU", new Vector2(150f, 65f), () => LoadMainMenu());
+            MakeText(frameGo.transform, "Hotkeys", "[ Click button, or press ENTER / SPACE / R to Retry | ESC for Menu ]", 15, new Color(0.85f, 0.6f, 0.6f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(800, 25), new Vector2(0, 20), new Vector2(0.5f, 0f));
+
+            _failedRetryBtn = CreateButton(frameGo.transform, "RetryBtn", "RETRY MISSION", new Vector2(-155f, 70f), () => RestartMission(), out _failedRetryRt, out _failedRetryImg);
+            _failedMenuBtn = CreateButton(frameGo.transform, "MenuBtn", "MAIN MENU", new Vector2(155f, 70f), () => LoadMainMenu(), out _failedMenuRt, out _failedMenuImg);
 
             _failedPanelGo.SetActive(false);
         }
@@ -380,6 +421,7 @@ namespace MistProtocol.FinalRescue
             _victoryStatsText.text = $"Robots Destroyed: {kills}    Escape Time: {mins}m {secs}s    Clues Discovered: {cluesFound}/3";
             _victoryPanelGo.SetActive(true);
 
+            EnsureEventSystem();
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
@@ -392,6 +434,7 @@ namespace MistProtocol.FinalRescue
 
             _failedPanelGo.SetActive(true);
 
+            EnsureEventSystem();
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
@@ -408,19 +451,104 @@ namespace MistProtocol.FinalRescue
                 _puzzleAlertGo.SetActive(false);
             }
 
-            // Keyboard navigation fallbacks for game over / win screens
-            if (_victoryPanelGo != null && _victoryPanelGo.activeSelf)
+            bool isFailedActive = _failedPanelGo != null && _failedPanelGo.activeSelf;
+            bool isVictoryActive = _victoryPanelGo != null && _victoryPanelGo.activeSelf;
+
+            if (isFailedActive || isVictoryActive)
             {
-                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) RestartMission();
+                // Force cursor unlocked & visible while end screens are open
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+
+                // 1. Direct Mouse Raycast & Click Handling (guarantees click works 100% even without EventSystem)
+                HandleDirectMouse(isFailedActive, isVictoryActive);
+
+                // 2. Comprehensive Keyboard Shortcuts (supports New Input System + Legacy)
+                HandleKeyboardShortcuts();
             }
-            else if (_failedPanelGo != null && _failedPanelGo.activeSelf)
+        }
+
+        private void HandleDirectMouse(bool isFailedActive, bool isVictoryActive)
+        {
+            var mouse = Mouse.current;
+            if (mouse == null) return;
+
+            Vector2 mousePos = mouse.position.ReadValue();
+            bool clickPressed = mouse.leftButton.wasPressedThisFrame;
+
+            if (isFailedActive)
             {
-                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) RestartMission();
+                bool hoverRetry = _failedRetryRt != null && RectTransformUtility.RectangleContainsScreenPoint(_failedRetryRt, mousePos, null);
+                bool hoverMenu = _failedMenuRt != null && RectTransformUtility.RectangleContainsScreenPoint(_failedMenuRt, mousePos, null);
+
+                if (_failedRetryImg != null)
+                    _failedRetryImg.color = hoverRetry ? (mouse.leftButton.isPressed ? PressedBtnColor : HoverBtnColor) : NormalBtnColor;
+                if (_failedMenuImg != null)
+                    _failedMenuImg.color = hoverMenu ? (mouse.leftButton.isPressed ? PressedBtnColor : HoverBtnColor) : NormalBtnColor;
+
+                if (clickPressed)
+                {
+                    if (hoverRetry)
+                    {
+                        ProceduralAudio.PlayAt("pickup", Vector3.zero, 1f, 1.2f);
+                        RestartMission();
+                    }
+                    else if (hoverMenu)
+                    {
+                        ProceduralAudio.PlayAt("pickup", Vector3.zero, 1f, 1f);
+                        LoadMainMenu();
+                    }
+                }
+            }
+            else if (isVictoryActive)
+            {
+                bool hoverRestart = _victoryRestartRt != null && RectTransformUtility.RectangleContainsScreenPoint(_victoryRestartRt, mousePos, null);
+                bool hoverMenu = _victoryMenuRt != null && RectTransformUtility.RectangleContainsScreenPoint(_victoryMenuRt, mousePos, null);
+
+                if (_victoryRestartImg != null)
+                    _victoryRestartImg.color = hoverRestart ? (mouse.leftButton.isPressed ? PressedBtnColor : HoverBtnColor) : NormalBtnColor;
+                if (_victoryMenuImg != null)
+                    _victoryMenuImg.color = hoverMenu ? (mouse.leftButton.isPressed ? PressedBtnColor : HoverBtnColor) : NormalBtnColor;
+
+                if (clickPressed)
+                {
+                    if (hoverRestart)
+                    {
+                        ProceduralAudio.PlayAt("pickup", Vector3.zero, 1f, 1.2f);
+                        RestartMission();
+                    }
+                    else if (hoverMenu)
+                    {
+                        ProceduralAudio.PlayAt("pickup", Vector3.zero, 1f, 1f);
+                        LoadMainMenu();
+                    }
+                }
+            }
+        }
+
+        private void HandleKeyboardShortcuts()
+        {
+            var kb = Keyboard.current;
+            if (kb != null)
+            {
+                if (kb.enterKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame || kb.rKey.wasPressedThisFrame)
+                {
+                    ProceduralAudio.PlayAt("pickup", Vector3.zero, 1f, 1.2f);
+                    RestartMission();
+                    return;
+                }
+                if (kb.escapeKey.wasPressedThisFrame || kb.mKey.wasPressedThisFrame)
+                {
+                    ProceduralAudio.PlayAt("pickup", Vector3.zero, 1f, 1f);
+                    LoadMainMenu();
+                    return;
+                }
             }
         }
 
         public static void RestartMission()
         {
+            Time.timeScale = 1f;
             StaticReset.RunAll();
             AI.Agents.AgentBase.Active.Clear();
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -428,9 +556,13 @@ namespace MistProtocol.FinalRescue
 
         public static void LoadMainMenu()
         {
+            Time.timeScale = 1f;
             StaticReset.RunAll();
             AI.Agents.AgentBase.Active.Clear();
-            SceneManager.LoadScene(0);
+            if (SceneManager.sceneCountInBuildSettings > 1)
+                SceneManager.LoadScene(0);
+            else
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         // =========================================================================
@@ -468,29 +600,31 @@ namespace MistProtocol.FinalRescue
             return t;
         }
 
-        private Button CreateButton(Transform parent, string name, string label, Vector2 pos, Action onClick)
+        private Button CreateButton(Transform parent, string name, string label, Vector2 pos, Action onClick, out RectTransform buttonRt, out Image buttonImg)
         {
             var btnGo = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             btnGo.transform.SetParent(parent, false);
-            var rt = btnGo.GetComponent<RectTransform>();
-            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0f);
-            rt.pivot = new Vector2(0.5f, 0f);
-            rt.sizeDelta = new Vector2(240f, 54f);
-            rt.anchoredPosition = pos;
+            buttonRt = btnGo.GetComponent<RectTransform>();
+            buttonRt.anchorMin = buttonRt.anchorMax = new Vector2(0.5f, 0f);
+            buttonRt.pivot = new Vector2(0.5f, 0f);
+            buttonRt.sizeDelta = new Vector2(250f, 54f);
+            buttonRt.anchoredPosition = pos;
 
-            var img = btnGo.GetComponent<Image>();
-            img.color = new Color(0.12f, 0.45f, 0.75f, 0.95f);
+            buttonImg = btnGo.GetComponent<Image>();
+            buttonImg.color = NormalBtnColor;
+            buttonImg.raycastTarget = true; // Crucial for receiving mouse raycasts
 
             var btn = btnGo.GetComponent<Button>();
+            btn.targetGraphic = buttonImg;
             var colors = btn.colors;
-            colors.normalColor = new Color(0.12f, 0.45f, 0.75f, 0.95f);
-            colors.highlightedColor = new Color(0.2f, 0.65f, 0.95f, 1f);
-            colors.pressedColor = new Color(0.08f, 0.3f, 0.55f, 1f);
+            colors.normalColor = NormalBtnColor;
+            colors.highlightedColor = HoverBtnColor;
+            colors.pressedColor = PressedBtnColor;
             btn.colors = colors;
 
             btn.onClick.AddListener(() => onClick?.Invoke());
 
-            var txt = MakeText(btnGo.transform, "BtnText", label, 20, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(230, 48), Vector2.zero, new Vector2(0.5f, 0.5f));
+            var txt = MakeText(btnGo.transform, "BtnText", label, 20, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(240, 48), Vector2.zero, new Vector2(0.5f, 0.5f));
             txt.fontStyle = FontStyle.Bold;
 
             return btn;
