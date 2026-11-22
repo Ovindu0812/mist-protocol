@@ -149,7 +149,7 @@ namespace MistProtocol.FinalRescue
             _clueBodyText = MakeText(_clueModalGo.transform, "Message", "\"Blue comes before Green.\"", 28, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(700, 70), new Vector2(0, -6), new Vector2(0.5f, 0.5f));
             _clueBodyText.fontStyle = FontStyle.Italic;
 
-            _clueProgressText = MakeText(_clueModalGo.transform, "Progress", "Clues Found: 1/3", 18, new Color(0.4f, 0.9f, 0.6f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(700, 30), new Vector2(0, 16), new Vector2(0.5f, 0f));
+            _clueProgressText = MakeText(_clueModalGo.transform, "Progress", "Clues Found: 1/4", 18, new Color(0.4f, 0.9f, 0.6f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(700, 30), new Vector2(0, 16), new Vector2(0.5f, 0f));
 
             _clueModalGo.SetActive(false);
         }
@@ -167,7 +167,7 @@ namespace MistProtocol.FinalRescue
             rt.anchoredPosition = new Vector2(40f, -140f);
             rt.sizeDelta = new Vector2(400f, 40f);
 
-            _clueHudText = MakeText(_clueHudGo.transform, "ClueText", "LAB CLUES: 0 / 3", 22, new Color(0.35f, 0.95f, 0.7f), TextAnchor.MiddleLeft, Vector2.zero, new Vector2(400, 40), Vector2.zero, Vector2.zero);
+            _clueHudText = MakeText(_clueHudGo.transform, "ClueText", "LAB CLUES: 0 / 4", 22, new Color(0.35f, 0.95f, 0.7f), TextAnchor.MiddleLeft, Vector2.zero, new Vector2(400, 40), Vector2.zero, Vector2.zero);
             _clueHudText.fontStyle = FontStyle.Bold;
 
             _clueHudGo.SetActive(false);
@@ -331,7 +331,7 @@ namespace MistProtocol.FinalRescue
         // =========================================================================
         // PUBLIC API METHODS
         // =========================================================================
-        public void ShowCluePopup(string clueTitle, string clueMessage, int foundCount, int totalCount = 3)
+        public void ShowCluePopup(string clueTitle, string clueMessage, int foundCount, int totalCount = 4)
         {
             if (_clueModalGo == null) return;
             _clueTitleText.text = clueTitle.ToUpperInvariant();
@@ -344,7 +344,7 @@ namespace MistProtocol.FinalRescue
             UpdateClueHud(foundCount, totalCount);
         }
 
-        public void UpdateClueHud(int foundCount, int totalCount = 3)
+        public void UpdateClueHud(int foundCount, int totalCount = 4)
         {
             if (_clueHudGo != null)
             {
