@@ -15,11 +15,12 @@ namespace MistProtocol.World
 
         private void Awake()
         {
+            if (bulb == null) bulb = GetComponentInChildren<Renderer>();
             _light = GetComponent<Light>();
             _base = _light.intensity;
             _seed = Random.value * 100f;
             _mpb = new MaterialPropertyBlock();
-            if (bulb != null) _emission = bulb.sharedMaterial.GetColor("_EmissionColor");
+            if (bulb != null && bulb.sharedMaterial != null) _emission = bulb.sharedMaterial.GetColor("_EmissionColor");
         }
 
         private void Update()
