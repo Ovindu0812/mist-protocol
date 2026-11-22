@@ -19,12 +19,12 @@ namespace MistProtocol.UI
     public class HUD : MonoBehaviour
     {
         private Font _font;
-        private Text _health, _ammo, _objective, _prompt, _overseer, _zone, _center, _hitmarker;
+        private Text _health, _ammo, _objective, _prompt, _overseer, _zone, _center, _hitmarker, _crosshairText;
         private Image _healthFill, _damage, _holdFill, _holdBack, _panel;
         private PlayerController _player;
         private PlayerWeapon _weapon;
         private PlayerInteractor _interactor;
-        private float _overseerUntil, _damageAlpha;
+        private float _overseerUntil, _damageAlpha, _lastPlayedHitmarkerTime;
         private readonly Queue<string> _overseerQueue = new();
 
         // Titan Boss Health Bar elements
@@ -58,7 +58,7 @@ namespace MistProtocol.UI
 
                 // Damage vignette & Crosshairs
                 _damage = MakeImage(root, "Damage", new Color(0.8f, 0f, 0f, 0f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                MakeText(root, "Crosshair", "+", 34, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(60, 60), Vector2.zero, new Vector2(0.5f, 0.5f));
+                _crosshairText = MakeText(root, "Crosshair", "+", 34, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(80, 80), Vector2.zero, new Vector2(0.5f, 0.5f));
                 _hitmarker = MakeText(root, "Hit", "x", 30, new Color(1f, 0.3f, 0.2f, 0f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(60, 60), Vector2.zero, new Vector2(0.5f, 0.5f));
 
                 // =========================================================================
@@ -321,6 +321,16 @@ namespace MistProtocol.UI
                 _ammo.text = $"{_weapon.ActiveWeaponName}\n<size=26>{status}</size>";
                 float since = Time.time - _weapon.LastHitTime;
                 if (_hitmarker != null) _hitmarker.color = new Color(1f, 0.3f, 0.2f, Mathf.Clamp01(1f - since * 6f));
+                if (since < 0.08f && _lastPlayedHitmarkerTime < _weapon.LastHitTime)
+                {
+                    _lastPlayedHitmarkerTime = _weapon.LastHitTime;
+                    ProceduralAudio.PlayAt("impact", _player != null ? _player.transform.position : Vector3.zero, 0.45f, 1.85f);
+                }
+                if (_crosshairText != null)
+                {
+                    float bloom = _weapon.CurrentBloom;
+                    _crosshairText.fontSize = Mathf.RoundToInt(34 + bloom * 16f);
+                }
             }
 
             string prompt = _interactor != null ? _interactor.Prompt : null;
