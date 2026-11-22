@@ -8,7 +8,8 @@ namespace MistProtocol.FinalRescue
     {
         ComputerTerminal,
         HiddenDocument,
-        WallMessage
+        WallMessage,
+        ResearchNotes
     }
 
     /// <summary>
@@ -31,6 +32,7 @@ namespace MistProtocol.FinalRescue
             LabClueType.ComputerTerminal => "[E] Read Computer Terminal",
             LabClueType.HiddenDocument => "[E] Inspect Hidden Research Document",
             LabClueType.WallMessage => "[E] Read Scratched Wall Inscription",
+            LabClueType.ResearchNotes => "[E] Read Chief Engineer's Notes",
             _ => "[E] Inspect Clue"
         };
 
@@ -40,16 +42,20 @@ namespace MistProtocol.FinalRescue
             switch (type)
             {
                 case LabClueType.ComputerTerminal:
-                    title = "Clue 1: Computer Terminal";
-                    message = "Blue comes before Green.";
+                    title = "Clue 1: Security Terminal";
+                    message = "Phase 1: Cold Mist (Blue) initiates the primary energy grid.";
                     break;
                 case LabClueType.HiddenDocument:
-                    title = "Clue 2: Hidden Document";
-                    message = "Red must be activated last.";
+                    title = "Clue 2: Plantation Document";
+                    message = "Phase 2 & 3: Morning Sun (Yellow) must rise before the Fresh Leaf (Green) can bloom.";
                     break;
                 case LabClueType.WallMessage:
-                    title = "Clue 3: Wall Message";
-                    message = "The correct sequence will disable the prison barrier.";
+                    title = "Clue 3: Scratched Wall Inscription";
+                    message = "Phase 4: Kiln Fire (Red) must seal the sequence to disengage the barrier.";
+                    break;
+                case LabClueType.ResearchNotes:
+                    title = "Clue 4: Chief Engineer's Log";
+                    message = "Master Sequence: Cold Mist -> Morning Sun -> Ceylon Leaf -> Kiln Flame.";
                     break;
             }
         }
@@ -79,7 +85,7 @@ namespace MistProtocol.FinalRescue
             }
             else if (FinalRescueUI.Instance != null)
             {
-                FinalRescueUI.Instance.ShowCluePopup(title, message, 1, 3);
+                FinalRescueUI.Instance.ShowCluePopup(title, message, 1, 4);
             }
         }
     }
