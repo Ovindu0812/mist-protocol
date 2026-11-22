@@ -46,6 +46,7 @@ namespace MistProtocol.AI.Agents
         {
             base.Awake();
             _walker = GetComponent<WalkerAnimator>();
+            if (searchlight == null) searchlight = GetComponentInChildren<Light>();
         }
 
         protected override void Start()
