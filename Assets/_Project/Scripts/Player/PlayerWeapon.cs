@@ -395,7 +395,7 @@ namespace MistProtocol.Player
 
             ApplyWeaponVisibility();
             ProceduralAudio.PlayAt("pickup", transform.position, 0.75f, 1.45f);
-            GameEvents.ZoneEntered?.Invoke($"EQUIPPED: {ActiveWeaponName.ToUpperInvariant()}");
+            GameEvents.RaiseZone($"EQUIPPED: {ActiveWeaponName.ToUpperInvariant()}");
             Debug.Log($"[PlayerWeapon] Switched to weapon {activeIndex}: {ActiveWeaponName}");
         }
 
