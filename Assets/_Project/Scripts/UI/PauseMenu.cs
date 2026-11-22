@@ -137,6 +137,17 @@ namespace MistProtocol.UI
                 PlayerPrefs.SetFloat("MasterVolume", val);
             });
 
+            // Mouse Look Controls
+            CreateValueSlider(_mainPanel.transform, "LookSens", "Look Sensitivity", PlayerPrefs.GetFloat("MouseSensitivity", 1f), 0.2f, 3.0f, new Vector2(0f, -130f), val =>
+            {
+                PlayerPrefs.SetFloat("MouseSensitivity", val);
+            });
+
+            CreateToggleOption(_mainPanel.transform, "InvertY", "Invert Y Axis", PlayerPrefs.GetInt("InvertY", 0) == 1, new Vector2(0f, -180f), val =>
+            {
+                PlayerPrefs.SetInt("InvertY", val ? 1 : 0);
+            });
+
             _pauseRoot.SetActive(false);
         }
 
@@ -243,6 +254,116 @@ namespace MistProtocol.UI
             slider.maxValue = 1f;
             slider.value = initialValue;
             slider.onValueChanged.AddListener(onChange);
+        }
+
+        private void CreateValueSlider(Transform parent, string name, string label, float initialValue, float min, float max, Vector2 pos, UnityEngine.Events.UnityAction<float> onChange)
+        {
+            var row = new GameObject(name, typeof(RectTransform));
+            row.transform.SetParent(parent, false);
+            var rt = row.GetComponent<RectTransform>();
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = new Vector2(360f, 40f);
+
+            var lblGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            lblGo.transform.SetParent(row.transform, false);
+            var lRt = lblGo.GetComponent<RectTransform>();
+            lRt.anchorMin = new Vector2(0f, 0f);
+            lRt.anchorMax = new Vector2(0.5f, 1f);
+            lRt.sizeDelta = Vector2.zero;
+            var t = lblGo.GetComponent<Text>();
+            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.fontSize = 15;
+            t.color = new Color(0.8f, 0.9f, 1f);
+            t.alignment = TextAnchor.MiddleLeft;
+            t.text = label;
+
+            var sliderGo = new GameObject("Slider", typeof(RectTransform), typeof(Slider));
+            sliderGo.transform.SetParent(row.transform, false);
+            var sRt = sliderGo.GetComponent<RectTransform>();
+            sRt.anchorMin = new Vector2(0.52f, 0.2f);
+            sRt.anchorMax = new Vector2(1f, 0.8f);
+            sRt.sizeDelta = Vector2.zero;
+
+            var bg = new GameObject("Background", typeof(RectTransform), typeof(Image));
+            bg.transform.SetParent(sliderGo.transform, false);
+            var bgRt = bg.GetComponent<RectTransform>();
+            bgRt.anchorMin = Vector2.zero;
+            bgRt.anchorMax = Vector2.one;
+            bgRt.sizeDelta = Vector2.zero;
+            bg.GetComponent<Image>().color = new Color(0.2f, 0.25f, 0.3f, 0.8f);
+
+            var fillArea = new GameObject("Fill Area", typeof(RectTransform));
+            fillArea.transform.SetParent(sliderGo.transform, false);
+            var faRt = fillArea.GetComponent<RectTransform>();
+            faRt.anchorMin = Vector2.zero;
+            faRt.anchorMax = Vector2.one;
+            faRt.sizeDelta = Vector2.zero;
+
+            var fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
+            fill.transform.SetParent(fillArea.transform, false);
+            var fRt = fill.GetComponent<RectTransform>();
+            fRt.anchorMin = Vector2.zero;
+            fRt.anchorMax = Vector2.one;
+            fRt.sizeDelta = Vector2.zero;
+            fill.GetComponent<Image>().color = new Color(0.3f, 0.85f, 0.6f, 1f);
+
+            var slider = sliderGo.GetComponent<Slider>();
+            slider.fillRect = fRt;
+            slider.minValue = min;
+            slider.maxValue = max;
+            slider.value = initialValue;
+            slider.onValueChanged.AddListener(onChange);
+        }
+
+        private void CreateToggleOption(Transform parent, string name, string label, bool initialValue, Vector2 pos, UnityEngine.Events.UnityAction<bool> onChange)
+        {
+            var row = new GameObject(name, typeof(RectTransform));
+            row.transform.SetParent(parent, false);
+            var rt = row.GetComponent<RectTransform>();
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = new Vector2(360f, 40f);
+
+            var lblGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            lblGo.transform.SetParent(row.transform, false);
+            var lRt = lblGo.GetComponent<RectTransform>();
+            lRt.anchorMin = new Vector2(0f, 0f);
+            lRt.anchorMax = new Vector2(0.7f, 1f);
+            lRt.sizeDelta = Vector2.zero;
+            var t = lblGo.GetComponent<Text>();
+            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.fontSize = 15;
+            t.color = new Color(0.8f, 0.9f, 1f);
+            t.alignment = TextAnchor.MiddleLeft;
+            t.text = label;
+
+            var toggleGo = new GameObject("Toggle", typeof(RectTransform), typeof(Toggle));
+            toggleGo.transform.SetParent(row.transform, false);
+            var tRt = toggleGo.GetComponent<RectTransform>();
+            tRt.anchorMin = new Vector2(0.75f, 0.1f);
+            tRt.anchorMax = new Vector2(0.95f, 0.9f);
+            tRt.sizeDelta = Vector2.zero;
+
+            var bg = new GameObject("Background", typeof(RectTransform), typeof(Image));
+            bg.transform.SetParent(toggleGo.transform, false);
+            var bgRt = bg.GetComponent<RectTransform>();
+            bgRt.anchorMin = Vector2.zero;
+            bgRt.anchorMax = Vector2.one;
+            bgRt.sizeDelta = Vector2.zero;
+            bg.GetComponent<Image>().color = new Color(0.2f, 0.25f, 0.3f, 0.8f);
+
+            var checkmark = new GameObject("Checkmark", typeof(RectTransform), typeof(Image));
+            checkmark.transform.SetParent(bg.transform, false);
+            var cRt = checkmark.GetComponent<RectTransform>();
+            cRt.anchorMin = new Vector2(0.2f, 0.2f);
+            cRt.anchorMax = new Vector2(0.8f, 0.8f);
+            cRt.sizeDelta = Vector2.zero;
+            checkmark.GetComponent<Image>().color = new Color(0.35f, 0.85f, 1f, 1f);
+
+            var toggle = toggleGo.GetComponent<Toggle>();
+            toggle.targetGraphic = bg.GetComponent<Image>();
+            toggle.graphic = checkmark.GetComponent<Image>();
+            toggle.isOn = initialValue;
+            toggle.onValueChanged.AddListener(onChange);
         }
     }
 }
