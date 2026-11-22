@@ -100,7 +100,17 @@ namespace MistProtocol.Interaction
 
         private IEnumerator TitanDefeatedSequence()
         {
-            yield return new WaitForSeconds(1.0f);
+            // Cinematic victory slow-motion time dilation
+            Time.timeScale = 0.35f;
+            float elapsedReal = 0f;
+            while (elapsedReal < 1.4f)
+            {
+                elapsedReal += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            Time.timeScale = 1.0f;
+
+            yield return new WaitForSeconds(0.5f);
 
             Vector3 spawnPos = _lastTitanPosition != Vector3.zero ? _lastTitanPosition : (transform.position + Vector3.forward * 10f);
             spawnPos.y = Mathf.Max(spawnPos.y, 0.05f);
@@ -159,7 +169,12 @@ namespace MistProtocol.Interaction
             }
 
             ProceduralAudio.PlayAt("door", transform.position, 1f, 0.6f);
+            ProceduralAudio.PlayAt("steam", transform.position + Vector3.up * 2f, 1.2f, 0.9f);
+            ProceduralAudio.PlayAt("alarm", transform.position, 1.0f, 1.0f);
             ProceduralAudio.PlayAt("explosion", transform.position, 0.4f, 0.5f);
+
+            // Atmospheric steam discharge along vault perimeter
+            Vfx.Burst(transform.position + Vector3.up * 2.5f, Vector3.down, new Color(0.9f, 0.95f, 1f, 0.8f), 40, 5f, 0.25f, 1.2f);
 
             // 2. Red emergency alert lights
             if (emergencyLights != null)
