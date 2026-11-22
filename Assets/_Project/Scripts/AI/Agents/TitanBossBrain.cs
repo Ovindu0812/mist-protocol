@@ -48,8 +48,9 @@ namespace MistProtocol.AI.Agents
             _walker = GetComponent<WalkerAnimator>();
         }
 
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             // Balance Titan stats so the fight is thrilling, fair, and fun
             var bossHealth = GetComponent<ArmoredBossHealth>();
             if (bossHealth != null)
