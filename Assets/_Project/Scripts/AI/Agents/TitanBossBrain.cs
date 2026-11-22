@@ -288,7 +288,7 @@ namespace MistProtocol.AI.Agents
             Vfx.Burst(transform.position + Vector3.up * 0.2f, Vector3.up, new Color(1f, 0.4f, 0.1f), 35, 8f, 0.15f, 0.7f);
 
             // Radial physics impulse & damage to player
-            if (PlayerLocator.Alive && Vector3.Distance(transform.position, PlayerLocator.Position) <= 6.5f)
+            if (PlayerLocator.Alive && Vector3.Distance(transform.position, PlayerLocator.State.Root.position) <= 6.5f)
             {
                 var pc = PlayerLocator.State.Root.GetComponent<PlayerController>();
                 if (pc != null) pc.RecoilPitch += 4.5f;
