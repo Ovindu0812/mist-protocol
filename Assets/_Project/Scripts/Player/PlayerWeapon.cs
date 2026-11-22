@@ -72,6 +72,8 @@ namespace MistProtocol.Player
         public string ActiveWeaponName => ActiveWeapon != null ? ActiveWeapon.name : "Mist Rifle";
         public int InMagazine => ActiveWeapon != null ? ActiveWeapon.inMagazine : magazineSize;
         public int Reserve => ActiveWeapon != null ? ActiveWeapon.reserveAmmo : reserveAmmo;
+        public float CurrentBloom { get; private set; }
+        public bool IsLowAmmo => ActiveWeapon != null && ActiveWeapon.inMagazine <= Mathf.CeilToInt(ActiveWeapon.magazineSize * 0.25f);
         public bool IsReloading { get; private set; }
         public float LastHitTime { get; private set; } = -9f;
 
@@ -297,6 +299,7 @@ namespace MistProtocol.Player
             var mouse = Mouse.current;
             var kb = Keyboard.current;
             bool holding = _interactor != null && _interactor.IsHolding;
+            CurrentBloom = Mathf.MoveTowards(CurrentBloom, 0f, dt * 3.5f);
 
             if (kb != null && !holding)
             {
@@ -320,13 +323,19 @@ namespace MistProtocol.Player
                         if (shootRequested && Time.time >= _nextFire)
                         {
                             if (cur.inMagazine > 0)
+                            {
                                 Fire(cur);
+                            }
                             else if (cur.reserveAmmo > 0)
+                            {
+                                _nextFire = Time.time + 0.25f;
+                                ProceduralAudio.PlayAt("dryfire", transform.position, 0.8f, 1.0f);
                                 StartReload(cur);
+                            }
                             else
                             {
-                                _nextFire = Time.time + 0.3f;
-                                ProceduralAudio.PlayAt("beep", transform.position, 0.2f, 0.5f);
+                                _nextFire = Time.time + 0.25f;
+                                ProceduralAudio.PlayAt("dryfire", transform.position, 0.8f, 1.0f);
                             }
                         }
                     }
@@ -401,6 +410,7 @@ namespace MistProtocol.Player
         {
             _nextFire = Time.time + w.fireInterval;
             w.inMagazine--;
+            CurrentBloom = Mathf.Clamp(CurrentBloom + w.heatGain * 2.5f, 0f, 2.0f);
 
             float moving = _player != null ? Mathf.Clamp01(_player.Velocity.Flat().magnitude / 6f) : 0f;
             bool isCrouching = _player != null && _player.IsCrouching;
