@@ -236,7 +236,16 @@ namespace MistProtocol.UI
 
             if (_objectiveDistText != null)
             {
-                _objectiveDistText.text = $"OBJ: {Mathf.RoundToInt(dist)}m";
+                if (dist <= 6f)
+                {
+                    _objectiveDistText.text = $"[NEAR] {Mathf.RoundToInt(dist)}m";
+                    _objectiveDistText.color = Color.Lerp(new Color(0.2f, 1f, 0.4f), new Color(1f, 0.82f, 0.35f), Mathf.PingPong(Time.unscaledTime * 4f, 1f));
+                }
+                else
+                {
+                    _objectiveDistText.text = $"OBJ: {Mathf.RoundToInt(dist)}m";
+                    _objectiveDistText.color = new Color(1f, 0.82f, 0.35f, 0.9f);
+                }
             }
 
             // Convert world displacement to UI radar coordinates (X -> X, Z -> Y)
