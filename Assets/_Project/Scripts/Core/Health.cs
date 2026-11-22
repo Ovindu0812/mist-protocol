@@ -7,12 +7,19 @@ namespace MistProtocol.Core
     public class Health : MonoBehaviour
     {
         [SerializeField] protected float maxHealth = 100f;
+        [SerializeField] protected float damageMultiplier = 1f;
 
         public float Max => maxHealth;
         public float Current { get; private set; }
         public float Normalized => maxHealth > 0f ? Current / maxHealth : 0f;
         public bool IsDead => Current <= 0f;
         public bool IsFullHealth => Current >= maxHealth;
+        public bool IsInvulnerable { get; set; }
+        public float DamageMultiplier
+        {
+            get => damageMultiplier;
+            set => damageMultiplier = Mathf.Max(0f, value);
+        }
 
         /// <summary>amount, world position the damage came from.</summary>
         public event Action<float, Vector3> Damaged;
@@ -29,9 +36,10 @@ namespace MistProtocol.Core
 
         public virtual void TakeDamage(float amount, Vector3 fromPosition)
         {
-            if (IsDead || amount <= 0f) return;
-            Current = Mathf.Max(0f, Current - amount);
-            Damaged?.Invoke(amount, fromPosition);
+            if (IsDead || IsInvulnerable || amount <= 0f) return;
+            float modifiedAmount = amount * damageMultiplier;
+            Current = Mathf.Max(0f, Current - modifiedAmount);
+            Damaged?.Invoke(modifiedAmount, fromPosition);
             if (Current <= 0f) Died?.Invoke();
         }
 
