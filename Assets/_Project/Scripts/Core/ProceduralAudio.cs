@@ -31,6 +31,8 @@ namespace MistProtocol.Core
                 "beep" => Tone(0.12f, 1200f, 0.3f, 18f),
                 "pickup" => Tone(0.25f, 660f, 0.35f, 8f),
                 "hum" => Tone(1.0f, 110f, 0.2f, 0f),
+                "alarm" => Tone(0.45f, 880f, 0.45f, 1.2f, true),
+                "success" => Tone(0.5f, 1046.5f, 0.4f, 3f),
                 _ => Noise(0.1f, 30f, 0.3f, 800f),
             };
             c.name = name;

@@ -38,15 +38,15 @@ namespace MistProtocol.Interaction
         {
             EnsureDoorUnlocked();
             HookTitanHealth();
-            EnsureHoldingCell();
+            EnsureFinalRescueMission();
         }
 
-        private void EnsureHoldingCell()
+        private void EnsureFinalRescueMission()
         {
-            if (HoldingCell.Instance == null && FindAnyObjectByType<HoldingCell>() == null)
+            if (FinalRescue.FinalRescueMission.Instance == null && FindAnyObjectByType<FinalRescue.FinalRescueMission>() == null)
             {
-                var cellGo = new GameObject("HoldingCell_SectorE");
-                cellGo.AddComponent<HoldingCell>();
+                var missionGo = new GameObject("FinalRescue_Mission");
+                missionGo.AddComponent<FinalRescue.FinalRescueMission>();
             }
         }
 

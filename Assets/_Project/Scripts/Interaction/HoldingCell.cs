@@ -35,40 +35,14 @@ namespace MistProtocol.Interaction
 
         private void Awake()
         {
-            Instance = this;
-            if (cellDoor == null) cellDoor = transform.Find("Cell_SlidingDoor");
-            if (lockTerminal == null) lockTerminal = transform.Find("Cell_LockTerminal");
-            if (appaTransform == null) appaTransform = transform.Find("NPC_Appa");
-            if (terminalStatusLight == null && lockTerminal != null)
-                terminalStatusLight = lockTerminal.GetComponentInChildren<Light>();
-
-            if (lockTerminal != null && lockTerminal.GetComponent<Collider>() == null)
-            {
-                var trig = lockTerminal.gameObject.AddComponent<BoxCollider>();
-                trig.size = new Vector3(0.8f, 1.2f, 0.8f);
-                trig.isTrigger = true;
-            }
-
-            BuildCellIfMissing();
+            // Superseded by The Final Rescue mission (Secret Laboratory).
+            // Destroy immediately so the old prototype cell never interferes with the puzzle laboratory.
+            Destroy(gameObject);
         }
 
         private void Start()
         {
-            if (cellDoor == null) cellDoor = transform.Find("Cell_SlidingDoor");
-            if (lockTerminal == null) lockTerminal = transform.Find("Cell_LockTerminal");
-            if (lockTerminal != null)
-            {
-                var termInteract = lockTerminal.GetComponent<CellLockTerminalInteractable>();
-                if (termInteract == null) termInteract = lockTerminal.gameObject.AddComponent<CellLockTerminalInteractable>();
-                termInteract.Configure(this);
-            }
-            if (appaTransform == null) appaTransform = transform.Find("NPC_Appa");
-            if (appaTransform != null)
-            {
-                var appaInteract = appaTransform.GetComponent<AppaNPCInteractable>();
-                if (appaInteract == null) appaInteract = appaTransform.gameObject.AddComponent<AppaNPCInteractable>();
-                appaInteract.Configure(this);
-            }
+            Destroy(gameObject);
         }
 
         /// <summary>

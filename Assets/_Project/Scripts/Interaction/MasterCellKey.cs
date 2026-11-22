@@ -18,7 +18,7 @@ namespace MistProtocol.Interaction
         private Light _glowLight;
 
         public bool CanInteract => !_collected;
-        public string Prompt => "[E] Pick up Master Prison Cell Key";
+        public string Prompt => "[E] Pick up Master Access Key";
 
         public static GameObject SpawnKey(Vector3 position)
         {
@@ -80,7 +80,7 @@ namespace MistProtocol.Interaction
             // Direct objective immediately to the key
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.SetCustomObjective(go.transform, "TITAN DESTROYED: Pick up the Master Cell Key from Titan's wreckage!");
+                GameManager.Instance.SetCustomObjective(go.transform, "TITAN DESTROYED: Pick up the Master Access Key from Titan's wreckage!");
             }
 
             return go;
@@ -120,17 +120,16 @@ namespace MistProtocol.Interaction
             }
 
             // Radio transmission from Appa
-            GameEvents.Overseer("APPA (Radio): \"...Nila?! Duwa, is that you?! I heard the Titan collapse! I'm locked inside the holding cell against the east wall! Use the Master Key on the terminal!\"");
+            GameEvents.Overseer("APPA (Radio): \"...Nila?! Duwa, is that you?! I heard the Titan collapse! I'm trapped in the Secret Laboratory past the containment vault! Find the lab entrance!\"");
 
-            // Direct objective to the holding cell terminal
-            var cell = HoldingCell.Instance != null ? HoldingCell.Instance : FindAnyObjectByType<HoldingCell>();
-            if (cell != null && GameManager.Instance != null)
+            // Notify Final Rescue Mission coordinator
+            if (FinalRescue.FinalRescueMission.Instance != null)
             {
-                GameManager.Instance.SetCustomObjective(cell.TerminalTransform, "RESCUE APPA: Swipe Master Key on Holding Cell Console (East Wall)!");
+                FinalRescue.FinalRescueMission.Instance.OnKeyCollected();
             }
             else
             {
-                GameEvents.Objective("RESCUE APPA: Swipe Master Key on Holding Cell Console at the East Wall!");
+                GameEvents.Objective("Find the Secret Laboratory.");
             }
 
             Destroy(gameObject, 0.15f);
