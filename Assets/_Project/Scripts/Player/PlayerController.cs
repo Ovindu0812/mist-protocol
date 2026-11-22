@@ -33,6 +33,8 @@ namespace MistProtocol.Player
         private float _stepDistance;
         private float _standHeight;
         private float _shake;
+        private float _headBobTimer;
+        private bool _wasGrounded;
         private Vector3 _velocity;
         private float _pivotHeight;
 
@@ -116,8 +118,7 @@ namespace MistProtocol.Player
             _cc.height = Mathf.MoveTowards(_cc.height, targetH, dt * 5f);
             _cc.center = new Vector3(0f, _cc.height * 0.5f, 0f);
             var lp = cameraPivot.localPosition;
-            lp.y = Mathf.MoveTowards(lp.y, _pivotHeight - (_standHeight - targetH), dt * 5f);
-            cameraPivot.localPosition = lp;
+            float targetBaseY = _pivotHeight - (_standHeight - targetH);
 
             Vector3 wish = (transform.forward * move.y + transform.right * move.x) * speed;
             if (_cc.isGrounded)
@@ -131,6 +132,35 @@ namespace MistProtocol.Player
             Vector3 before = transform.position;
             _cc.Move(delta);
             _velocity = (transform.position - before) / Mathf.Max(dt, 0.0001f);
+
+            // Landing impact thud
+            if (!_wasGrounded && _cc.isGrounded)
+            {
+                if (_verticalVel < -4f)
+                {
+                    ProceduralAudio.PlayAt("step", transform.position, 0.85f, 0.7f);
+                    _shake = Mathf.Max(_shake, 0.15f);
+                }
+            }
+            _wasGrounded = _cc.isGrounded;
+
+            // Procedural head-bobbing & breathing sway
+            float horizSpeed = _velocity.Flat().magnitude;
+            if (_cc.isGrounded && horizSpeed > 0.5f)
+            {
+                float bobFreq = IsSprinting ? 12.5f : 8.5f;
+                float bobAmp = IsSprinting ? 0.045f : 0.024f;
+                _headBobTimer += dt * bobFreq;
+                lp.y = Mathf.MoveTowards(lp.y, targetBaseY + Mathf.Sin(_headBobTimer) * bobAmp, dt * 8f);
+                lp.x = Mathf.Cos(_headBobTimer * 0.5f) * (bobAmp * 0.6f);
+            }
+            else
+            {
+                float breath = Mathf.Sin(Time.time * 2.0f) * 0.008f;
+                lp.y = Mathf.MoveTowards(lp.y, targetBaseY + breath, dt * 5f);
+                lp.x = Mathf.MoveTowards(lp.x, 0f, dt * 2.5f);
+            }
+            cameraPivot.localPosition = lp;
 
             // ---- footsteps into the acoustic sim
             if (_cc.isGrounded)
