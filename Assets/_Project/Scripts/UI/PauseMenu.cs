@@ -123,12 +123,19 @@ namespace MistProtocol.UI
             pRt.sizeDelta = new Vector2(500f, 600f);
 
             // Title
-            CreateText(_mainPanel.transform, "Title", "MISSION PAUSED", 36, new Color(0.35f, 0.85f, 1f), new Vector2(0f, 220f));
+            CreateText(_mainPanel.transform, "Title", "MISSION PAUSED", 36, new Color(0.35f, 0.85f, 1f), new Vector2(0f, 240f));
 
             // Buttons
-            CreateButton(_mainPanel.transform, "ResumeBtn", "RESUME", new Vector2(0f, 120f), Resume);
-            CreateButton(_mainPanel.transform, "RestartBtn", "RESTART MISSION", new Vector2(0f, 40f), RestartMission);
-            CreateButton(_mainPanel.transform, "QuitBtn", "ABORT MISSION", new Vector2(0f, -40f), QuitGame);
+            CreateButton(_mainPanel.transform, "ResumeBtn", "RESUME", new Vector2(0f, 150f), Resume);
+            CreateButton(_mainPanel.transform, "RestartBtn", "RESTART MISSION", new Vector2(0f, 80f), RestartMission);
+            CreateButton(_mainPanel.transform, "QuitBtn", "ABORT MISSION", new Vector2(0f, 10f), QuitGame);
+
+            // Audio Volume Sliders
+            CreateVolumeSlider(_mainPanel.transform, "MasterVol", "Master Volume", AudioListener.volume, new Vector2(0f, -80f), val =>
+            {
+                AudioListener.volume = val;
+                PlayerPrefs.SetFloat("MasterVolume", val);
+            });
 
             _pauseRoot.SetActive(false);
         }
@@ -177,6 +184,65 @@ namespace MistProtocol.UI
             t.text = label;
 
             return btn;
+        }
+
+        private void CreateVolumeSlider(Transform parent, string name, string label, float initialValue, Vector2 pos, UnityEngine.Events.UnityAction<float> onChange)
+        {
+            var row = new GameObject(name, typeof(RectTransform));
+            row.transform.SetParent(parent, false);
+            var rt = row.GetComponent<RectTransform>();
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = new Vector2(360f, 40f);
+
+            var lblGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            lblGo.transform.SetParent(row.transform, false);
+            var lRt = lblGo.GetComponent<RectTransform>();
+            lRt.anchorMin = new Vector2(0f, 0f);
+            lRt.anchorMax = new Vector2(0.5f, 1f);
+            lRt.sizeDelta = Vector2.zero;
+            var t = lblGo.GetComponent<Text>();
+            t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            t.fontSize = 15;
+            t.color = new Color(0.8f, 0.9f, 1f);
+            t.alignment = TextAnchor.MiddleLeft;
+            t.text = label;
+
+            var sliderGo = new GameObject("Slider", typeof(RectTransform), typeof(Slider));
+            sliderGo.transform.SetParent(row.transform, false);
+            var sRt = sliderGo.GetComponent<RectTransform>();
+            sRt.anchorMin = new Vector2(0.52f, 0.2f);
+            sRt.anchorMax = new Vector2(1f, 0.8f);
+            sRt.sizeDelta = Vector2.zero;
+
+            var bg = new GameObject("Background", typeof(RectTransform), typeof(Image));
+            bg.transform.SetParent(sliderGo.transform, false);
+            var bgRt = bg.GetComponent<RectTransform>();
+            bgRt.anchorMin = Vector2.zero;
+            bgRt.anchorMax = Vector2.one;
+            bgRt.sizeDelta = Vector2.zero;
+            bg.GetComponent<Image>().color = new Color(0.2f, 0.25f, 0.3f, 0.8f);
+
+            var fillArea = new GameObject("Fill Area", typeof(RectTransform));
+            fillArea.transform.SetParent(sliderGo.transform, false);
+            var faRt = fillArea.GetComponent<RectTransform>();
+            faRt.anchorMin = Vector2.zero;
+            faRt.anchorMax = Vector2.one;
+            faRt.sizeDelta = Vector2.zero;
+
+            var fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
+            fill.transform.SetParent(fillArea.transform, false);
+            var fRt = fill.GetComponent<RectTransform>();
+            fRt.anchorMin = Vector2.zero;
+            fRt.anchorMax = Vector2.one;
+            fRt.sizeDelta = Vector2.zero;
+            fill.GetComponent<Image>().color = new Color(0.2f, 0.7f, 1f, 1f);
+
+            var slider = sliderGo.GetComponent<Slider>();
+            slider.fillRect = fRt;
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.value = initialValue;
+            slider.onValueChanged.AddListener(onChange);
         }
     }
 }
