@@ -33,6 +33,10 @@ namespace MistProtocol.Core
                 "hum" => Tone(1.0f, 110f, 0.2f, 0f),
                 "alarm" => Tone(0.45f, 880f, 0.45f, 1.2f, true),
                 "success" => Tone(0.5f, 1046.5f, 0.4f, 3f),
+                "heartbeat" => Tone(0.35f, 48f, 0.7f, 3f),
+                "dryfire" => Click(0.06f),
+                "slam" => Noise(1.2f, 3.5f, 1.1f, 180f),
+                "steam" => Noise(0.85f, 4.5f, 0.45f, 3400f),
                 _ => Noise(0.1f, 30f, 0.3f, 800f),
             };
             c.name = name;
