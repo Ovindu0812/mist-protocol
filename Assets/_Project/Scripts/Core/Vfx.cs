@@ -75,7 +75,15 @@ namespace MistProtocol.Core
 
         public static void Impact(Vector3 pos, Vector3 normal, bool metal)
         {
-            Burst(pos, normal, metal ? new Color(1f, 0.8f, 0.4f) : new Color(0.6f, 0.58f, 0.55f), metal ? 10 : 6, 4f, 0.06f, 0.35f);
+            Color sparkCol = metal ? new Color(1f, 0.85f, 0.4f) : new Color(0.7f, 0.65f, 0.58f);
+            Burst(pos, normal, sparkCol, metal ? 14 : 7, metal ? 5.2f : 3.4f, 0.07f, 0.35f);
+            Flash(pos + normal * 0.08f, sparkCol, metal ? 2.2f : 0.8f, metal ? 2.8f : 1.5f, 0.04f);
+        }
+
+        public static void ImpactSpark(Vector3 pos, Vector3 normal, Color sparkColor, bool isMetal = false)
+        {
+            Burst(pos, normal, sparkColor, isMetal ? 16 : 8, isMetal ? 5.5f : 3.2f, 0.06f, 0.28f);
+            Flash(pos + normal * 0.1f, sparkColor, 1.8f, 2.5f, 0.05f);
         }
 
         public static void Explosion(Vector3 pos)
