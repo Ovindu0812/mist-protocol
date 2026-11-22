@@ -245,6 +245,14 @@ namespace MistProtocol.Core
         public void OnMasterCellKeyCollected()
         {
             HasMasterCellKey = true;
+            // Clear custom objective so minimap points to holding cell terminal
+            var cell = HoldingCell.Instance != null
+                ? HoldingCell.Instance
+                : UnityEngine.Object.FindAnyObjectByType<HoldingCell>();
+            if (cell != null)
+                SetCustomObjective(cell.TerminalTransform, "RESCUE APPA: Swipe Master Key on Holding Cell terminal (Sector E)!");
+            else
+                GameEvents.Objective("RESCUE APPA: Head to Sector E - Swipe the Master Key on the Holding Cell terminal!");
         }
 
         public void OnAppaRescued()

@@ -113,6 +113,15 @@ namespace MistProtocol.AI.Agents
                 GameManager.Instance.OnTitanDefeated();
             }
 
+            // Spawn key only if BossChamberTrap hasn't already spawned it
+            // (BossChamberTrap hooks Titan health.Died - check if a key already exists)
+            bool keyAlreadySpawned = UnityEngine.Object.FindAnyObjectByType<Interaction.MasterCellKey>() != null;
+            if (!keyAlreadySpawned)
+            {
+                Interaction.MasterCellKey.SpawnKey(transform.position);
+                Interaction.FatherClue.SpawnMap(transform.position + Vector3.right * 0.8f);
+            }
+
             base.OnDied();
         }
 
