@@ -7,6 +7,7 @@ namespace MistProtocol.FinalRescue
     public enum SwitchColor
     {
         Blue,
+        Yellow,
         Green,
         Red
     }
@@ -57,8 +58,9 @@ namespace MistProtocol.FinalRescue
             float pitch = switchColor switch
             {
                 SwitchColor.Blue => 1.0f,
-                SwitchColor.Green => 1.25f,
-                SwitchColor.Red => 1.5f,
+                SwitchColor.Yellow => 1.15f,
+                SwitchColor.Green => 1.30f,
+                SwitchColor.Red => 1.50f,
                 _ => 1.0f
             };
             ProceduralAudio.PlayAt("beep", transform.position, 0.85f, pitch);
@@ -97,6 +99,7 @@ namespace MistProtocol.FinalRescue
             UnityEngine.Color baseCol = switchColor switch
             {
                 SwitchColor.Blue => new UnityEngine.Color(0.1f, 0.5f, 1f),
+                SwitchColor.Yellow => new UnityEngine.Color(1f, 0.72f, 0.05f),
                 SwitchColor.Green => new UnityEngine.Color(0.15f, 0.95f, 0.35f),
                 SwitchColor.Red => new UnityEngine.Color(1f, 0.2f, 0.15f),
                 _ => UnityEngine.Color.white
