@@ -32,9 +32,11 @@ namespace MistProtocol.AI.Agents
         private WalkerAnimator _walker;
         private int _patrolIndex;
         private float _nextStomp;
+        private float _nextGroundSlam;
         private float _staggerUntil;
         private float _searchYaw;
         private bool _isChasing;
+        private bool _isEnraged;
         private Vector3 _lastKnownPlayerPos;
         private float _lostSightTime;
 
@@ -57,11 +59,31 @@ namespace MistProtocol.AI.Agents
             if (bossHealth != null)
             {
                 bossHealth.BalanceBoss(650f, 0.45f);
+                bossHealth.ArmorFractured += OnArmorFractured;
             }
             if (Weapon != null)
             {
                 Weapon.Balance(7.5f, 0.22f, 3.2f);
             }
+        }
+
+        private void OnDestroy()
+        {
+            var bossHealth = GetComponent<ArmoredBossHealth>();
+            if (bossHealth != null) bossHealth.ArmorFractured -= OnArmorFractured;
+        }
+
+        private void OnArmorFractured()
+        {
+            _isEnraged = true;
+            patrolSpeed *= 1.35f;
+            chaseSpeed *= 1.35f;
+            if (searchlight != null)
+            {
+                searchlight.color = Color.red;
+                searchlight.intensity = 4.5f;
+            }
+            GameEvents.Overseer("TITAN PROTOCOL: Core safety overrides offline. Enraged combat mode engaged!");
         }
 
         protected override void OnDamaged(float amount, Vector3 fromPos)
@@ -150,6 +172,8 @@ namespace MistProtocol.AI.Agents
                 {
                     Weapon.TryFireAt(player.Root.position + Vector3.up * 1.1f, 1.2f);
                 }
+
+                TryExecuteGroundSlam(player.Root.position);
             }
             else if (_isChasing)
             {
@@ -245,6 +269,40 @@ namespace MistProtocol.AI.Agents
                         float intensity = (1f - d / 18f) * 0.25f;
                         pc.RecoilPitch += Random.Range(-intensity, intensity);
                     }
+                }
+            }
+        }
+
+        private void TryExecuteGroundSlam(Vector3 playerPos)
+        {
+            if (Time.time < _nextGroundSlam) return;
+            float dist = Vector3.Distance(transform.position, playerPos);
+            if (dist > 5.5f) return;
+
+            _nextGroundSlam = Time.time + (_isEnraged ? 4.5f : 6.5f);
+            _staggerUntil = Time.time + 1.2f;
+            Motor.Stop();
+
+            // Seismic impact sound & shockwave VFX
+            ProceduralAudio.PlayAt("slam", transform.position, 1.4f, 0.85f);
+            Vfx.Burst(transform.position + Vector3.up * 0.2f, Vector3.up, new Color(1f, 0.4f, 0.1f), 35, 8f, 0.15f, 0.7f);
+
+            // Radial physics impulse & damage to player
+            if (PlayerLocator.Alive && Vector3.Distance(transform.position, PlayerLocator.Position) <= 6.5f)
+            {
+                var pc = PlayerLocator.State.Root.GetComponent<PlayerController>();
+                if (pc != null) pc.RecoilPitch += 4.5f;
+                PlayerLocator.State.Health.TakeDamage(18f, transform.position);
+            }
+
+            // Push nearby loose rigidbodies
+            var colliders = Physics.OverlapSphere(transform.position, 6.5f);
+            foreach (var col in colliders)
+            {
+                var rb = col.attachedRigidbody;
+                if (rb != null && !rb.isKinematic)
+                {
+                    rb.AddExplosionForce(750f, transform.position, 6.5f, 1.0f);
                 }
             }
         }
