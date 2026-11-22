@@ -30,9 +30,12 @@ namespace MistProtocol.UI
         // Titan Boss Health Bar elements
         private GameObject _bossContainerGo;
         private Image _bossBarFill;
+        private Image _bossGhostFill;
         private Text _bossHpText;
         private Health _titanHealth;
         private float _displayedBossNorm = 1f;
+        private float _displayedGhostNorm = 1f;
+        private float _nextHeartbeat;
 
         private static readonly Color Cyan = new Color(0.45f, 0.9f, 1f);
         private static readonly Color Amber = new Color(1f, 0.78f, 0.25f);
@@ -96,6 +99,18 @@ namespace MistProtocol.UI
                 bossTroughRt.anchoredPosition = new Vector2(0f, 6f);
                 bossTroughRt.sizeDelta = new Vector2(550f, 20f);
                 bossTroughGo.GetComponent<Image>().color = new Color(0.02f, 0.03f, 0.05f, 0.98f);
+
+                // 4.5 Ghost Damage-Lag Bar Fill (Amber trailing fill)
+                var bossGhostGo = new GameObject("Boss_Ghost_Fill", typeof(RectTransform), typeof(Image));
+                bossGhostGo.transform.SetParent(bossTroughGo.transform, false);
+                var bossGhostRt = bossGhostGo.GetComponent<RectTransform>();
+                bossGhostRt.anchorMin = bossGhostRt.anchorMax = new Vector2(0f, 0.5f);
+                bossGhostRt.pivot = new Vector2(0f, 0.5f);
+                bossGhostRt.anchoredPosition = new Vector2(2f, 0f);
+                bossGhostRt.sizeDelta = new Vector2(546f, 16f);
+                _bossGhostFill = bossGhostGo.GetComponent<Image>();
+                _bossGhostFill.color = new Color(1f, 0.65f, 0.15f, 0.65f);
+                _bossGhostFill.raycastTarget = false;
 
                 // 5. Boss Bar Fill
                 var bossFillGo = new GameObject("Boss_Fill", typeof(RectTransform), typeof(Image));
@@ -323,6 +338,31 @@ namespace MistProtocol.UI
 
             _damageAlpha = Mathf.MoveTowards(_damageAlpha, 0f, dt * 0.8f);
             if (_damage != null) _damage.color = new Color(0.7f, 0f, 0f, _damageAlpha);
+
+            // Critical Low-HP Rhythmic Heartbeat & Vignette Pulse
+            if (_player != null && _player.Health != null && !_player.Health.IsDead && _player.Health.Normalized <= 0.25f)
+            {
+                if (Time.unscaledTime > _nextHeartbeat)
+                {
+                    _nextHeartbeat = Time.unscaledTime + 0.95f;
+                    ProceduralAudio.PlayAt("heartbeat", _player.transform.position, 1.2f, 1.0f);
+                }
+                float pulse = 0.15f + Mathf.PingPong(Time.unscaledTime * 2.5f, 0.35f);
+                if (_damage != null) _damage.color = new Color(0.8f, 0f, 0f, Mathf.Max(_damageAlpha, pulse));
+            }
+
+            // Low Ammo Warning Flash
+            if (_weapon != null && _ammo != null)
+            {
+                if (_weapon.IsLowAmmo)
+                {
+                    _ammo.color = Mathf.PingPong(Time.unscaledTime * 4f, 1f) > 0.5f ? new Color(1f, 0.25f, 0.2f) : Color.white;
+                }
+                else
+                {
+                    _ammo.color = Color.white;
+                }
+            }
             if (_zone != null)
             {
                 var zc = _zone.color; zc.a = Mathf.MoveTowards(zc.a, 0f, dt * 0.4f); _zone.color = zc;
@@ -368,10 +408,16 @@ namespace MistProtocol.UI
             if (showBossBar && _bossBarFill != null && _titanHealth != null)
             {
                 float targetNorm = Mathf.Clamp01(_titanHealth.Normalized);
-                _displayedBossNorm = Mathf.MoveTowards(_displayedBossNorm, targetNorm, dt * 1.5f);
+                _displayedBossNorm = targetNorm;
+                _displayedGhostNorm = Mathf.MoveTowards(_displayedGhostNorm, targetNorm, dt * 0.45f);
 
                 var rt = _bossBarFill.rectTransform;
                 rt.sizeDelta = new Vector2(546f * _displayedBossNorm, 16f);
+
+                if (_bossGhostFill != null)
+                {
+                    _bossGhostFill.rectTransform.sizeDelta = new Vector2(546f * _displayedGhostNorm, 16f);
+                }
 
                 // Color gradient: Vibrant orange-crimson -> Blood red when low
                 if (_displayedBossNorm > 0.45f)
