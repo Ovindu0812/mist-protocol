@@ -21,7 +21,7 @@ namespace MistProtocol.AI.Navigation
         [SerializeField] private int width = 128;
         [SerializeField] private int height = 92;
         [SerializeField] private float cellSize = 0.5f;
-        [SerializeField] private bool drawGizmos;
+        [SerializeField] private bool drawGizmos = false;
 
         private bool[] _staticWalkable;
         private bool[] _walkable;
@@ -31,6 +31,7 @@ namespace MistProtocol.AI.Navigation
         public int Height => height;
         public float CellSize => cellSize;
         public int Count => width * height;
+        public bool DrawGizmos { get => drawGizmos; set => drawGizmos = value; }
         /// <summary>Bumped whenever walkability changes so agents know to re-plan.</summary>
         public int Version { get; private set; }
         public IReadOnlyList<int> CoverCells => _coverCells;
