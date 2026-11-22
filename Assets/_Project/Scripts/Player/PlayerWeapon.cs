@@ -390,10 +390,12 @@ namespace MistProtocol.Player
             activeIndex = newIndex;
             _nextFire = Time.time + 0.2f;
             _heat = 0f;
+            CurrentBloom = 0f;
             _kick = 0.5f;
 
             ApplyWeaponVisibility();
-            ProceduralAudio.PlayAt("pickup", transform.position, 0.45f, 1.4f);
+            ProceduralAudio.PlayAt("pickup", transform.position, 0.75f, 1.45f);
+            GameEvents.ZoneEntered?.Invoke($"EQUIPPED: {ActiveWeaponName.ToUpperInvariant()}");
             Debug.Log($"[PlayerWeapon] Switched to weapon {activeIndex}: {ActiveWeaponName}");
         }
 
