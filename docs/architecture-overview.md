@@ -71,7 +71,7 @@ The AI simulation is composed of four decoupled layers:
 [Explore Lab: Collect 4 Glenmist Lore Clues]
          │
          ▼
-[Solve 4-Color Switch Console: Mist -> Sun -> Leaf -> Fire]
+[Solve Appa's Harvest Cipher: Fire (Red) -> Mist (Blue) -> Sun (Yellow) -> Leaf (Green)]
          │
          ▼
 [Disable Prison Energy Barrier & Speak with Father]
@@ -79,3 +79,14 @@ The AI simulation is composed of four decoupled layers:
          ▼
 [Emergency Evacuation: 60-Second Countdown to Yard Escape Point]
 ```
+
+### 4.1 Harvest Cipher & Scrambled Pedestal Mechanics
+To prevent linear mechanical bypass, the physical consoles are scrambled across the laboratory room:
+- **Station 1 (Leftmost):** Emerald Leaf (Green)
+- **Station 2 (Mid-Left):** Sunrise Sun (Yellow)
+- **Station 3 (Mid-Right):** Kiln Flame (Red)
+- **Station 4 (Rightmost):** Midnight Mist (Blue)
+
+Solving the cipher requires executing the narrative tea manufacturing order:
+$$\mathbf{Red \ (Pedestal \ 3) \rightarrow Blue \ (Pedestal \ 4) \rightarrow Yellow \ (Pedestal \ 2) \rightarrow Green \ (Pedestal \ 1)}$$
+Mismatches trigger an electrical short circuit discharge, room warning strobes, and prompt reset.
