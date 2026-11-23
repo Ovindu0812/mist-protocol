@@ -310,6 +310,22 @@ namespace MistProtocol.Core
                 a.HealthComponent.TakeDamage(9999f, a.transform.position + Vector3.up);
         }
 
+        public string CalculateMissionRank(out int totalScore)
+        {
+            float elapsed = EndTime - StartTime;
+            int baseScore = 5000;
+            int timeBonus = Mathf.Max(0, Mathf.RoundToInt((300f - elapsed) * 10f));
+            int killBonus = Kills * 150;
+            int rescueBonus = IsAppaRescued ? 2000 : 500;
+
+            totalScore = baseScore + timeBonus + killBonus + rescueBonus;
+
+            if (totalScore >= 9000) return "S";
+            if (totalScore >= 7500) return "A";
+            if (totalScore >= 6000) return "B";
+            return "C";
+        }
+
         private void SetStage(int s)
         {
             Stage = s;
