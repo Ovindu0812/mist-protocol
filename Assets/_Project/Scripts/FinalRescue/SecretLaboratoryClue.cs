@@ -42,8 +42,8 @@ namespace MistProtocol.FinalRescue
             switch (type)
             {
                 case LabClueType.ComputerTerminal:
-                    title = "Clue 1: OVERSEER Security Diagnostic";
-                    message = "[LOCKDOWN OVERRIDE ENGAGED]\n'Prisoner Appa reversed the standard factory circuit. Phase 1 must ignite the primary thermal furnace (RED - Kiln Fire).' Note: Physical console pedestals were scrambled by the facility lockdown.";
+                    title = "Clue 1: OVERSEER Terminal Diagnostic";
+                    message = "[EMERGENCY OVERRIDE CONSOLE ACTIVATED]\n'Appa rewired the Master Console Workstation. The security cipher requires Phase 1 to ignite the thermal drying kiln (RED - Kiln Fire).' Verify slots on the workstation screen.";
                     break;
                 case LabClueType.HiddenDocument:
                     title = "Clue 2: Highland Plantation Log";
@@ -55,7 +55,7 @@ namespace MistProtocol.FinalRescue
                     break;
                 case LabClueType.ResearchNotes:
                     title = "Clue 4: Appa's Emergency Cipher";
-                    message = "'TO MY DAUGHTER NILA:\nThe pedestal boxes are scrambled to fool OVERSEER! The ancient Glenmist harvest cycle breaks the barrier:\n\n1. FIRE (Red) -> 2. MIST (Blue) -> 3. SUN (Yellow) -> 4. LEAF (Green)!\n\nEnter the cycle in order, not by pedestal position!'";
+                    message = "'TO MY DAUGHTER NILA:\nThe Master Console screen tracks the 4 sacred harvest phases:\n\n1. FIRE (Red) -> 2. MIST (Blue) -> 3. SUN (Yellow) -> 4. LEAF (Green)!\n\nInput the sequence using the 4 desk buttons to shut down the prison field!'";
                     break;
             }
         }
@@ -75,7 +75,8 @@ namespace MistProtocol.FinalRescue
             if (_glowLight != null)
             {
                 _glowLight.color = new Color(0.3f, 0.95f, 0.6f);
-                _glowLight.intensity = 2.5f;
+                _glowLight.intensity = 0.75f;
+                _glowLight.range = 2.2f;
             }
 
             // Notify mission coordinator of discovery
