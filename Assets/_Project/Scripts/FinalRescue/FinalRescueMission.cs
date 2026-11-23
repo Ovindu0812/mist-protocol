@@ -504,6 +504,25 @@ namespace MistProtocol.FinalRescue
             puzzle.Bind(blueBtn, yellowBtn, greenBtn, redBtn, energyBarrier, emergencyAlarmLights);
             puzzle.BindScreen(scrTitle, scrSlots, scrStatus, scrLight);
 
+            // Glowing cyber power conduit cables connecting Master Console to the Barrier
+            var cableMat = new Material(litShader) { color = new Color(0.1f, 0.45f, 0.65f) };
+            cableMat.EnableKeyword("_EMISSION");
+            cableMat.SetColor("_EmissionColor", new Color(0.15f, 0.6f, 0.9f) * 0.6f);
+
+            var cable1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cable1.name = "Console_Conduit_1";
+            cable1.transform.SetParent(transform, false);
+            cable1.transform.localPosition = new Vector3(0.5f, 0.02f, 1.25f);
+            cable1.transform.localScale = new Vector3(0.08f, 0.04f, 2.5f);
+            cable1.GetComponent<Renderer>().material = cableMat;
+
+            var cable2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cable2.name = "Console_Conduit_2";
+            cable2.transform.SetParent(transform, false);
+            cable2.transform.localPosition = new Vector3(0.7f, 0.02f, 1.25f);
+            cable2.transform.localScale = new Vector3(0.08f, 0.04f, 2.5f);
+            cable2.GetComponent<Renderer>().material = cableMat;
+
             // 8. Four Hidden Clues placed in accessible laboratory player area
             CreateClueStation("Clue1_Terminal", new Vector3(-1.8f, 0f, -2.2f), LabClueType.ComputerTerminal, darkMetal, litShader);
             CreateClueStation("Clue2_Document", new Vector3(-0.8f, 0f, -2.5f), LabClueType.HiddenDocument, darkMetal, litShader);
@@ -557,22 +576,6 @@ namespace MistProtocol.FinalRescue
             btnGo.transform.SetParent(consoleParent, false);
             btnGo.transform.localPosition = localPos;
 
-            // Small button housing / bezel
-            var bezelGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            bezelGo.name = "Bezel";
-            bezelGo.transform.SetParent(btnGo.transform, false);
-            bezelGo.transform.localPosition = Vector3.zero;
-            bezelGo.transform.localScale = new Vector3(0.28f, 0.06f, 0.28f);
-            bezelGo.GetComponent<Renderer>().material = deskMat;
-
-            // Colored push button
-            var capGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            capGo.name = "Cap";
-            capGo.transform.SetParent(btnGo.transform, false);
-            capGo.transform.localPosition = new Vector3(0f, 0.05f, 0f);
-            capGo.transform.localScale = new Vector3(0.20f, 0.05f, 0.20f);
-
-            var btnMat = new Material(shader);
             Color baseCol = color switch
             {
                 SwitchColor.Red => new Color(0.95f, 0.2f, 0.2f),
@@ -581,21 +584,70 @@ namespace MistProtocol.FinalRescue
                 SwitchColor.Green => new Color(0.25f, 0.9f, 0.3f),
                 _ => Color.white
             };
-            btnMat.color = baseCol;
+
+            // 1. Sleek metallic button housing / bezel
+            var bezelGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bezelGo.name = "Bezel";
+            bezelGo.transform.SetParent(btnGo.transform, false);
+            bezelGo.transform.localPosition = Vector3.zero;
+            bezelGo.transform.localScale = new Vector3(0.32f, 0.06f, 0.32f);
+            bezelGo.GetComponent<Renderer>().material = deskMat;
+
+            // 2. Glowing LED Halo Ring around the button base
+            var haloGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            haloGo.name = "Neon_Halo";
+            haloGo.transform.SetParent(btnGo.transform, false);
+            haloGo.transform.localPosition = new Vector3(0f, 0.032f, 0f);
+            haloGo.transform.localScale = new Vector3(0.28f, 0.01f, 0.28f);
+            var haloMat = new Material(shader) { color = baseCol };
+            haloMat.EnableKeyword("_EMISSION");
+            haloMat.SetColor("_EmissionColor", baseCol * 0.7f);
+            haloGo.GetComponent<Renderer>().material = haloMat;
+
+            // 3. Colored tactile push button cap
+            var capGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            capGo.name = "Cap";
+            capGo.transform.SetParent(btnGo.transform, false);
+            capGo.transform.localPosition = new Vector3(0f, 0.06f, 0f);
+            capGo.transform.localScale = new Vector3(0.22f, 0.06f, 0.22f);
+
+            var btnMat = new Material(shader) { color = baseCol };
             btnMat.EnableKeyword("_EMISSION");
-            btnMat.SetColor("_EmissionColor", baseCol * 0.45f);
+            btnMat.SetColor("_EmissionColor", baseCol * 0.5f);
             var rend = capGo.GetComponent<Renderer>();
             rend.material = btnMat;
 
+            // 4. In-world button mini label on the desk surface
+            var lblGo = new GameObject("Label_Canvas", typeof(Canvas));
+            lblGo.transform.SetParent(btnGo.transform, false);
+            lblGo.transform.localPosition = new Vector3(0f, 0.045f, -0.22f);
+            lblGo.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            var lblCanvas = lblGo.GetComponent<Canvas>();
+            lblCanvas.renderMode = RenderMode.WorldSpace;
+            var lblRt = lblGo.GetComponent<RectTransform>();
+            lblRt.sizeDelta = new Vector2(160f, 40f);
+            lblRt.localScale = Vector3.one * 0.0018f;
+
+            string labelText = color switch
+            {
+                SwitchColor.Green => "LEAF",
+                SwitchColor.Yellow => "SUN",
+                SwitchColor.Red => "FIRE",
+                SwitchColor.Blue => "MIST",
+                _ => color.ToString()
+            };
+            MakeScreenText(lblGo.transform, "LblText", labelText, 22, baseCol, Vector2.zero, new Vector2(160f, 40f));
+
+            // 5. Point light
             var lt = capGo.AddComponent<Light>();
             lt.type = LightType.Point;
-            lt.range = 1.8f;
-            lt.intensity = 0.5f;
+            lt.range = 2.0f;
+            lt.intensity = 0.55f;
             lt.color = baseCol;
 
             // Interaction collider
             var col = btnGo.AddComponent<BoxCollider>();
-            col.size = new Vector3(0.35f, 0.5f, 0.35f);
+            col.size = new Vector3(0.38f, 0.6f, 0.38f);
             col.center = new Vector3(0f, 0.15f, 0f);
             col.isTrigger = true;
 
