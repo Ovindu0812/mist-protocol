@@ -46,9 +46,9 @@ namespace MistProtocol.Tests
         [Test]
         public void Puzzle_PhysicalLeftToRightPedestalOrder_Fails()
         {
-            // The physical pedestals in the room are scrambled from left to right:
+            // The physical buttons on the console desk are mounted from left to right:
             // Green -> Yellow -> Red -> Blue
-            // Pressing them in physical line order must FAIL!
+            // Pressing them in naive left-to-right line order must FAIL!
             var physicalLineAttempt = new List<SwitchColor>
             {
                 SwitchColor.Green,
@@ -56,7 +56,15 @@ namespace MistProtocol.Tests
                 SwitchColor.Red,
                 SwitchColor.Blue
             };
-            Assert.IsFalse(ValidateSequence(physicalLineAttempt), "Pressing pedestals in sequential line order must not solve the puzzle!");
+            Assert.IsFalse(ValidateSequence(physicalLineAttempt), "Pressing console buttons in sequential line order must not solve the puzzle!");
+        }
+
+        [Test]
+        public void Puzzle_DeskConsoleButtons_LeftToRightOrder_Fails()
+        {
+            // Specifically verifies that the desk console layout requires cipher deduction:
+            var deskLayout = new[] { SwitchColor.Green, SwitchColor.Yellow, SwitchColor.Red, SwitchColor.Blue };
+            Assert.IsFalse(ValidateSequence(new List<SwitchColor>(deskLayout)));
         }
 
         [Test]
