@@ -40,17 +40,18 @@ namespace MistProtocol.FinalRescue
             if (!IsActive || _isDisabling) return;
 
             // Electric shimmer / oscillation
-            float pulse = 0.8f + 0.2f * Mathf.Sin(Time.time * 8f);
+            float pulse = 0.85f + 0.15f * Mathf.Sin(Time.time * 6f);
             if (barrierLight != null)
             {
-                barrierLight.intensity = 3.5f * pulse;
+                barrierLight.intensity = 0.75f * pulse;
+                barrierLight.range = 3.2f;
             }
 
             if (_barrierMat != null)
             {
-                Color c = new Color(0.2f, 0.7f, 1f, 0.75f * pulse);
+                Color c = new Color(0.1f, 0.5f, 0.9f, 0.35f * pulse);
                 _barrierMat.SetColor("_BaseColor", c);
-                _barrierMat.SetColor("_EmissionColor", new Color(0.15f, 0.65f, 1f) * (2.8f * pulse));
+                _barrierMat.SetColor("_EmissionColor", new Color(0.1f, 0.55f, 1f) * (0.65f * pulse));
             }
         }
 
