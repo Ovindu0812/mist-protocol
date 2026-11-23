@@ -305,7 +305,9 @@ namespace MistProtocol.UI
                             ? "With the Master Key in hand, Nila unlocks the heavy containment cell.\nAppa embraces her with tears in his eyes: \"...Nila, my brave duwa. You saved me.\"\nTogether, hand in hand, they step out into the clearing morning mist."
                             : "The kill switch slams down. Every machine in Glenmist falls silent at once.\nIn the quiet, a radio crackles from the loft: \"...Nila? Is that you, duwa?\"\nAppa is alive.";
 
+                        string rank = gm.CalculateMissionRank(out int score);
                         _center.text = $"{title}\n\n{story}\n\n" +
+                                       $"TACTICAL EVALUATION: [ RANK {rank} ]    SCORE: {score}\n" +
                                        $"Robots destroyed: {gm.Kills}     Time: {Mathf.FloorToInt((gm.EndTime - gm.StartTime) / 60)}m {Mathf.FloorToInt((gm.EndTime - gm.StartTime) % 60)}s\n\nPress ENTER to play again";
                     }
                     else if (gm.State == GameManager.Flow.Lost)
