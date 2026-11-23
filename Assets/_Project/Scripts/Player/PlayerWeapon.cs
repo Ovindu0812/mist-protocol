@@ -412,6 +412,10 @@ namespace MistProtocol.Player
         {
             _nextFire = Time.time + w.fireInterval;
             w.inMagazine--;
+            if (w.inMagazine > 0 && w.inMagazine <= Mathf.CeilToInt(w.magazineSize * 0.25f))
+            {
+                ProceduralAudio.PlayAt("beep", transform.position, 0.22f, 1.75f);
+            }
             CurrentBloom = Mathf.Clamp(CurrentBloom + w.heatGain * 2.5f, 0f, 2.0f);
 
             float moving = _player != null ? Mathf.Clamp01(_player.Velocity.Flat().magnitude / 6f) : 0f;

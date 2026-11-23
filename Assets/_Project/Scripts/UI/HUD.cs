@@ -319,6 +319,15 @@ namespace MistProtocol.UI
             {
                 string status = _weapon.IsReloading ? "RELOADING..." : $"{_weapon.InMagazine} / {_weapon.Reserve}";
                 _ammo.text = $"{_weapon.ActiveWeaponName}\n<size=26>{status}</size>";
+                if (_weapon.IsLowAmmo && !_weapon.IsReloading)
+                {
+                    float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 9f);
+                    _ammo.color = Color.Lerp(Color.white, new Color(1f, 0.4f, 0.2f), pulse);
+                }
+                else
+                {
+                    _ammo.color = Color.white;
+                }
                 float since = Time.time - _weapon.LastHitTime;
                 if (_hitmarker != null) _hitmarker.color = new Color(1f, 0.3f, 0.2f, Mathf.Clamp01(1f - since * 6f));
                 if (since < 0.08f && _lastPlayedHitmarkerTime < _weapon.LastHitTime)
