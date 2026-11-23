@@ -80,13 +80,18 @@ The AI simulation is composed of four decoupled layers:
 [Emergency Evacuation: 60-Second Countdown to Yard Escape Point]
 ```
 
-### 4.1 Harvest Cipher & Scrambled Pedestal Mechanics
-To prevent linear mechanical bypass, the physical consoles are scrambled across the laboratory room:
-- **Station 1 (Leftmost):** Emerald Leaf (Green)
-- **Station 2 (Mid-Left):** Sunrise Sun (Yellow)
-- **Station 3 (Mid-Right):** Kiln Flame (Red)
-- **Station 4 (Rightmost):** Midnight Mist (Blue)
+### 4.1 Harvest Cipher & Unified Workstation Console Mechanics
+To prevent linear mechanical bypass, all controls are centralized into a unified Master Puzzle Console Workstation (`Master_PuzzleConsole`) featuring:
+- **Interactive CRT Monitor:** Real-time slot progression and cipher diagnostic feedback.
+- **Scrambled Desk Buttons:** 
+  - **Button 1 (Leftmost):** Emerald Leaf (Green)
+  - **Button 2 (Mid-Left):** Sunrise Sun (Yellow)
+  - **Button 3 (Mid-Right):** Kiln Flame (Red)
+  - **Button 4 (Rightmost):** Midnight Mist (Blue)
 
 Solving the cipher requires executing the narrative tea manufacturing order:
-$$\mathbf{Red \ (Pedestal \ 3) \rightarrow Blue \ (Pedestal \ 4) \rightarrow Yellow \ (Pedestal \ 2) \rightarrow Green \ (Pedestal \ 1)}$$
+$$\mathbf{Red \ (Button \ 3) \rightarrow Blue \ (Button \ 4) \rightarrow Yellow \ (Button \ 2) \rightarrow Green \ (Button \ 1)}$$
 Mismatches trigger an electrical short circuit discharge, room warning strobes, and prompt reset.
+
+### 4.2 Dynamic Blast Door Emergence
+Upon Titan defeat, `GameManager` signals `FinalRescueMission` to trigger `SecretLaboratoryDoor.RevealDoor()`. The concealing perimeter wall plate (`Lab_WallCoverPlate`) retracts into the floor accompanied by procedural steam, dust particle bursts, and audio cues, exposing the Master Key swipe terminal.
