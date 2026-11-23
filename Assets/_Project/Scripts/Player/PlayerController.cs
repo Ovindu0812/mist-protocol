@@ -106,9 +106,18 @@ namespace MistProtocol.Player
                 _pitch = Mathf.Clamp(_pitch - md.y, -85f, 85f);
             }
             RecoilPitch = Mathf.Lerp(RecoilPitch, 0f, dt * 10f);
-            _shake = Mathf.MoveTowards(_shake, 0f, dt * 2.5f);
+            _shake = Mathf.MoveTowards(_shake, 0f, dt * 2.2f);
             transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
-            Vector3 shake = Random.insideUnitSphere * _shake * 1.5f;
+
+            // Procedural trauma-based camera shake (quadratic decay with perlin noise)
+            float trauma = _shake * _shake;
+            float t = Time.time * 24f;
+            Vector3 shake = new Vector3(
+                (Mathf.PerlinNoise(t, 0f) - 0.5f) * 2f,
+                (Mathf.PerlinNoise(0f, t) - 0.5f) * 2f,
+                (Mathf.PerlinNoise(t, t) - 0.5f) * 1.5f
+            ) * (trauma * 3.2f);
+
             cameraPivot.localRotation = Quaternion.Euler(_pitch - RecoilPitch + shake.x, shake.y, shake.z);
 
             // ---- move
