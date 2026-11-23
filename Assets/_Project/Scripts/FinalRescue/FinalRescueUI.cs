@@ -361,6 +361,15 @@ namespace MistProtocol.FinalRescue
             if (_clueHudGo != null) _clueHudGo.SetActive(false);
         }
 
+        public void ShowHarvestPhaseAlert(int currentPhase, int totalPhases = 4, string phaseName = "")
+        {
+            if (_puzzleAlertGo == null) return;
+            _puzzleAlertBack.color = new Color(0.12f, 0.45f, 0.75f, 0.94f);
+            _puzzleAlertText.text = $"HARVEST CIPHER: Phase {currentPhase}/{totalPhases} Engaged - {phaseName}";
+            _puzzleAlertGo.SetActive(true);
+            _puzzleAlertHideTime = Time.unscaledTime + 2.8f;
+        }
+
         public void ShowPuzzleIncorrectAlert(string message = "Incorrect sequence. Check the clues and try again.")
         {
             if (_puzzleAlertGo == null) return;
@@ -421,7 +430,7 @@ namespace MistProtocol.FinalRescue
             int mins = Mathf.FloorToInt(timeElapsed / 60f);
             int secs = Mathf.FloorToInt(timeElapsed % 60f);
 
-            _victoryStatsText.text = $"Robots Destroyed: {kills}    Escape Time: {mins}m {secs}s    Clues Discovered: {cluesFound}/3";
+            _victoryStatsText.text = $"Robots Destroyed: {kills}    Escape Time: {mins}m {secs}s    Clues Discovered: {cluesFound}/4";
             _victoryPanelGo.SetActive(true);
 
             EnsureEventSystem();
