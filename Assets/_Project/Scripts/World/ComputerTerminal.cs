@@ -35,7 +35,7 @@ namespace MistProtocol.World
             if (_isAccessed)
             {
                 state = TerminalState.AccessGranted;
-                ProceduralAudio.PlayAt("beep", transform.position, 0.7f, 1.4f);
+                ProceduralAudio.PlayAt("terminalBoot", transform.position, 0.7f, 1.2f);
                 if (_screenText != null)
                 {
                     _screenText.text = $"[{terminalId}] OVERRIDE ACTIVE\n\n{securityLog}\n\nACCESS LEVEL: TOP SECRET";
@@ -48,7 +48,7 @@ namespace MistProtocol.World
             }
             else
             {
-                ProceduralAudio.PlayAt("beep", transform.position, 0.5f, 0.9f);
+                ProceduralAudio.PlayAt("terminalBleep", transform.position, 0.5f, 0.9f);
                 if (_screenText != null)
                 {
                     _screenText.text = $"[{terminalId}] READY\nPRESS [E] TO LOGIN";
