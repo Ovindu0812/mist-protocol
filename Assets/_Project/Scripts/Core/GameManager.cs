@@ -102,6 +102,12 @@ namespace MistProtocol.Core
                 var pauseGo = new GameObject("PauseMenu_Manager");
                 pauseGo.AddComponent<UI.PauseMenu>();
             }
+
+            if (World.DryingChamberContainers.Instance == null && FindAnyObjectByType<World.DryingChamberContainers>() == null)
+            {
+                var containerGo = new GameObject("DryingChamber_Containers_Manager");
+                containerGo.AddComponent<World.DryingChamberContainers>();
+            }
         }
 
         private void Update()
