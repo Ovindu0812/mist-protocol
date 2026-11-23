@@ -20,6 +20,11 @@ namespace MistProtocol.Player
         [SerializeField] private float jumpHeight = 1.0f;
         [SerializeField] private float gravity = -20f;
         [SerializeField] private float mouseSensitivity = 0.11f;
+        [Header("Stamina")]
+        [SerializeField] private float maxStamina = 100f;
+        [SerializeField] private float staminaDrainRate = 22f;
+        [SerializeField] private float staminaRegenRate = 18f;
+        [SerializeField] private float staminaRegenDelay = 1.0f;
         [Header("Physics push")]
         [SerializeField] private float pushForce = 1100f;
         [Header("Rig")]
@@ -37,6 +42,9 @@ namespace MistProtocol.Player
         private bool _wasGrounded;
         private Vector3 _velocity;
         private float _pivotHeight;
+        private float _currentStamina = 100f;
+        private float _lastSprintTime;
+        private bool _isExhausted;
 
         public bool InputEnabled { get; set; } = true;
         public float RecoilPitch { get; set; }
@@ -52,6 +60,9 @@ namespace MistProtocol.Player
         public bool IsHoldingObject => _interactor != null && _interactor.IsHolding;
         public Health Health => _health;
         public Transform CameraPivot => cameraPivot;
+        public float CurrentStamina => _currentStamina;
+        public float MaxStamina => maxStamina;
+        public bool IsExhausted => _isExhausted;
 
         private void Awake()
         {
@@ -111,7 +122,34 @@ namespace MistProtocol.Player
                 move = Vector2.ClampMagnitude(move, 1f);
             }
             IsCrouching = input && (kb.leftCtrlKey.isPressed || kb.cKey.isPressed);
-            IsSprinting = input && !IsCrouching && kb.leftShiftKey.isPressed && move.y > 0.1f && !IsHoldingObject;
+            bool wantsSprint = input && !IsCrouching && kb.leftShiftKey.isPressed && move.y > 0.1f && !IsHoldingObject;
+
+            if (_isExhausted && _currentStamina >= 25f)
+            {
+                _isExhausted = false;
+            }
+
+            if (wantsSprint && !_isExhausted && _currentStamina > 0f)
+            {
+                IsSprinting = true;
+                _currentStamina = Mathf.Max(0f, _currentStamina - staminaDrainRate * dt);
+                _lastSprintTime = Time.time;
+                if (_currentStamina <= 0f)
+                {
+                    _isExhausted = true;
+                    IsSprinting = false;
+                    ProceduralAudio.PlayAt("heartbeat", transform.position, 0.45f, 1.3f);
+                }
+            }
+            else
+            {
+                IsSprinting = false;
+                if (Time.time > _lastSprintTime + staminaRegenDelay)
+                {
+                    _currentStamina = Mathf.Min(maxStamina, _currentStamina + staminaRegenRate * dt);
+                }
+            }
+
             float speed = IsCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
 
             float targetH = IsCrouching ? 1.1f : _standHeight;
