@@ -98,7 +98,7 @@ namespace MistProtocol.FinalRescue
             {
                 if (FinalRescueUI.Instance != null)
                 {
-                    FinalRescueUI.Instance.ShowPuzzleSuccessAlert($"Harvest Cipher Phase {stepIndex + 1}/4 Engaged: {activatedSwitch.LoreTitle}");
+                    FinalRescueUI.Instance.ShowHarvestPhaseAlert(stepIndex + 1, 4, activatedSwitch.LoreTitle);
                 }
             }
         }
@@ -160,7 +160,7 @@ namespace MistProtocol.FinalRescue
                 FinalRescueUI.Instance.ShowPuzzleIncorrectAlert("INCORRECT CIPHER! Appa's Riddle: Fire (Red) -> Mist (Blue) -> Sun (Yellow) -> Leaf (Green)");
             }
 
-            // 2. Flash red warning lights
+            // 2. Flash red warning lights with balanced intensity
             if (warningLights != null)
             {
                 for (int i = 0; i < 4; i++)
@@ -171,13 +171,13 @@ namespace MistProtocol.FinalRescue
                         {
                             l.enabled = true;
                             l.color = Color.red;
-                            l.intensity = 4f;
+                            l.intensity = 2.0f;
                         }
                     }
                     yield return new WaitForSeconds(0.2f);
                     foreach (var l in warningLights)
                     {
-                        if (l != null) l.intensity = 0.5f;
+                        if (l != null) l.intensity = 0.35f;
                     }
                     yield return new WaitForSeconds(0.2f);
                 }
