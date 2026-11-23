@@ -23,6 +23,12 @@ namespace MistProtocol.FinalRescue
         [SerializeField] private EnergyBarrier energyBarrier;
         [SerializeField] private Light[] warningLights;
 
+        [Header("Console Screen")]
+        [SerializeField] private UnityEngine.UI.Text screenTitleText;
+        [SerializeField] private UnityEngine.UI.Text screenSlotsText;
+        [SerializeField] private UnityEngine.UI.Text screenStatusText;
+        [SerializeField] private Light screenLight;
+
         private readonly List<SwitchColor> _correctSequence = new()
         {
             SwitchColor.Red,
@@ -46,9 +52,23 @@ namespace MistProtocol.FinalRescue
             warningLights = lights;
         }
 
+        public void BindScreen(UnityEngine.UI.Text title, UnityEngine.UI.Text slots, UnityEngine.UI.Text status, Light light)
+        {
+            screenTitleText = title;
+            screenSlotsText = slots;
+            screenStatusText = status;
+            screenLight = light;
+            UpdateScreenDisplay();
+        }
+
         private void Awake()
         {
             Instance = this;
+        }
+
+        private void Start()
+        {
+            UpdateScreenDisplay();
         }
 
         public void OnSwitchActivated(LaboratorySwitch activatedSwitch)
@@ -66,6 +86,8 @@ namespace MistProtocol.FinalRescue
                 return;
             }
 
+            UpdateScreenDisplay();
+
             // Correct step so far!
             if (_currentSequence.Count == _correctSequence.Count)
             {
@@ -81,6 +103,39 @@ namespace MistProtocol.FinalRescue
             }
         }
 
+        public void UpdateScreenDisplay()
+        {
+            if (screenSlotsText == null) return;
+
+            string s1 = _currentSequence.Count > 0 ? $"<color=#FF4444>[ {GetPhaseName(_currentSequence[0])} ]</color>" : "[  ???  ]";
+            string s2 = _currentSequence.Count > 1 ? $"<color=#44AAFF>[ {GetPhaseName(_currentSequence[1])} ]</color>" : "[  ???  ]";
+            string s3 = _currentSequence.Count > 2 ? $"<color=#FFAA22>[ {GetPhaseName(_currentSequence[2])} ]</color>" : "[  ???  ]";
+            string s4 = _currentSequence.Count > 3 ? $"<color=#55FF66>[ {GetPhaseName(_currentSequence[3])} ]</color>" : "[  ???  ]";
+
+            screenSlotsText.text = $"{s1}   {s2}   {s3}   {s4}";
+
+            if (screenStatusText != null)
+            {
+                screenStatusText.text = _currentSequence.Count switch
+                {
+                    0 => "PHASE 1: KINDLE WITHERING KILN FURNACE (RED)",
+                    1 => "PHASE 2: HIGHLAND MOUNTAIN MIST (BLUE)",
+                    2 => "PHASE 3: MORNING SUNRISE GOLD (YELLOW)",
+                    3 => "PHASE 4: HARVEST FRESH CEYLON LEAF (GREEN)",
+                    _ => "<color=#55FF66>CIPHER VERIFIED: PRISON BARRIER DEACTIVATED</color>"
+                };
+            }
+        }
+
+        private string GetPhaseName(SwitchColor c) => c switch
+        {
+            SwitchColor.Red => "RED: FIRE",
+            SwitchColor.Blue => "BLUE: MIST",
+            SwitchColor.Yellow => "YELLOW: SUN",
+            SwitchColor.Green => "GREEN: LEAF",
+            _ => c.ToString()
+        };
+
         private IEnumerator IncorrectSequenceSequence()
         {
             _isResetting = true;
@@ -89,6 +144,10 @@ namespace MistProtocol.FinalRescue
             // 1. Play alarm sound, electrical short circuit & UI message
             ProceduralAudio.PlayAt("alarm", transform.position, 1f, 1f);
             ProceduralAudio.PlayAt("shortCircuit", transform.position, 0.85f, 0.9f);
+
+            if (screenSlotsText != null) screenSlotsText.text = "<color=#FF2222>[ ERROR ]   [ ERROR ]   [ ERROR ]   [ ERROR ]</color>";
+            if (screenStatusText != null) screenStatusText.text = "<color=#FF3333>SEQUENCE MISMATCH: Circuit Overload! Resetting...</color>";
+            if (screenLight != null) screenLight.color = Color.red;
 
             // Emit electrical short-circuit spark bursts from switches
             if (blueSwitch != null) Vfx.Burst(blueSwitch.transform.position + Vector3.up * 0.9f, Vector3.up, new Color(0.2f, 0.7f, 1f), 14, 3f, 0.08f, 0.4f);
@@ -135,6 +194,9 @@ namespace MistProtocol.FinalRescue
             if (redSwitch != null) redSwitch.SetInactive();
 
             _currentSequence.Clear();
+            if (screenLight != null) screenLight.color = new Color(0.2f, 0.75f, 1f);
+            UpdateScreenDisplay();
+
             _isResetting = false;
             if (FinalRescueMission.Instance != null) FinalRescueMission.Instance.IsPuzzleLocked = false;
         }
@@ -142,6 +204,10 @@ namespace MistProtocol.FinalRescue
         private IEnumerator SuccessSequence()
         {
             IsSolved = true;
+
+            if (screenSlotsText != null) screenSlotsText.text = "<color=#55FF66>[ RED: FIRE ]   [ BLUE: MIST ]   [ YELLOW: SUN ]   [ GREEN: LEAF ]</color>";
+            if (screenStatusText != null) screenStatusText.text = "<color=#55FF66>ACCESS GRANTED: ALL 4 PHASES VERIFIED. APPA IS FREE!</color>";
+            if (screenLight != null) screenLight.color = new Color(0.2f, 1f, 0.5f);
 
             // 1. Play success fanfare / chime
             ProceduralAudio.PlayAt("success", transform.position, 1f, 1f);
