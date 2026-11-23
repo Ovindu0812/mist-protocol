@@ -63,7 +63,7 @@ namespace MistProtocol.FinalRescue
             IsActive = true;
             UpdateVisuals();
 
-            // Play sound based on color pitch
+            // Play tactile mechanical relay click and sound based on color pitch
             float pitch = switchColor switch
             {
                 SwitchColor.Blue => 1.0f,
@@ -73,7 +73,8 @@ namespace MistProtocol.FinalRescue
                 _ => 1.0f
             };
             ProceduralAudio.PlayAt("beep", transform.position, 0.85f, pitch);
-            ProceduralAudio.PlayAt("zap", transform.position, 0.4f, pitch);
+            ProceduralAudio.PlayAt("pickup", transform.position, 0.65f, 1.6f);
+            ProceduralAudio.PlayAt("zap", transform.position, 0.35f, pitch);
 
             // Notify puzzle controller
             if (LaboratoryPuzzleController.Instance != null)
@@ -84,6 +85,10 @@ namespace MistProtocol.FinalRescue
 
         public void SetInactive()
         {
+            if (IsActive)
+            {
+                ProceduralAudio.PlayAt("click", transform.position, 0.45f, 0.8f);
+            }
             IsActive = false;
             UpdateVisuals();
         }
