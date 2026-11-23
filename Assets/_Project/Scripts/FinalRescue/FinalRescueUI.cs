@@ -349,7 +349,10 @@ namespace MistProtocol.FinalRescue
             if (_clueHudGo != null)
             {
                 _clueHudGo.SetActive(true);
-                _clueHudText.text = $"LAB CLUES FOUND: {foundCount} / {totalCount}";
+                string hint = foundCount >= totalCount
+                    ? "<color=#55FF88>ALL CLUES FOUND:</color> Fire (Red) -> Mist (Blue) -> Sun (Yellow) -> Leaf (Green)"
+                    : $"LAB CLUES FOUND: {foundCount} / {totalCount}";
+                _clueHudText.text = hint;
             }
         }
 
