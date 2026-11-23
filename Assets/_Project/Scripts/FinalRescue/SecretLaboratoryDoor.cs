@@ -69,17 +69,22 @@ namespace MistProtocol.FinalRescue
 
         private IEnumerator RevealSequence()
         {
-            // Hydraulic sound & steam burst
+            // Hydraulic sound, heavy steam burst & mechanical unlatching
             ProceduralAudio.PlayAt("door", transform.position, 1.4f, 0.5f);
-            ProceduralAudio.PlayAt("steam", transform.position, 1.1f, 0.8f);
-            ProceduralAudio.PlayAt("zap", transform.position, 0.9f, 1.2f);
-            Vfx.Burst(transform.position + Vector3.up * 1.5f, Vector3.forward, new Color(0.9f, 0.95f, 1f), 35, 4.5f, 0.15f, 0.8f);
+            ProceduralAudio.PlayAt("steam", transform.position, 1.2f, 0.75f);
+            ProceduralAudio.PlayAt("zap", transform.position, 0.8f, 1.1f);
+
+            // Upper steam venting
+            Vfx.Burst(transform.position + Vector3.up * 2.8f, Vector3.forward, new Color(0.85f, 0.9f, 0.95f), 40, 5.0f, 0.2f, 0.9f);
+            // Ground perimeter dust discharge
+            Vfx.Burst(transform.position + Vector3.up * 0.1f, Vector3.up, new Color(0.5f, 0.45f, 0.4f), 25, 2.5f, 0.25f, 0.7f);
 
             if (terminalStatusLight != null)
             {
                 terminalStatusLight.enabled = true;
-                terminalStatusLight.color = new Color(1f, 0.6f, 0.1f);
-                terminalStatusLight.intensity = 3.5f;
+                terminalStatusLight.color = new Color(1f, 0.65f, 0.2f);
+                terminalStatusLight.intensity = 1.4f;
+                terminalStatusLight.range = 3.2f;
             }
 
             GameEvents.Overseer("SECURITY SENSORS: Massive hydraulic shift detected! A hidden blast door has emerged from the Sector E perimeter wall!");
