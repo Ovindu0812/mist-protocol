@@ -271,6 +271,8 @@ namespace MistProtocol.Core
             IsTitanDefeated = true;
             GameEvents.Overseer("OVERSEER: Unit-94 DESTROYED?! Security mainframe breached... The Master Prison Cell Key has dropped from its core!");
             GameEvents.Objective("TITAN DESTROYED: Pick up the Master Cell Key from Titan's wreckage!");
+
+            FinalRescue.FinalRescueMission.Instance?.OnTitanDefeated();
         }
 
         public void OnMasterCellKeyCollected()
