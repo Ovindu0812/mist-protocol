@@ -107,21 +107,21 @@ namespace MistProtocol.FinalRescue
         {
             if (screenSlotsText == null) return;
 
-            string s1 = _currentSequence.Count > 0 ? $"<color=#FF4444>[ {GetPhaseName(_currentSequence[0])} ]</color>" : "[  ???  ]";
-            string s2 = _currentSequence.Count > 1 ? $"<color=#44AAFF>[ {GetPhaseName(_currentSequence[1])} ]</color>" : "[  ???  ]";
-            string s3 = _currentSequence.Count > 2 ? $"<color=#FFAA22>[ {GetPhaseName(_currentSequence[2])} ]</color>" : "[  ???  ]";
-            string s4 = _currentSequence.Count > 3 ? $"<color=#55FF66>[ {GetPhaseName(_currentSequence[3])} ]</color>" : "[  ???  ]";
+            string s1 = _currentSequence.Count > 0 ? $"<color=#FF4444>[ {GetPhaseName(_currentSequence[0])} ]</color>" : "<color=#778899>[ 1: ??? ]</color>";
+            string s2 = _currentSequence.Count > 1 ? $"<color=#44AAFF>[ {GetPhaseName(_currentSequence[1])} ]</color>" : "<color=#778899>[ 2: ??? ]</color>";
+            string s3 = _currentSequence.Count > 2 ? $"<color=#FFAA22>[ {GetPhaseName(_currentSequence[2])} ]</color>" : "<color=#778899>[ 3: ??? ]</color>";
+            string s4 = _currentSequence.Count > 3 ? $"<color=#55FF66>[ {GetPhaseName(_currentSequence[3])} ]</color>" : "<color=#778899>[ 4: ??? ]</color>";
 
-            screenSlotsText.text = $"{s1}   {s2}   {s3}   {s4}";
+            screenSlotsText.text = $"{s1}    {s2}    {s3}    {s4}";
 
             if (screenStatusText != null)
             {
                 screenStatusText.text = _currentSequence.Count switch
                 {
-                    0 => "PHASE 1: KINDLE WITHERING KILN FURNACE (RED)",
-                    1 => "PHASE 2: HIGHLAND MOUNTAIN MIST (BLUE)",
-                    2 => "PHASE 3: MORNING SUNRISE GOLD (YELLOW)",
-                    3 => "PHASE 4: HARVEST FRESH CEYLON LEAF (GREEN)",
+                    0 => "<color=#FFAA33>PHASE 1: KINDLE WITHERING KILN FURNACE (RED)</color>",
+                    1 => "<color=#55CCFF>PHASE 2: HIGHLAND MOUNTAIN MIST (BLUE)</color>",
+                    2 => "<color=#FFEE44>PHASE 3: MORNING SUNRISE GOLD (YELLOW)</color>",
+                    3 => "<color=#66FF77>PHASE 4: HARVEST FRESH CEYLON LEAF (GREEN)</color>",
                     _ => "<color=#55FF66>CIPHER VERIFIED: PRISON BARRIER DEACTIVATED</color>"
                 };
             }
