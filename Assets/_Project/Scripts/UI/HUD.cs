@@ -382,7 +382,9 @@ namespace MistProtocol.UI
             {
                 if (_overseer != null) _overseer.text = _overseerQueue.Dequeue();
                 _overseerUntil = Time.unscaledTime + 5.5f;
-                ProceduralAudio.PlayAt("hum", _player != null ? _player.transform.position : Vector3.zero, 0.25f);
+                Vector3 soundPos = _player != null ? _player.transform.position : Vector3.zero;
+                ProceduralAudio.PlayAt("radioChirp", soundPos, 0.4f, 1.1f);
+                ProceduralAudio.PlayAt("radioStatic", soundPos, 0.25f, 1.0f);
             }
             if (_overseer != null)
             {
