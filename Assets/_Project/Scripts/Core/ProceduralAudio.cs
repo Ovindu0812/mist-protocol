@@ -43,6 +43,7 @@ namespace MistProtocol.Core
                 "radioChirp" => Tone(0.14f, 1760f, 0.35f, 24f),
                 "terminalBleep" => Tone(0.08f, 1850f, 0.25f, 28f),
                 "terminalBoot" => Tone(0.42f, 440f, 0.35f, 8f, true),
+                "shortCircuit" => Tone(0.28f, 130f, 0.6f, 32f, true),
                 _ => Noise(0.1f, 30f, 0.3f, 800f),
             };
             c.name = name;
