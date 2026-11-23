@@ -96,6 +96,12 @@ namespace MistProtocol.Core
                 var missionGo = new GameObject("FinalRescue_Mission");
                 missionGo.AddComponent<FinalRescue.FinalRescueMission>();
             }
+
+            if (UI.PauseMenu.Instance == null && FindAnyObjectByType<UI.PauseMenu>() == null)
+            {
+                var pauseGo = new GameObject("PauseMenu_Manager");
+                pauseGo.AddComponent<UI.PauseMenu>();
+            }
         }
 
         private void Update()
@@ -112,8 +118,27 @@ namespace MistProtocol.Core
                     if (startPressed) Begin();
                     break;
                 case Flow.Playing:
-                    if (kb.escapeKey.wasPressedThisFrame) Cursor.lockState = CursorLockMode.None;
-                    if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) Cursor.lockState = CursorLockMode.Locked;
+                    if (UI.PauseMenu.Instance != null && UI.PauseMenu.Instance.IsPaused)
+                    {
+                        break;
+                    }
+                    if (kb.escapeKey.wasPressedThisFrame)
+                    {
+                        if (UI.PauseMenu.Instance != null)
+                        {
+                            UI.PauseMenu.Instance.TogglePause();
+                        }
+                        else
+                        {
+                            Cursor.lockState = CursorLockMode.None;
+                            Cursor.visible = true;
+                        }
+                    }
+                    else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    {
+                        Cursor.lockState = CursorLockMode.Locked;
+                        Cursor.visible = false;
+                    }
                     break;
                 case Flow.Won:
                 case Flow.Lost:
