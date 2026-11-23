@@ -493,11 +493,11 @@ namespace MistProtocol.FinalRescue
             scrLight.intensity = 0.85f;
             scrLight.color = new Color(0.2f, 0.75f, 1f);
 
-            // 4 Console Buttons mounted together neatly in a row on the desk surface
-            var redBtn = CreateConsoleButton(consoleGo.transform, "Btn_Red", new Vector3(-0.6f, 0.95f, -0.1f), SwitchColor.Red, darkMetal, litShader);
-            var blueBtn = CreateConsoleButton(consoleGo.transform, "Btn_Blue", new Vector3(-0.2f, 0.95f, -0.1f), SwitchColor.Blue, darkMetal, litShader);
-            var yellowBtn = CreateConsoleButton(consoleGo.transform, "Btn_Yellow", new Vector3(0.2f, 0.95f, -0.1f), SwitchColor.Yellow, darkMetal, litShader);
-            var greenBtn = CreateConsoleButton(consoleGo.transform, "Btn_Green", new Vector3(0.6f, 0.95f, -0.1f), SwitchColor.Green, darkMetal, litShader);
+            // 4 Console Buttons mounted neatly on the desk panel (scrambled physically so naive left-to-right press fails)
+            var greenBtn = CreateConsoleButton(consoleGo.transform, "Btn_Green", new Vector3(-0.6f, 0.95f, -0.1f), SwitchColor.Green, darkMetal, litShader);
+            var yellowBtn = CreateConsoleButton(consoleGo.transform, "Btn_Yellow", new Vector3(-0.2f, 0.95f, -0.1f), SwitchColor.Yellow, darkMetal, litShader);
+            var redBtn = CreateConsoleButton(consoleGo.transform, "Btn_Red", new Vector3(0.2f, 0.95f, -0.1f), SwitchColor.Red, darkMetal, litShader);
+            var blueBtn = CreateConsoleButton(consoleGo.transform, "Btn_Blue", new Vector3(0.6f, 0.95f, -0.1f), SwitchColor.Blue, darkMetal, litShader);
 
             // 7. Puzzle Controller on the console
             var puzzle = consoleGo.AddComponent<LaboratoryPuzzleController>();
