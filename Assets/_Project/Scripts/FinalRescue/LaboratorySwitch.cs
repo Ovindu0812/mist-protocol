@@ -27,9 +27,18 @@ namespace MistProtocol.FinalRescue
 
         public bool CanInteract => !IsActive && (FinalRescueMission.Instance == null || !FinalRescueMission.Instance.IsPuzzleLocked);
 
+        public string LoreTitle => switchColor switch
+        {
+            SwitchColor.Red => "Kiln Flame (Red)",
+            SwitchColor.Blue => "Midnight Mist (Blue)",
+            SwitchColor.Yellow => "Sunrise Sun (Yellow)",
+            SwitchColor.Green => "Emerald Leaf (Green)",
+            _ => switchColor.ToString()
+        };
+
         public string Prompt => IsActive
-            ? $"[{switchColor} Switch Active]"
-            : $"[E] Activate {switchColor} Switch";
+            ? $"[{LoreTitle} Engaged]"
+            : $"[E] Activate {LoreTitle}";
 
         public void Configure(SwitchColor color, Renderer rend = null, Light light = null)
         {

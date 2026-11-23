@@ -25,10 +25,10 @@ namespace MistProtocol.FinalRescue
 
         private readonly List<SwitchColor> _correctSequence = new()
         {
+            SwitchColor.Red,
             SwitchColor.Blue,
             SwitchColor.Yellow,
-            SwitchColor.Green,
-            SwitchColor.Red
+            SwitchColor.Green
         };
 
         private readonly List<SwitchColor> _currentSequence = new();
@@ -69,8 +69,15 @@ namespace MistProtocol.FinalRescue
             // Correct step so far!
             if (_currentSequence.Count == _correctSequence.Count)
             {
-                // All 3 entered in exact order: Blue -> Green -> Red!
+                // All 4 entered in exact order: Fire (Red) -> Mist (Blue) -> Sun (Yellow) -> Leaf (Green)!
                 StartCoroutine(SuccessSequence());
+            }
+            else
+            {
+                if (FinalRescueUI.Instance != null)
+                {
+                    FinalRescueUI.Instance.ShowPuzzleSuccessAlert($"Harvest Cipher Phase {stepIndex + 1}/4 Engaged: {activatedSwitch.LoreTitle}");
+                }
             }
         }
 
@@ -83,7 +90,7 @@ namespace MistProtocol.FinalRescue
             ProceduralAudio.PlayAt("alarm", transform.position, 1f, 1f);
             if (FinalRescueUI.Instance != null)
             {
-                FinalRescueUI.Instance.ShowPuzzleIncorrectAlert("Incorrect sequence. Check the clues and try again.");
+                FinalRescueUI.Instance.ShowPuzzleIncorrectAlert("INCORRECT CIPHER! Appa's Riddle: Fire (Red) -> Mist (Blue) -> Sun (Yellow) -> Leaf (Green)");
             }
 
             // 2. Flash red warning lights

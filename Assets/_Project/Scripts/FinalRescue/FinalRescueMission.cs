@@ -406,11 +406,12 @@ namespace MistProtocol.FinalRescue
             fatherNPC = appaGo.AddComponent<FatherRescueNPC>();
             fatherNPC.BindBarrier(energyBarrier);
 
-            // 6. Four Control Switches: Blue, Yellow, Green, Red
-            var blueSw = CreateSwitchStation("Switch_Blue", new Vector3(-1.8f, 0f, 2.5f), SwitchColor.Blue, darkMetal, litShader);
-            var yellowSw = CreateSwitchStation("Switch_Yellow", new Vector3(-0.6f, 0f, 2.8f), SwitchColor.Yellow, darkMetal, litShader);
-            var greenSw = CreateSwitchStation("Switch_Green", new Vector3(0.6f, 0f, 2.8f), SwitchColor.Green, darkMetal, litShader);
-            var redSw = CreateSwitchStation("Switch_Red", new Vector3(1.8f, 0f, 2.5f), SwitchColor.Red, darkMetal, litShader);
+            // 6. Four Control Switches: Scrambled layout (Green, Yellow, Red, Blue)
+            // Sequence solution required by Appa's Ceylon Tea Lore: Red (Flame) -> Blue (Mist) -> Yellow (Sun) -> Green (Leaf)
+            var greenSw = CreateSwitchStation("Switch_Green", new Vector3(-1.6f, 0f, 2.5f), SwitchColor.Green, darkMetal, litShader);
+            var yellowSw = CreateSwitchStation("Switch_Yellow", new Vector3(-0.8f, 0f, 2.5f), SwitchColor.Yellow, darkMetal, litShader);
+            var redSw = CreateSwitchStation("Switch_Red", new Vector3(0.0f, 0f, 2.5f), SwitchColor.Red, darkMetal, litShader);
+            var blueSw = CreateSwitchStation("Switch_Blue", new Vector3(0.8f, 0f, 2.5f), SwitchColor.Blue, darkMetal, litShader);
 
             // 7. Puzzle Controller
             var puzzleGo = new GameObject("PuzzleController");
@@ -418,11 +419,11 @@ namespace MistProtocol.FinalRescue
             var puzzle = puzzleGo.AddComponent<LaboratoryPuzzleController>();
             puzzle.Bind(blueSw, yellowSw, greenSw, redSw, energyBarrier, emergencyAlarmLights);
 
-            // 8. Four Hidden Clues
-            CreateClueStation("Clue1_Terminal", new Vector3(-1.6f, 0f, -2.4f), LabClueType.ComputerTerminal, darkMetal, litShader);
-            CreateClueStation("Clue2_Document", new Vector3(-0.2f, 0f, -2.6f), LabClueType.HiddenDocument, darkMetal, litShader);
-            CreateClueStation("Clue3_WallMessage", new Vector3(2.45f, 1.8f, -1.2f), LabClueType.WallMessage, darkMetal, litShader);
-            CreateClueStation("Clue4_ResearchNotes", new Vector3(1.4f, 0f, -2.3f), LabClueType.ResearchNotes, darkMetal, litShader);
+            // 8. Four Hidden Clues placed in accessible laboratory player area
+            CreateClueStation("Clue1_Terminal", new Vector3(-1.8f, 0f, -2.2f), LabClueType.ComputerTerminal, darkMetal, litShader);
+            CreateClueStation("Clue2_Document", new Vector3(-0.8f, 0f, -2.5f), LabClueType.HiddenDocument, darkMetal, litShader);
+            CreateClueStation("Clue3_WallMessage", new Vector3(-2.45f, 1.8f, 0.2f), LabClueType.WallMessage, darkMetal, litShader);
+            CreateClueStation("Clue4_ResearchNotes", new Vector3(-0.3f, 0f, 0.2f), LabClueType.ResearchNotes, darkMetal, litShader);
         }
 
         private void EnsureEscapePoint()
@@ -458,8 +459,16 @@ namespace MistProtocol.FinalRescue
             baseGo.name = "Pedestal";
             baseGo.transform.SetParent(stationGo.transform, false);
             baseGo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
-            baseGo.transform.localScale = new Vector3(0.45f, 0.9f, 0.45f);
+            baseGo.transform.localScale = new Vector3(0.55f, 0.9f, 0.55f);
             baseGo.GetComponent<Renderer>().material = pedestalMat;
+
+            // Pedestal collar cap
+            var capGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            capGo.name = "PedestalCap";
+            capGo.transform.SetParent(stationGo.transform, false);
+            capGo.transform.localPosition = new Vector3(0f, 0.91f, 0f);
+            capGo.transform.localScale = new Vector3(0.65f, 0.04f, 0.65f);
+            capGo.GetComponent<Renderer>().material = pedestalMat;
 
             // Try loading 3D button box model
             GameObject buttonModelPrefab = Resources.Load<GameObject>("Models/PuzzleButtons");
@@ -477,7 +486,7 @@ namespace MistProtocol.FinalRescue
                 // Instantiate the specific color box from the FBX hierarchy
                 var fullModel = Instantiate(buttonModelPrefab, stationGo.transform);
                 fullModel.name = $"Model_{color}";
-                fullModel.transform.localPosition = new Vector3(0f, 0.96f, 0f);
+                fullModel.transform.localPosition = new Vector3(0f, 0.98f, 0f);
                 fullModel.transform.localScale = Vector3.one * 1.8f;
                 fullModel.transform.localRotation = Quaternion.Euler(0f, 180f, 0f); // face player
 
@@ -499,6 +508,8 @@ namespace MistProtocol.FinalRescue
 
                 if (matchedChild != null)
                 {
+                    // Center the isolated child squarely onto the pedestal
+                    matchedChild.localPosition = Vector3.zero;
                     activeRend = matchedChild.GetComponent<Renderer>();
                 }
                 else
@@ -508,7 +519,7 @@ namespace MistProtocol.FinalRescue
 
                 var ltGo = new GameObject("StatusLight");
                 ltGo.transform.SetParent(stationGo.transform, false);
-                ltGo.transform.localPosition = new Vector3(0f, 1.15f, -0.2f);
+                ltGo.transform.localPosition = new Vector3(0f, 1.25f, -0.2f);
                 lt = ltGo.AddComponent<Light>();
                 lt.type = LightType.Point;
                 lt.range = 3.5f;
@@ -519,8 +530,8 @@ namespace MistProtocol.FinalRescue
                 var buttonGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 buttonGo.name = "ButtonMesh";
                 buttonGo.transform.SetParent(stationGo.transform, false);
-                buttonGo.transform.localPosition = new Vector3(0f, 0.95f, 0f);
-                buttonGo.transform.localScale = new Vector3(0.22f, 0.08f, 0.22f);
+                buttonGo.transform.localPosition = new Vector3(0f, 0.96f, 0f);
+                buttonGo.transform.localScale = new Vector3(0.25f, 0.08f, 0.25f);
 
                 var btnMat = new Material(shader);
                 buttonGo.GetComponent<Renderer>().material = btnMat;
@@ -532,7 +543,8 @@ namespace MistProtocol.FinalRescue
             }
 
             var box = stationGo.AddComponent<BoxCollider>();
-            box.size = new Vector3(1.2f, 1.8f, 1.2f);
+            box.size = new Vector3(1.1f, 1.8f, 1.1f);
+            box.center = new Vector3(0f, 0.9f, 0f);
             box.isTrigger = true;
 
             var sw = stationGo.AddComponent<LaboratorySwitch>();

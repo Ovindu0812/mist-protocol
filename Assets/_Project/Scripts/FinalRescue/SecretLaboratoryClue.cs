@@ -29,10 +29,10 @@ namespace MistProtocol.FinalRescue
 
         public string Prompt => clueType switch
         {
-            LabClueType.ComputerTerminal => "[E] Read Computer Terminal",
-            LabClueType.HiddenDocument => "[E] Inspect Hidden Research Document",
-            LabClueType.WallMessage => "[E] Read Scratched Wall Inscription",
-            LabClueType.ResearchNotes => "[E] Read Chief Engineer's Notes",
+            LabClueType.ComputerTerminal => "[E] Access Security Terminal Diagnostic",
+            LabClueType.HiddenDocument => "[E] Inspect Withering Loft Plantation Log",
+            LabClueType.WallMessage => "[E] Read Appa's Scratched Wall Inscription",
+            LabClueType.ResearchNotes => "[E] Read Appa's Secret Emergency Cipher",
             _ => "[E] Inspect Clue"
         };
 
@@ -42,20 +42,20 @@ namespace MistProtocol.FinalRescue
             switch (type)
             {
                 case LabClueType.ComputerTerminal:
-                    title = "Clue 1: Security Terminal";
-                    message = "Phase 1: Cold Mist (Blue) initiates the primary energy grid.";
+                    title = "Clue 1: OVERSEER Security Diagnostic";
+                    message = "[LOCKDOWN OVERRIDE ENGAGED]\n'Prisoner Appa reversed the standard factory circuit. Phase 1 must ignite the primary thermal furnace (RED - Kiln Fire).' Note: Physical console pedestals were scrambled by the facility lockdown.";
                     break;
                 case LabClueType.HiddenDocument:
-                    title = "Clue 2: Plantation Document";
-                    message = "Phase 2 & 3: Morning Sun (Yellow) must rise before the Fresh Leaf (Green) can bloom.";
+                    title = "Clue 2: Highland Plantation Log";
+                    message = "'In the Nuwara Eliya hills, after the kiln furnace roars (Phase 1: Red), the cold mountain mist blankets the rolling room at midnight (Phase 2: Midnight Mist / BLUE).'";
                     break;
                 case LabClueType.WallMessage:
-                    title = "Clue 3: Scratched Wall Inscription";
-                    message = "Phase 4: Kiln Fire (Red) must seal the sequence to disengage the barrier.";
+                    title = "Clue 3: Scratched Wall Message";
+                    message = "'Nila, duwa... At dawn, the golden sunrise warms the dew (Phase 3: Morning Sun / YELLOW) before the harvesters take to the estate.'";
                     break;
                 case LabClueType.ResearchNotes:
-                    title = "Clue 4: Chief Engineer's Log";
-                    message = "Master Sequence: Cold Mist -> Morning Sun -> Ceylon Leaf -> Kiln Flame.";
+                    title = "Clue 4: Appa's Emergency Cipher";
+                    message = "'TO MY DAUGHTER NILA:\nThe pedestal boxes are scrambled to fool OVERSEER! The ancient Glenmist harvest cycle breaks the barrier:\n\n1. FIRE (Red) -> 2. MIST (Blue) -> 3. SUN (Yellow) -> 4. LEAF (Green)!\n\nEnter the cycle in order, not by pedestal position!'";
                     break;
             }
         }
