@@ -25,6 +25,8 @@ namespace MistProtocol.Core
                 "explosion" => Noise(1.1f, 4f, 1f, 250f),
                 "impact" => Noise(0.08f, 40f, 0.5f, 600f),
                 "step" => Noise(0.05f, 60f, 0.25f, 300f),
+                "step_metal" => Noise(0.06f, 50f, 0.35f, 950f),
+                "step_wood" => Noise(0.07f, 40f, 0.35f, 220f),
                 "reload" => Click(0.35f),
                 "door" => Tone(0.6f, 70f, 0.4f, 6f),
                 "zap" => Tone(0.25f, 900f, 0.4f, 12f, true),

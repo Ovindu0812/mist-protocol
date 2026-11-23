@@ -173,9 +173,21 @@ namespace MistProtocol.Player
                     _stepDistance = 0f;
                     float loud = IsCrouching ? 3f : IsSprinting ? 17f : 8f;
                     SoundSystem.Emit(transform.position, loud, SoundType.Footstep, true);
-                    ProceduralAudio.PlayAt("step", transform.position, IsCrouching ? 0.15f : 0.4f);
+                    string stepCue = GetSurfaceFootstepSound();
+                    ProceduralAudio.PlayAt(stepCue, transform.position, IsCrouching ? 0.15f : 0.4f);
                 }
             }
+        }
+
+        private string GetSurfaceFootstepSound()
+        {
+            if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out var hit, 1.2f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                string n = hit.collider.gameObject.name.ToLower();
+                if (n.Contains("metal") || n.Contains("grate") || n.Contains("pipe") || n.Contains("catwalk")) return "step_metal";
+                if (n.Contains("wood") || n.Contains("plank") || n.Contains("crate") || n.Contains("floor_wood")) return "step_wood";
+            }
+            return "step";
         }
 
         public void AddShake(float amount) => _shake = Mathf.Min(1f, _shake + amount);
