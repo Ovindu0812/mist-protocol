@@ -13,20 +13,24 @@ namespace MistProtocol.FinalRescue
     {
         [SerializeField] private Transform slidingDoor;
         [SerializeField] private Transform keyTerminal;
+        [SerializeField] private Transform wallCoverPlate;
         [SerializeField] private Light terminalStatusLight;
 
+        private bool _isRevealed;
         private bool _isUnlocked;
         private bool _isOpening;
 
+        public bool IsRevealed => _isRevealed;
         public bool IsUnlocked => _isUnlocked;
         public Transform TerminalTransform => keyTerminal != null ? keyTerminal : transform;
 
-        public bool CanInteract => !_isUnlocked && !_isOpening;
+        public bool CanInteract => _isRevealed && !_isUnlocked && !_isOpening;
 
         public string Prompt
         {
             get
             {
+                if (!_isRevealed) return "[Sealed Wall Mechanism - Defeat Titan]";
                 if (_isUnlocked) return "[Secret Laboratory Unlocked]";
                 bool hasKey = FinalRescueMission.Instance != null && FinalRescueMission.Instance.HasMasterAccessKey;
                 if (!hasKey && GameManager.Instance != null)
@@ -34,24 +38,68 @@ namespace MistProtocol.FinalRescue
                     hasKey = GameManager.Instance.HasMasterCellKey;
                 }
                 return hasKey
-                    ? "[E] Swipe Master Access Key to open Secret Laboratory"
-                    : "[Locked] Requires Master Access Key (Defeat Titan Robot)";
+                    ? "[E] Insert Master Access Key into revealed door terminal"
+                    : "[Locked] Requires Master Access Key (Defeat Titan Automaton)";
             }
         }
 
-        public void Bind(Transform door, Transform terminal, Light statusLight)
+        public void Bind(Transform door, Transform terminal, Light statusLight, Transform coverPlate = null)
         {
             slidingDoor = door;
             keyTerminal = terminal;
             terminalStatusLight = statusLight;
+            wallCoverPlate = coverPlate;
         }
 
         private void Awake()
         {
             if (slidingDoor == null) slidingDoor = transform.Find("Lab_SlidingDoor");
             if (keyTerminal == null) keyTerminal = transform.Find("Lab_Terminal");
+            if (wallCoverPlate == null) wallCoverPlate = transform.Find("Lab_WallCoverPlate");
             if (terminalStatusLight == null && keyTerminal != null)
                 terminalStatusLight = keyTerminal.GetComponentInChildren<Light>();
+        }
+
+        public void RevealDoor()
+        {
+            if (_isRevealed) return;
+            _isRevealed = true;
+            StartCoroutine(RevealSequence());
+        }
+
+        private IEnumerator RevealSequence()
+        {
+            // Hydraulic sound & steam burst
+            ProceduralAudio.PlayAt("door", transform.position, 1.4f, 0.5f);
+            ProceduralAudio.PlayAt("steam", transform.position, 1.1f, 0.8f);
+            ProceduralAudio.PlayAt("zap", transform.position, 0.9f, 1.2f);
+            Vfx.Burst(transform.position + Vector3.up * 1.5f, Vector3.forward, new Color(0.9f, 0.95f, 1f), 35, 4.5f, 0.15f, 0.8f);
+
+            if (terminalStatusLight != null)
+            {
+                terminalStatusLight.enabled = true;
+                terminalStatusLight.color = new Color(1f, 0.6f, 0.1f);
+                terminalStatusLight.intensity = 3.5f;
+            }
+
+            GameEvents.Overseer("SECURITY SENSORS: Massive hydraulic shift detected! A hidden blast door has emerged from the Sector E perimeter wall!");
+            GameEvents.Objective("The Secret Laboratory door has revealed itself! Swipe the Master Access Key to enter!");
+
+            if (wallCoverPlate != null)
+            {
+                Vector3 startPos = wallCoverPlate.localPosition;
+                Vector3 endPos = startPos + new Vector3(0f, -3.8f, 0f); // Retract down into floor
+                float elapsed = 0f;
+                while (elapsed < 2.0f)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = Mathf.SmoothStep(0f, 1f, elapsed / 2.0f);
+                    wallCoverPlate.localPosition = Vector3.Lerp(startPos, endPos, t);
+                    yield return null;
+                }
+                wallCoverPlate.localPosition = endPos;
+                wallCoverPlate.gameObject.SetActive(false);
+            }
         }
 
         public void Interact()
