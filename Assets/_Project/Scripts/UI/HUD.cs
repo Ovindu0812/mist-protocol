@@ -20,7 +20,8 @@ namespace MistProtocol.UI
     {
         private Font _font;
         private Text _health, _ammo, _objective, _prompt, _overseer, _zone, _center, _hitmarker, _crosshairText;
-        private Image _healthFill, _damage, _holdFill, _holdBack, _panel;
+        private Image _healthFill, _damage, _holdFill, _holdBack, _panel, _staminaFill;
+        private CanvasGroup _staminaGroup;
         private PlayerController _player;
         private PlayerWeapon _weapon;
         private PlayerInteractor _interactor;
@@ -185,6 +186,35 @@ namespace MistProtocol.UI
                 _health = MakeText(troughGo.transform, "HP_Number", "100 / 100", 18, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(318, 30), Vector2.zero, new Vector2(0.5f, 0.5f));
                 _health.fontStyle = FontStyle.Bold;
 
+                // 7. Stamina Bar Trough & Fill directly below HP
+                var stamGo = new GameObject("Stamina_Container", typeof(RectTransform), typeof(CanvasGroup));
+                stamGo.transform.SetParent(hpContainer, false);
+                _staminaGroup = stamGo.GetComponent<CanvasGroup>();
+                var sRt = stamGo.GetComponent<RectTransform>();
+                sRt.anchorMin = sRt.anchorMax = new Vector2(0f, 0.5f);
+                sRt.pivot = new Vector2(0f, 0.5f);
+                sRt.anchoredPosition = new Vector2(66f, -22f);
+                sRt.sizeDelta = new Vector2(322f, 6f);
+
+                var stamBg = new GameObject("Stamina_Bg", typeof(RectTransform), typeof(Image));
+                stamBg.transform.SetParent(stamGo.transform, false);
+                var sBgRt = stamBg.GetComponent<RectTransform>();
+                sBgRt.anchorMin = Vector2.zero;
+                sBgRt.anchorMax = Vector2.one;
+                sBgRt.sizeDelta = Vector2.zero;
+                stamBg.GetComponent<Image>().color = new Color(0.04f, 0.06f, 0.08f, 0.85f);
+
+                var stamFillGo = new GameObject("Stamina_Fill", typeof(RectTransform), typeof(Image));
+                stamFillGo.transform.SetParent(stamGo.transform, false);
+                var sFillRt = stamFillGo.GetComponent<RectTransform>();
+                sFillRt.anchorMin = sFillRt.anchorMax = new Vector2(0f, 0.5f);
+                sFillRt.pivot = new Vector2(0f, 0.5f);
+                sFillRt.anchoredPosition = Vector2.zero;
+                sFillRt.sizeDelta = new Vector2(322f, 6f);
+                _staminaFill = stamFillGo.GetComponent<Image>();
+                _staminaFill.color = new Color(0.2f, 0.85f, 1f, 0.95f);
+                _staminaFill.raycastTarget = false;
+
                 // =========================================================================
                 // AMMO COUNTER (Bottom-Right: Positioned safely above bottom edge)
                 // =========================================================================
@@ -308,6 +338,28 @@ namespace MistProtocol.UI
                 {
                     float flash = 0.65f + 0.35f * Mathf.Sin(Time.unscaledTime * 12f);
                     _healthFill.color = new Color(1f, 0.15f, 0.1f, flash);
+                }
+            }
+
+            // Update Stamina Bar
+            if (_player != null && _staminaFill != null)
+            {
+                float stamNorm = Mathf.Clamp01(_player.CurrentStamina / Mathf.Max(1f, _player.MaxStamina));
+                _staminaFill.rectTransform.sizeDelta = new Vector2(322f * stamNorm, 6f);
+                if (_player.IsExhausted)
+                {
+                    float flash = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 14f);
+                    _staminaFill.color = new Color(1f, 0.3f, 0.15f, flash);
+                }
+                else
+                {
+                    _staminaFill.color = new Color(0.2f, 0.85f, 1f, 0.95f);
+                }
+
+                if (_staminaGroup != null)
+                {
+                    float targetAlpha = (stamNorm < 0.98f || _player.IsExhausted) ? 1.0f : 0.0f;
+                    _staminaGroup.alpha = Mathf.MoveTowards(_staminaGroup.alpha, targetAlpha, dt * 2.5f);
                 }
             }
 
