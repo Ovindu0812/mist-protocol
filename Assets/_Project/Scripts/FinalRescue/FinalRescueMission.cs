@@ -134,6 +134,10 @@ namespace MistProtocol.FinalRescue
             if (labDoor != null)
             {
                 labDoor.RevealDoor();
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.SetCustomObjective(labDoor.TerminalTransform, "Hidden blast door emerged in Sector E! Collect Titan's Master Key and swipe to enter!");
+                }
             }
         }
 
