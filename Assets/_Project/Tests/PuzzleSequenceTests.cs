@@ -82,5 +82,31 @@ namespace MistProtocol.Tests
             };
             Assert.IsFalse(ValidateSequence(attempt));
         }
+
+        [Test]
+        public void Puzzle_DuplicateColorInputs_Fails()
+        {
+            var attempt = new List<SwitchColor>
+            {
+                SwitchColor.Red,
+                SwitchColor.Red,
+                SwitchColor.Red,
+                SwitchColor.Red
+            };
+            Assert.IsFalse(ValidateSequence(attempt), "Duplicate color spam must not unlock the puzzle");
+        }
+
+        [Test]
+        public void Puzzle_ReverseOrder_Fails()
+        {
+            var attempt = new List<SwitchColor>
+            {
+                SwitchColor.Green,
+                SwitchColor.Yellow,
+                SwitchColor.Blue,
+                SwitchColor.Red
+            };
+            Assert.IsFalse(ValidateSequence(attempt), "Reverse sequence must not unlock the puzzle");
+        }
     }
 }
