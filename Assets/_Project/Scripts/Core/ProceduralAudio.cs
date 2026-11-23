@@ -37,6 +37,8 @@ namespace MistProtocol.Core
                 "dryfire" => Click(0.06f),
                 "slam" => Noise(1.2f, 3.5f, 1.1f, 180f),
                 "steam" => Noise(0.85f, 4.5f, 0.45f, 3400f),
+                "radioStatic" => Noise(0.22f, 15f, 0.4f, 2200f),
+                "radioChirp" => Tone(0.14f, 1760f, 0.35f, 24f),
                 _ => Noise(0.1f, 30f, 0.3f, 800f),
             };
             c.name = name;
