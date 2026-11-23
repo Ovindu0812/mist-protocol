@@ -29,20 +29,26 @@ Appa scrambled the physical pedestal boxes across the laboratory floor, renderin
 
 ---
 
-## 2. Spatial Layout & Anti-Guessing Design
+## 2. Spatial Layout & Master Workstation Console Design
 
-### Scrambled Pedestal Configuration
-The physical pedestals in the laboratory chamber are arranged left-to-right as follows:
-- **Pedestal 1 (Leftmost):** Emerald Leaf Switch (Green)
-- **Pedestal 2 (Mid-Left):** Sunrise Sun Switch (Yellow)
-- **Pedestal 3 (Mid-Right):** Kiln Flame Switch (Red)
-- **Pedestal 4 (Rightmost):** Midnight Mist Switch (Blue)
+### Unified Master Puzzle Workstation (`Master_PuzzleConsole`)
+Rather than isolated loose pedestals, all controls are integrated into a single high-tech Glenmist Workstation Console:
+- **Interactive CRT Monitor Screen:**
+  - Displays real-time cipher slot progress: `[ RED: FIRE ]   [ ??? ]   [ ??? ]   [ ??? ]`
+  - Shows dynamic phase guidance matching Appa's riddle.
+  - Flashes red with circuit overload diagnostic on incorrect entry; turns emerald green on barrier release.
+- **Scrambled Desk Panel Button Mounts:**
+  The 4 interactive push buttons are mounted neatly in a single row on the desk panel surface:
+  - **Button 1 (Leftmost, x = -0.6f):** Emerald Leaf Switch (Green)
+  - **Button 2 (Mid-Left, x = -0.2f):** Sunrise Sun Switch (Yellow)
+  - **Button 3 (Mid-Right, x = +0.2f):** Kiln Flame Switch (Red)
+  - **Button 4 (Rightmost, x = +0.6f):** Midnight Mist Switch (Blue)
 
-### Non-Linear Solution
-A player attempting to press the switches sequentially in physical line order (`1 -> 2 -> 3 -> 4`) immediately inputs `Green` on step 1, triggering an instant security alarm, red warning light strobes, and electrical discharge reset.
+### Non-Linear Solution & Anti-Brute-Force Mechanics
+A player attempting to press the desk buttons in naive physical left-to-right line order (`1 -> 2 -> 3 -> 4`) immediately inputs `Green` on step 1, triggering an instant security alarm, red warning light strobes, electrical spark discharge, and automated circuit reset.
 
-To disengage the barrier, the player must execute:
-$$\mathbf{Red \ (Pedestal \ 3) \rightarrow Blue \ (Pedestal \ 4) \rightarrow Yellow \ (Pedestal \ 2) \rightarrow Green \ (Pedestal \ 1)}$$
+To disengage the barrier, the player must execute Appa's Harvest Riddle:
+$$\mathbf{Red \ (Button \ 3) \rightarrow Blue \ (Button \ 4) \rightarrow Yellow \ (Button \ 2) \rightarrow Green \ (Button \ 1)}$$
 
 ---
 
