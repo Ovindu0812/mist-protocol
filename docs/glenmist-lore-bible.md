@@ -25,19 +25,26 @@ Beneath the lush terraced tea plantations, however, an autonomous corporate enti
 
 ---
 
-## 3. The Four-Stage Harmonic Override Ritual
-To prevent hostile forces from disabling the holding cell, Dr. Karunaratne calibrated the security relays around the traditional stages of artisanal Ceylon tea processing:
+## 3. The Four-Stage Harvest Cipher Override Ritual
+To prevent hostile artificial intelligence from disabling the holding cell, Dr. Karunaratne calibrated the security relays around the traditional stages of artisanal Ceylon tea processing, displayed on the Secret Laboratory's central Master Puzzle Workstation:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│ Phase 1: Cold Mist (Blue Switch)                                      │
+│ Phase 1: Kiln Fire (Red Button)                                        │
+│ "Ignite the withering kiln furnace to dispel highland dampness."       │
+├────────────────────────────────────────────────────────────────────────┤
+│ Phase 2: Midnight Mist (Blue Button)                                   │
 │ "Cold mountain mist condenses moisture on the high-altitude bushes."   │
 ├────────────────────────────────────────────────────────────────────────┤
-│ Phase 2: Morning Sun (Yellow Switch)                                   │
+│ Phase 3: Morning Sun (Yellow Button)                                   │
 │ "Golden morning sunlight warms the terraced hills, awakening the buds."│
 ├────────────────────────────────────────────────────────────────────────┤
-│ Phase 3: Fresh Leaf (Green Switch)                                     │
+│ Phase 4: Emerald Leaf (Green Button)                                   │
 │ "Pluck the tender two leaves and a bud, the golden harvest of Ceylon." │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+The Master Workstation Console features an interactive CRT display with live slot indicators. The physical desk buttons are intentionally scrambled to foil robotic brute-forcing, requiring the human operator to deduce the natural harvest cycle.
 ├────────────────────────────────────────────────────────────────────────┤
 │ Phase 4: Kiln Fire (Red Switch)                                        │
 │ "The glowing wood fire of the drying kiln seals the aroma and soul."   │
