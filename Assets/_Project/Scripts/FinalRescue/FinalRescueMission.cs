@@ -4,6 +4,7 @@ using MistProtocol.Core;
 using MistProtocol.Interaction;
 using MistProtocol.Player;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MistProtocol.FinalRescue
 {
@@ -112,14 +113,27 @@ namespace MistProtocol.FinalRescue
         {
             HasMasterAccessKey = true;
 
+            if (labDoor != null)
+            {
+                labDoor.RevealDoor();
+            }
+
             // Direct objective to the Secret Laboratory
-            string objective = "Find the Secret Laboratory.";
+            string objective = "The Secret Laboratory door has revealed itself! Swipe the Master Access Key to enter!";
             GameEvents.Objective(objective);
-            GameEvents.Overseer("SECURITY ALERT: Master Access Key acquired from Titan's core. Locating Secret Laboratory...");
+            GameEvents.Overseer("SECURITY ALERT: Master Access Key acquired from Titan's core. Hidden blast door emerged from the Sector E wall!");
 
             if (labDoor != null && GameManager.Instance != null)
             {
                 GameManager.Instance.SetCustomObjective(labDoor.TerminalTransform, objective);
+            }
+        }
+
+        public void OnTitanDefeated()
+        {
+            if (labDoor != null)
+            {
+                labDoor.RevealDoor();
             }
         }
 
@@ -306,10 +320,18 @@ namespace MistProtocol.FinalRescue
 
             var floorMat = new Material(litShader) { color = new Color(0.16f, 0.18f, 0.2f) };
 
-            // 1. Secret Laboratory Entrance Blast Door
+            // 1. Secret Laboratory Entrance Blast Door (Embedded in Sector E wall)
             var doorRoot = new GameObject("SecretLab_Entrance");
             doorRoot.transform.SetParent(transform, false);
             doorRoot.transform.localPosition = new Vector3(-2.2f, 0f, 0f);
+
+            // Large Wall Cover Plate that conceals the door until Titan is defeated
+            var coverPlate = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            coverPlate.name = "Lab_WallCoverPlate";
+            coverPlate.transform.SetParent(doorRoot.transform, false);
+            coverPlate.transform.localPosition = new Vector3(-0.1f, 1.75f, 0f);
+            coverPlate.transform.localScale = new Vector3(0.25f, 3.55f, 2.5f);
+            coverPlate.GetComponent<Renderer>().material = highTechWall;
 
             var slidingDoorGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
             slidingDoorGo.name = "Lab_SlidingDoor";
@@ -329,15 +351,15 @@ namespace MistProtocol.FinalRescue
             var termLight = termGo.AddComponent<Light>();
             termLight.type = LightType.Point;
             termLight.range = 3.5f;
-            termLight.intensity = 2.5f;
-            termLight.color = new Color(1f, 0.2f, 0.15f); // Red locked indicator initially
+            termLight.intensity = 0.6f;
+            termLight.color = new Color(1f, 0.4f, 0.1f);
 
             var termCol = termGo.GetComponent<BoxCollider>();
             termCol.size = new Vector3(2.5f, 2.5f, 2.5f);
             termCol.isTrigger = true;
 
             labDoor = doorRoot.AddComponent<SecretLaboratoryDoor>();
-            labDoor.Bind(slidingDoorGo.transform, termGo.transform, termLight);
+            labDoor.Bind(slidingDoorGo.transform, termGo.transform, termLight, coverPlate.transform);
 
             // 2. Secret Laboratory Room Shell
             CreateWall("Wall_East", new Vector3(2.6f, 1.75f, 0f), new Vector3(0.25f, 3.5f, 7.5f), highTechWall);
@@ -353,7 +375,7 @@ namespace MistProtocol.FinalRescue
             var l1 = light1Go.AddComponent<Light>();
             l1.type = LightType.Point;
             l1.range = 8f;
-            l1.intensity = 2f;
+            l1.intensity = 1.4f;
             l1.color = new Color(0.6f, 0.8f, 1f);
 
             var light2Go = new GameObject("LabLight_2");
@@ -362,29 +384,29 @@ namespace MistProtocol.FinalRescue
             var l2 = light2Go.AddComponent<Light>();
             l2.type = LightType.Point;
             l2.range = 8f;
-            l2.intensity = 2f;
+            l2.intensity = 1.4f;
             l2.color = new Color(0.6f, 0.8f, 1f);
 
             emergencyAlarmLights = new[] { l1, l2 };
 
-            // 4. Energy Barrier
+            // 4. Energy Barrier (Gentle translucent blue sci-fi forcefield, no glare bloom)
             var barrierGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
             barrierGo.name = "EnergyBarrier";
             barrierGo.transform.SetParent(transform, false);
             barrierGo.transform.localPosition = new Vector3(1.0f, 1.75f, 0f);
-            barrierGo.transform.localScale = new Vector3(0.12f, 3.4f, 3.6f);
+            barrierGo.transform.localScale = new Vector3(0.08f, 3.4f, 3.6f);
 
             var barrierMat = new Material(litShader);
-            barrierMat.SetColor("_BaseColor", new Color(0.2f, 0.7f, 1f, 0.8f));
+            barrierMat.SetColor("_BaseColor", new Color(0.1f, 0.5f, 0.9f, 0.35f));
             barrierMat.EnableKeyword("_EMISSION");
-            barrierMat.SetColor("_EmissionColor", new Color(0.15f, 0.65f, 1f) * 3f);
+            barrierMat.SetColor("_EmissionColor", new Color(0.1f, 0.55f, 1f) * 0.6f);
             barrierGo.GetComponent<Renderer>().material = barrierMat;
 
             var barrierLight = barrierGo.AddComponent<Light>();
             barrierLight.type = LightType.Point;
-            barrierLight.range = 6f;
-            barrierLight.intensity = 3.5f;
-            barrierLight.color = new Color(0.2f, 0.7f, 1f);
+            barrierLight.range = 3.2f;
+            barrierLight.intensity = 0.75f;
+            barrierLight.color = new Color(0.2f, 0.6f, 1f);
 
             energyBarrier = barrierGo.AddComponent<EnergyBarrier>();
             energyBarrier.Configure(barrierGo.GetComponent<BoxCollider>(), barrierGo.GetComponent<Renderer>(), barrierLight);
@@ -393,7 +415,7 @@ namespace MistProtocol.FinalRescue
             var appaGo = new GameObject("NPC_Father_Appa");
             appaGo.transform.SetParent(transform, false);
             appaGo.transform.localPosition = new Vector3(1.9f, 0f, 0f);
-            appaGo.transform.localRotation = Quaternion.Euler(0f, -90f, 0f); // Looking towards entrance
+            appaGo.transform.localRotation = Quaternion.Euler(0f, -90f, 0f);
 
             AttachAppaModel(appaGo);
 
@@ -406,18 +428,77 @@ namespace MistProtocol.FinalRescue
             fatherNPC = appaGo.AddComponent<FatherRescueNPC>();
             fatherNPC.BindBarrier(energyBarrier);
 
-            // 6. Four Control Switches: Scrambled layout (Green, Yellow, Red, Blue)
-            // Sequence solution required by Appa's Ceylon Tea Lore: Red (Flame) -> Blue (Mist) -> Yellow (Sun) -> Green (Leaf)
-            var greenSw = CreateSwitchStation("Switch_Green", new Vector3(-1.6f, 0f, 2.5f), SwitchColor.Green, darkMetal, litShader);
-            var yellowSw = CreateSwitchStation("Switch_Yellow", new Vector3(-0.8f, 0f, 2.5f), SwitchColor.Yellow, darkMetal, litShader);
-            var redSw = CreateSwitchStation("Switch_Red", new Vector3(0.0f, 0f, 2.5f), SwitchColor.Red, darkMetal, litShader);
-            var blueSw = CreateSwitchStation("Switch_Blue", new Vector3(0.8f, 0f, 2.5f), SwitchColor.Blue, darkMetal, litShader);
+            // 6. Unified Master Puzzle Console Workstation
+            var consoleGo = new GameObject("Master_PuzzleConsole");
+            consoleGo.transform.SetParent(transform, false);
+            consoleGo.transform.localPosition = new Vector3(0f, 0f, 2.5f);
 
-            // 7. Puzzle Controller
-            var puzzleGo = new GameObject("PuzzleController");
-            puzzleGo.transform.SetParent(transform, false);
-            var puzzle = puzzleGo.AddComponent<LaboratoryPuzzleController>();
-            puzzle.Bind(blueSw, yellowSw, greenSw, redSw, energyBarrier, emergencyAlarmLights);
+            // Desk Base
+            var deskGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            deskGo.name = "Console_Desk";
+            deskGo.transform.SetParent(consoleGo.transform, false);
+            deskGo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
+            deskGo.transform.localScale = new Vector3(2.4f, 0.9f, 0.85f);
+            deskGo.GetComponent<Renderer>().material = darkMetal;
+
+            // Desk Collar Cap
+            var collarGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            collarGo.name = "Console_Collar";
+            collarGo.transform.SetParent(consoleGo.transform, false);
+            collarGo.transform.localPosition = new Vector3(0f, 0.91f, 0f);
+            collarGo.transform.localScale = new Vector3(2.5f, 0.05f, 0.92f);
+            collarGo.GetComponent<Renderer>().material = darkMetal;
+
+            // Monitor Frame
+            var frameGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            frameGo.name = "Monitor_Frame";
+            frameGo.transform.SetParent(consoleGo.transform, false);
+            frameGo.transform.localPosition = new Vector3(0f, 1.55f, 0.35f);
+            frameGo.transform.localScale = new Vector3(1.9f, 1.0f, 0.08f);
+            frameGo.GetComponent<Renderer>().material = darkMetal;
+
+            // Monitor Screen Glass
+            var screenGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            screenGo.name = "Monitor_Screen";
+            screenGo.transform.SetParent(consoleGo.transform, false);
+            screenGo.transform.localPosition = new Vector3(0f, 1.55f, 0.30f);
+            screenGo.transform.localScale = new Vector3(1.8f, 0.9f, 0.02f);
+            var scrMat = new Material(litShader) { color = new Color(0.04f, 0.07f, 0.12f) };
+            scrMat.EnableKeyword("_EMISSION");
+            scrMat.SetColor("_EmissionColor", new Color(0.08f, 0.25f, 0.45f) * 0.8f);
+            screenGo.GetComponent<Renderer>().material = scrMat;
+
+            // In-world UI Canvas on the monitor screen
+            var canvasGo = new GameObject("Screen_Canvas", typeof(Canvas), typeof(CanvasScaler));
+            canvasGo.transform.SetParent(consoleGo.transform, false);
+            canvasGo.transform.localPosition = new Vector3(0f, 1.55f, 0.28f);
+            var canvas = canvasGo.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            var cRt = canvasGo.GetComponent<RectTransform>();
+            cRt.sizeDelta = new Vector2(700f, 350f);
+            cRt.localScale = new Vector3(0.0025f, 0.0025f, 0.0025f);
+
+            var scrTitle = MakeScreenText(canvasGo.transform, "Title", "APPA'S HARVEST CIPHER OVERRIDE", 26, new Color(0.35f, 0.9f, 1f), new Vector2(0f, 120f), new Vector2(680f, 40f));
+            var scrSub = MakeScreenText(canvasGo.transform, "Sub", "GLENMIST EMERGENCY CONTAINMENT TERMINAL", 16, new Color(0.7f, 0.8f, 0.9f), new Vector2(0f, 85f), new Vector2(680f, 30f));
+            var scrSlots = MakeScreenText(canvasGo.transform, "Slots", "[  ???  ]    [  ???  ]    [  ???  ]    [  ???  ]", 28, Color.white, new Vector2(0f, 10f), new Vector2(680f, 50f));
+            var scrStatus = MakeScreenText(canvasGo.transform, "Status", "PHASE 1: KINDLE WITHERING KILN FURNACE (RED)", 17, new Color(1f, 0.85f, 0.3f), new Vector2(0f, -65f), new Vector2(680f, 40f));
+
+            var scrLight = consoleGo.AddComponent<Light>();
+            scrLight.type = LightType.Point;
+            scrLight.range = 3.0f;
+            scrLight.intensity = 0.85f;
+            scrLight.color = new Color(0.2f, 0.75f, 1f);
+
+            // 4 Console Buttons mounted together neatly in a row on the desk surface
+            var redBtn = CreateConsoleButton(consoleGo.transform, "Btn_Red", new Vector3(-0.6f, 0.95f, -0.1f), SwitchColor.Red, darkMetal, litShader);
+            var blueBtn = CreateConsoleButton(consoleGo.transform, "Btn_Blue", new Vector3(-0.2f, 0.95f, -0.1f), SwitchColor.Blue, darkMetal, litShader);
+            var yellowBtn = CreateConsoleButton(consoleGo.transform, "Btn_Yellow", new Vector3(0.2f, 0.95f, -0.1f), SwitchColor.Yellow, darkMetal, litShader);
+            var greenBtn = CreateConsoleButton(consoleGo.transform, "Btn_Green", new Vector3(0.6f, 0.95f, -0.1f), SwitchColor.Green, darkMetal, litShader);
+
+            // 7. Puzzle Controller on the console
+            var puzzle = consoleGo.AddComponent<LaboratoryPuzzleController>();
+            puzzle.Bind(blueBtn, yellowBtn, greenBtn, redBtn, energyBarrier, emergencyAlarmLights);
+            puzzle.BindScreen(scrTitle, scrSlots, scrStatus, scrLight);
 
             // 8. Four Hidden Clues placed in accessible laboratory player area
             CreateClueStation("Clue1_Terminal", new Vector3(-1.8f, 0f, -2.2f), LabClueType.ComputerTerminal, darkMetal, litShader);
@@ -448,107 +529,74 @@ namespace MistProtocol.FinalRescue
             if (r != null) r.material = mat;
         }
 
-        private LaboratorySwitch CreateSwitchStation(string name, Vector3 pos, SwitchColor color, Material pedestalMat, Shader shader)
+        private static Text MakeScreenText(Transform parent, string name, string initialText, int fontSize, Color color, Vector2 anchoredPos, Vector2 sizeDelta)
         {
-            var stationGo = new GameObject(name);
-            stationGo.transform.SetParent(transform, false);
-            stationGo.transform.localPosition = pos;
+            var go = new GameObject(name, typeof(RectTransform), typeof(Text));
+            go.transform.SetParent(parent, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchoredPosition = anchoredPos;
+            rt.sizeDelta = sizeDelta;
 
-            // Pedestal base
-            var baseGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            baseGo.name = "Pedestal";
-            baseGo.transform.SetParent(stationGo.transform, false);
-            baseGo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
-            baseGo.transform.localScale = new Vector3(0.55f, 0.9f, 0.55f);
-            baseGo.GetComponent<Renderer>().material = pedestalMat;
+            var txt = go.GetComponent<Text>();
+            txt.text = initialText;
+            txt.fontSize = fontSize;
+            txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf") ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+            txt.alignment = TextAnchor.MiddleCenter;
+            txt.color = color;
+            txt.supportRichText = true;
+            return txt;
+        }
 
-            // Pedestal collar cap
-            var capGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            capGo.name = "PedestalCap";
-            capGo.transform.SetParent(stationGo.transform, false);
-            capGo.transform.localPosition = new Vector3(0f, 0.91f, 0f);
-            capGo.transform.localScale = new Vector3(0.65f, 0.04f, 0.65f);
-            capGo.GetComponent<Renderer>().material = pedestalMat;
+        private LaboratorySwitch CreateConsoleButton(Transform consoleParent, string name, Vector3 localPos, SwitchColor color, Material deskMat, Shader shader)
+        {
+            var btnGo = new GameObject(name);
+            btnGo.transform.SetParent(consoleParent, false);
+            btnGo.transform.localPosition = localPos;
 
-            // Try loading 3D button box model
-            GameObject buttonModelPrefab = Resources.Load<GameObject>("Models/PuzzleButtons");
-#if UNITY_EDITOR
-            if (buttonModelPrefab == null)
+            // Small button housing / bezel
+            var bezelGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bezelGo.name = "Bezel";
+            bezelGo.transform.SetParent(btnGo.transform, false);
+            bezelGo.transform.localPosition = Vector3.zero;
+            bezelGo.transform.localScale = new Vector3(0.28f, 0.06f, 0.28f);
+            bezelGo.GetComponent<Renderer>().material = deskMat;
+
+            // Colored push button
+            var capGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            capGo.name = "Cap";
+            capGo.transform.SetParent(btnGo.transform, false);
+            capGo.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+            capGo.transform.localScale = new Vector3(0.20f, 0.05f, 0.20f);
+
+            var btnMat = new Material(shader);
+            Color baseCol = color switch
             {
-                buttonModelPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Art/Models/PuzzleButtons.fbx");
-            }
-#endif
-            Renderer activeRend = null;
-            Light lt = null;
+                SwitchColor.Red => new Color(0.95f, 0.2f, 0.2f),
+                SwitchColor.Blue => new Color(0.2f, 0.65f, 1f),
+                SwitchColor.Yellow => new Color(1f, 0.85f, 0.2f),
+                SwitchColor.Green => new Color(0.25f, 0.9f, 0.3f),
+                _ => Color.white
+            };
+            btnMat.color = baseCol;
+            btnMat.EnableKeyword("_EMISSION");
+            btnMat.SetColor("_EmissionColor", baseCol * 0.45f);
+            var rend = capGo.GetComponent<Renderer>();
+            rend.material = btnMat;
 
-            if (buttonModelPrefab != null)
-            {
-                // Instantiate the specific color box from the FBX hierarchy
-                var fullModel = Instantiate(buttonModelPrefab, stationGo.transform);
-                fullModel.name = $"Model_{color}";
-                fullModel.transform.localPosition = new Vector3(0f, 0.98f, 0f);
-                fullModel.transform.localScale = Vector3.one * 1.8f;
-                fullModel.transform.localRotation = Quaternion.Euler(0f, 180f, 0f); // face player
+            var lt = capGo.AddComponent<Light>();
+            lt.type = LightType.Point;
+            lt.range = 1.8f;
+            lt.intensity = 0.5f;
+            lt.color = baseCol;
 
-                // Enable only the child object corresponding to this switch color
-                string targetChildName = $"PuzzleBox_{color}";
-                Transform matchedChild = null;
-                foreach (Transform child in fullModel.transform)
-                {
-                    if (child.name.Equals(targetChildName, System.StringComparison.OrdinalIgnoreCase))
-                    {
-                        child.gameObject.SetActive(true);
-                        matchedChild = child;
-                    }
-                    else
-                    {
-                        child.gameObject.SetActive(false);
-                    }
-                }
+            // Interaction collider
+            var col = btnGo.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.35f, 0.5f, 0.35f);
+            col.center = new Vector3(0f, 0.15f, 0f);
+            col.isTrigger = true;
 
-                if (matchedChild != null)
-                {
-                    // Center the isolated child squarely onto the pedestal
-                    matchedChild.localPosition = Vector3.zero;
-                    activeRend = matchedChild.GetComponent<Renderer>();
-                }
-                else
-                {
-                    activeRend = fullModel.GetComponentInChildren<Renderer>();
-                }
-
-                var ltGo = new GameObject("StatusLight");
-                ltGo.transform.SetParent(stationGo.transform, false);
-                ltGo.transform.localPosition = new Vector3(0f, 1.25f, -0.2f);
-                lt = ltGo.AddComponent<Light>();
-                lt.type = LightType.Point;
-                lt.range = 3.5f;
-            }
-            else
-            {
-                // Fallback procedural button
-                var buttonGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                buttonGo.name = "ButtonMesh";
-                buttonGo.transform.SetParent(stationGo.transform, false);
-                buttonGo.transform.localPosition = new Vector3(0f, 0.96f, 0f);
-                buttonGo.transform.localScale = new Vector3(0.25f, 0.08f, 0.25f);
-
-                var btnMat = new Material(shader);
-                buttonGo.GetComponent<Renderer>().material = btnMat;
-                activeRend = buttonGo.GetComponent<Renderer>();
-
-                lt = buttonGo.AddComponent<Light>();
-                lt.type = LightType.Point;
-                lt.range = 3.5f;
-            }
-
-            var box = stationGo.AddComponent<BoxCollider>();
-            box.size = new Vector3(1.1f, 1.8f, 1.1f);
-            box.center = new Vector3(0f, 0.9f, 0f);
-            box.isTrigger = true;
-
-            var sw = stationGo.AddComponent<LaboratorySwitch>();
-            sw.Configure(color, activeRend, lt);
+            var sw = btnGo.AddComponent<LaboratorySwitch>();
+            sw.Configure(color, rend, lt);
             return sw;
         }
 
@@ -575,13 +623,13 @@ namespace MistProtocol.FinalRescue
 
                 var scrMat = new Material(shader) { color = new Color(0.1f, 0.5f, 0.85f) };
                 scrMat.EnableKeyword("_EMISSION");
-                scrMat.SetColor("_EmissionColor", new Color(0.1f, 0.6f, 0.95f) * 2.5f);
+                scrMat.SetColor("_EmissionColor", new Color(0.1f, 0.6f, 0.95f) * 0.5f);
                 screen.GetComponent<Renderer>().material = scrMat;
 
                 var lt = screen.AddComponent<Light>();
                 lt.type = LightType.Point;
-                lt.range = 3.5f;
-                lt.intensity = 2f;
+                lt.range = 2.5f;
+                lt.intensity = 0.6f;
                 lt.color = new Color(0.2f, 0.7f, 1f);
             }
             else if (type == LabClueType.HiddenDocument)
@@ -601,18 +649,18 @@ namespace MistProtocol.FinalRescue
 
                 var docMat = new Material(shader) { color = new Color(0.9f, 0.85f, 0.65f) };
                 docMat.EnableKeyword("_EMISSION");
-                docMat.SetColor("_EmissionColor", new Color(0.9f, 0.8f, 0.5f) * 1.5f);
+                docMat.SetColor("_EmissionColor", new Color(0.9f, 0.8f, 0.5f) * 0.35f);
                 doc.GetComponent<Renderer>().material = docMat;
 
                 var lt = doc.AddComponent<Light>();
                 lt.type = LightType.Point;
-                lt.range = 3f;
-                lt.intensity = 1.8f;
+                lt.range = 2.0f;
+                lt.intensity = 0.4f;
                 lt.color = new Color(1f, 0.9f, 0.5f);
             }
             else if (type == LabClueType.WallMessage)
             {
-                // Glowing inscribed plate on wall
+                // Glowing inscribed plate on wall - soft glow without blinding bloom
                 var plate = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 plate.transform.SetParent(clueGo.transform, false);
                 plate.transform.localPosition = Vector3.zero;
@@ -620,13 +668,13 @@ namespace MistProtocol.FinalRescue
 
                 var pMat = new Material(shader) { color = new Color(0.95f, 0.75f, 0.2f) };
                 pMat.EnableKeyword("_EMISSION");
-                pMat.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.25f) * 2.8f);
+                pMat.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.25f) * 0.5f);
                 plate.GetComponent<Renderer>().material = pMat;
 
                 var lt = plate.AddComponent<Light>();
                 lt.type = LightType.Point;
-                lt.range = 4f;
-                lt.intensity = 2.5f;
+                lt.range = 2.5f;
+                lt.intensity = 0.5f;
                 lt.color = new Color(1f, 0.85f, 0.3f);
             }
             else if (type == LabClueType.ResearchNotes)
@@ -646,13 +694,13 @@ namespace MistProtocol.FinalRescue
 
                 var padMat = new Material(shader) { color = new Color(0.2f, 0.85f, 1f) };
                 padMat.EnableKeyword("_EMISSION");
-                padMat.SetColor("_EmissionColor", new Color(0.2f, 0.85f, 1f) * 2.5f);
+                padMat.SetColor("_EmissionColor", new Color(0.2f, 0.85f, 1f) * 0.45f);
                 pad.GetComponent<Renderer>().material = padMat;
 
                 var lt = pad.AddComponent<Light>();
                 lt.type = LightType.Point;
-                lt.range = 3.5f;
-                lt.intensity = 2f;
+                lt.range = 2.2f;
+                lt.intensity = 0.5f;
                 lt.color = new Color(0.2f, 0.85f, 1f);
             }
 
