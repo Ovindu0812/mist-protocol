@@ -62,6 +62,9 @@ namespace MistProtocol.Interaction
             if (_progress >= holdSeconds)
             {
                 _done = true;
+                Vfx.Burst(transform.position + Vector3.up * 0.8f, Vector3.up, new Color(0.3f, 0.85f, 1f), 30, 4.5f, 0.12f, 0.8f);
+                ProceduralAudio.PlayAt("zap", transform.position, 0.85f, 0.9f);
+                ProceduralAudio.PlayAt("alarm", transform.position, 0.9f, 1.0f);
                 GameManager.Instance.OnKillSwitchCompleted();
             }
         }
