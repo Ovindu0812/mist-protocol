@@ -86,8 +86,16 @@ namespace MistProtocol.FinalRescue
             _isResetting = true;
             if (FinalRescueMission.Instance != null) FinalRescueMission.Instance.IsPuzzleLocked = true;
 
-            // 1. Play alarm sound & UI message
+            // 1. Play alarm sound, electrical short circuit & UI message
             ProceduralAudio.PlayAt("alarm", transform.position, 1f, 1f);
+            ProceduralAudio.PlayAt("shortCircuit", transform.position, 0.85f, 0.9f);
+
+            // Emit electrical short-circuit spark bursts from switches
+            if (blueSwitch != null) Vfx.Burst(blueSwitch.transform.position + Vector3.up * 0.9f, Vector3.up, new Color(0.2f, 0.7f, 1f), 14, 3f, 0.08f, 0.4f);
+            if (yellowSwitch != null) Vfx.Burst(yellowSwitch.transform.position + Vector3.up * 0.9f, Vector3.up, new Color(1f, 0.8f, 0.2f), 14, 3f, 0.08f, 0.4f);
+            if (greenSwitch != null) Vfx.Burst(greenSwitch.transform.position + Vector3.up * 0.9f, Vector3.up, new Color(0.2f, 1f, 0.4f), 14, 3f, 0.08f, 0.4f);
+            if (redSwitch != null) Vfx.Burst(redSwitch.transform.position + Vector3.up * 0.9f, Vector3.up, new Color(1f, 0.3f, 0.2f), 14, 3f, 0.08f, 0.4f);
+
             if (FinalRescueUI.Instance != null)
             {
                 FinalRescueUI.Instance.ShowPuzzleIncorrectAlert("INCORRECT CIPHER! Appa's Riddle: Fire (Red) -> Mist (Blue) -> Sun (Yellow) -> Leaf (Green)");
