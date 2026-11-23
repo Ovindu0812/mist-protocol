@@ -25,7 +25,15 @@ namespace MistProtocol.Interaction
         private void Start()
         {
             _health = GetComponent<Health>();
+            _health.Damaged += OnDamaged;
             _health.Died += Explode;
+        }
+
+        private void OnDamaged(float amount, Vector3 hitPoint)
+        {
+            if (_exploded) return;
+            Vfx.Burst(hitPoint, Vector3.up, new Color(1f, 0.65f, 0.15f), 12, 3.5f, 0.08f, 0.35f);
+            ProceduralAudio.PlayAt("steam", transform.position, 0.5f, 1.4f);
         }
 
         protected override void OnImpact(float speed, Collision c)
