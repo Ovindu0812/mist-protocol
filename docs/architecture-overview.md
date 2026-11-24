@@ -39,6 +39,11 @@ The AI simulation is composed of four decoupled layers:
 - **State Representation**: Bitmask and key-value world states (`PlayerInSight`, `WeaponArmed`, `InCover`, `TargetReachable`).
 - **Action Regression**: Backward A* search through action precondition-effect graphs to formulate dynamic tactical execution plans.
 
+### 2.4 Agent Controller & Path Translation Subsystem (`AgentMotor`, `PathUtils`)
+- **String-Pulling & Spline Smoothing**: Translates discrete grid cell paths into continuous $C^1$ trajectories using line-of-sight pruning and centripetal Catmull-Rom resampling (`PathUtils.Smooth`).
+- **Kinematic Steering**: Pure-pursuit lookahead tracking with dynamic angular velocity damping scaled inversely against linear speed (`AgentMotor.cs`).
+- **Procedural Locomotion**: Phase-locked bipedal cadence (`WalkerAnimator.cs`) and aerodynamic quad-rotor banking physics (`DroneAnimator.cs`), decoupling AI decision-making from visual presentation without external animation clip overhead.
+
 ---
 
 ## 3. Combat & Ballistics Pipeline
