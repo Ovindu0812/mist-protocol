@@ -115,6 +115,12 @@ namespace MistProtocol.Core
                 encounterGo.AddComponent<World.RollingRoomEncounter>();
             }
 
+            if (World.FacilityEncounterSquads.Instance == null && FindAnyObjectByType<World.FacilityEncounterSquads>() == null)
+            {
+                var facilitySquadsGo = new GameObject("FacilityEncounterSquads");
+                facilitySquadsGo.AddComponent<World.FacilityEncounterSquads>();
+            }
+
             if (Interaction.WitheringLoftKeycardTask.Instance == null && FindAnyObjectByType<Interaction.WitheringLoftKeycardTask>() == null)
             {
                 var keycardTaskGo = new GameObject("WitheringLoft_KeycardTask_Manager");
