@@ -241,7 +241,24 @@ namespace MistProtocol.AI.Agents
 
         private void Patrol()
         {
-            if (patrolPoints == null || patrolPoints.Length == 0) return;
+            if (patrolPoints == null || patrolPoints.Length == 0 || patrolPoints[_patrolIndex] == null)
+            {
+                var p0 = GameObject.Find("PatrolTitan_0");
+                var p1 = GameObject.Find("PatrolTitan_1");
+                var p2 = GameObject.Find("PatrolTitan_2");
+                var p3 = GameObject.Find("PatrolTitan_3");
+                if (p0 != null && p1 != null && p2 != null && p3 != null)
+                {
+                    patrolPoints = new[] { p0.transform, p1.transform, p2.transform, p3.transform };
+                    _patrolIndex = 0;
+                }
+                else
+                {
+                    Motor.MaxSpeed = patrolSpeed;
+                    Motor.MoveTo(new Vector3(46f, 0f, 7f));
+                    return;
+                }
+            }
 
             Vector3 dest = patrolPoints[_patrolIndex].position;
             Motor.MaxSpeed = patrolSpeed;

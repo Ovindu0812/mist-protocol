@@ -17,9 +17,9 @@ namespace MistProtocol.AI.Navigation
     {
         public static NavGrid Instance { get; private set; }
 
-        [SerializeField] private Vector3 origin = new Vector3(-32f, 0f, -8f);
-        [SerializeField] private int width = 128;
-        [SerializeField] private int height = 92;
+        [SerializeField] private Vector3 origin = new Vector3(-32f, 0f, -10f);
+        [SerializeField] private int width = 176;
+        [SerializeField] private int height = 96;
         [SerializeField] private float cellSize = 0.5f;
         [SerializeField] private bool drawGizmos = false;
 
@@ -45,25 +45,29 @@ namespace MistProtocol.AI.Navigation
             origin = gridOrigin; width = w; height = h; cellSize = size;
         }
 
-        private void Awake() => Instance = this;
+        private void Awake()
+        {
+            Instance = this;
+            if (width < 176)
+            {
+                origin = new Vector3(-32f, 0f, -10f);
+                width = 176;
+                height = 96;
+                cellSize = 0.5f;
+            }
+        }
 
-        // Start, not Awake: NavMeshSurface registers its baked data in OnEnable, which
-        // runs after this object's Awake. Execution order -200 keeps this Start first.
         private void Start()
         {
             Build();
-            // Disable NavMeshSurface components at runtime to suppress editor cyan mesh drawing
-            var surfaces = FindObjectsByType<Unity.AI.Navigation.NavMeshSurface>();
-            foreach (var s in surfaces)
-            {
-                s.enabled = false;
-            }
         }
 
         public void Build()
         {
             _staticWalkable = new bool[Count];
             _walkable = new bool[Count];
+            int onMeshCount = 0;
+
             for (int z = 0; z < height; z++)
             for (int x = 0; x < width; x++)
             {
@@ -72,7 +76,26 @@ namespace MistProtocol.AI.Navigation
                 bool onMesh = NavMesh.SamplePosition(c + Vector3.up * 0.1f, out var hit, cellSize * 0.45f, NavMesh.AllAreas)
                               && Mathf.Abs(hit.position.y - origin.y) < 0.6f;
                 _staticWalkable[i] = onMesh;
+                if (onMesh) onMeshCount++;
             }
+
+            // Fallback: If NavMesh has not been baked or returned 0 walkable cells, sample physics colliders!
+            if (onMeshCount == 0)
+            {
+                for (int z = 0; z < height; z++)
+                for (int x = 0; x < width; x++)
+                {
+                    int i = Index(x, z);
+                    Vector3 c = CellCenter(i);
+                    // Check if floor exists under cell center
+                    bool hasFloor = Physics.Raycast(c + Vector3.up * 1.5f, Vector3.down, out var floorHit, 2.5f, ~0, QueryTriggerInteraction.Ignore)
+                                    && Mathf.Abs(floorHit.point.y - origin.y) < 0.6f;
+                    // Check if space is not blocked by static wall
+                    bool blockedByWall = Physics.CheckSphere(c + Vector3.up * 0.8f, cellSize * 0.35f, ~0, QueryTriggerInteraction.Ignore);
+                    _staticWalkable[i] = hasFloor && !blockedByWall;
+                }
+            }
+
             for (int i = 0; i < Count; i++) _walkable[i] = _staticWalkable[i] && !DynamicBlocked(CellCenter(i));
             BuildCover();
             Version++;
