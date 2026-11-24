@@ -155,6 +155,18 @@ namespace MistProtocol.FinalRescue
             if (greenSwitch != null) Vfx.Burst(greenSwitch.transform.position + Vector3.up * 0.9f, Vector3.up, new Color(0.2f, 1f, 0.4f), 14, 3f, 0.08f, 0.4f);
             if (redSwitch != null) Vfx.Burst(redSwitch.transform.position + Vector3.up * 0.9f, Vector3.up, new Color(1f, 0.3f, 0.2f), 14, 3f, 0.08f, 0.4f);
 
+            // Circuit overload spark surge along floor power conduits connecting console to barrier
+            Vector3 conduitStart1 = new Vector3(45.7f, 0.05f, 10.5f);
+            Vector3 conduitStart2 = new Vector3(47.3f, 0.05f, 10.5f);
+            for (int step = 0; step < 4; step++)
+            {
+                float t = step / 3.0f;
+                Vector3 p1 = Vector3.Lerp(conduitStart1, new Vector3(45.7f, 0.05f, 12.8f), t);
+                Vector3 p2 = Vector3.Lerp(conduitStart2, new Vector3(47.3f, 0.05f, 12.8f), t);
+                Vfx.Burst(p1, Vector3.up, new Color(0.3f, 0.8f, 1f), 8, 2.5f, 0.06f, 0.3f);
+                Vfx.Burst(p2, Vector3.up, new Color(1f, 0.4f, 0.2f), 8, 2.5f, 0.06f, 0.3f);
+            }
+
             if (FinalRescueUI.Instance != null)
             {
                 FinalRescueUI.Instance.ShowPuzzleIncorrectAlert("INCORRECT CIPHER! Appa's Riddle: Fire (Red) -> Mist (Blue) -> Sun (Yellow) -> Leaf (Green)");
