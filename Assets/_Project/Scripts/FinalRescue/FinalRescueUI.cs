@@ -440,7 +440,7 @@ namespace MistProtocol.FinalRescue
             int mins = Mathf.FloorToInt(timeElapsed / 60f);
             int secs = Mathf.FloorToInt(timeElapsed % 60f);
 
-            _victoryStatsText.text = $"Robots Destroyed: {kills}    Escape Time: {mins}m {secs}s    Clues Discovered: {cluesFound}/4";
+            _victoryStatsText.text = $"Robots Destroyed: {kills}    Escape Time: {mins}m {secs}s    Status: Father Rescued!";
             _victoryPanelGo.SetActive(true);
 
             EnsureEventSystem();

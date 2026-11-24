@@ -151,7 +151,7 @@ namespace MistProtocol.FinalRescue
 
             if (FinalRescueUI.Instance != null)
             {
-                FinalRescueUI.Instance.UpdateClueHud(_discoveredClues.Count, 4);
+                FinalRescueUI.Instance.HideClueHud();
             }
 
             // Direct objective to the Energy Barrier / Father inside
@@ -483,7 +483,7 @@ namespace MistProtocol.FinalRescue
             cRt.localScale = new Vector3(0.0025f, 0.0025f, 0.0025f);
 
             var scrTitle = MakeScreenText(canvasGo.transform, "Title", "APPA'S HARVEST CIPHER OVERRIDE", 26, new Color(0.35f, 0.9f, 1f), new Vector2(0f, 120f), new Vector2(680f, 40f));
-            var scrSub = MakeScreenText(canvasGo.transform, "Sub", "GLENMIST EMERGENCY CONTAINMENT TERMINAL", 16, new Color(0.7f, 0.8f, 0.9f), new Vector2(0f, 85f), new Vector2(680f, 30f));
+            var scrSub = MakeScreenText(canvasGo.transform, "Sub", "RIDDLE: FIRE (RED) -> MIST (BLUE) -> SUN (YELLOW) -> LEAF (GREEN)", 15, new Color(1f, 0.85f, 0.35f), new Vector2(0f, 85f), new Vector2(680f, 30f));
             var scrSlots = MakeScreenText(canvasGo.transform, "Slots", "[  ???  ]    [  ???  ]    [  ???  ]    [  ???  ]", 28, Color.white, new Vector2(0f, 10f), new Vector2(680f, 50f));
             var scrStatus = MakeScreenText(canvasGo.transform, "Status", "PHASE 1: KINDLE WITHERING KILN FURNACE (RED)", 17, new Color(1f, 0.85f, 0.3f), new Vector2(0f, -65f), new Vector2(680f, 40f));
 
@@ -523,11 +523,11 @@ namespace MistProtocol.FinalRescue
             cable2.transform.localScale = new Vector3(0.08f, 0.04f, 2.5f);
             cable2.GetComponent<Renderer>().material = cableMat;
 
-            // 8. Four Hidden Clues placed in accessible laboratory player area
-            CreateClueStation("Clue1_Terminal", new Vector3(-1.8f, 0f, -2.2f), LabClueType.ComputerTerminal, darkMetal, litShader);
-            CreateClueStation("Clue2_Document", new Vector3(-0.8f, 0f, -2.5f), LabClueType.HiddenDocument, darkMetal, litShader);
-            CreateClueStation("Clue3_WallMessage", new Vector3(-2.45f, 1.8f, 0.2f), LabClueType.WallMessage, darkMetal, litShader);
-            CreateClueStation("Clue4_ResearchNotes", new Vector3(-0.3f, 0f, 0.2f), LabClueType.ResearchNotes, darkMetal, litShader);
+            // Remove any legacy scattered clue objects so the laboratory remains sleek, spacious, and uncluttered
+            foreach (var clue in GetComponentsInChildren<SecretLaboratoryClue>(true))
+            {
+                Destroy(clue.gameObject);
+            }
         }
 
         private void EnsureEscapePoint()
