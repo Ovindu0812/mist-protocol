@@ -666,22 +666,34 @@ namespace MistProtocol.EditorTools
                 var s = Place(PrefabFactory.Sentinel, p, yaw, _gameplay).GetComponent<SentinelBrain>();
                 PrefabFactory.SetArray(s, "patrolPoints", patrol);
             }
-            Sentinel(new Vector3(-20f, 0, 20f), 0f, Patrol("PatrolA", new Vector3(-20, 0, 4), new Vector3(-20, 0, 31), new Vector3(-28, 0, 24), new Vector3(-12, 0, 24)));
-            Sentinel(new Vector3(-2f, 0, 12f), 90f, Patrol("PatrolB1", new Vector3(-2, 0, 3), new Vector3(-2, 0, 31), new Vector3(8, 0, 31)));
-            Sentinel(new Vector3(2f, 0, 22f), -90f, Patrol("PatrolB2", new Vector3(8, 0, 20), new Vector3(2, 0, 4), new Vector3(-8, 0, 28)));
-            // Rolling Room (Zone B) dedicated combat reinforcement squad: 3 Sentinels + 3 Hunter Drones
+            // Zone A (Withering Loft - First Room): 3 Sentinels, 3 Hunter Drones, 2 Saboteurs
+            Sentinel(new Vector3(-20f, 0, 8f), 0f, Patrol("PatrolA1", new Vector3(-20, 0, 4), new Vector3(-26, 0, 4), new Vector3(-26, 0, 14), new Vector3(-20, 0, 14)));
+            Sentinel(new Vector3(-18f, 0, 18f), 180f, Patrol("PatrolA2", new Vector3(-18, 0, 14), new Vector3(-13, 0, 14), new Vector3(-13, 0, 24), new Vector3(-18, 0, 24)));
+            Sentinel(new Vector3(-24f, 0, 28f), -90f, Patrol("PatrolA3", new Vector3(-24, 0, 26), new Vector3(-28, 0, 26), new Vector3(-28, 0, 33), new Vector3(-24, 0, 33)));
+            Place(PrefabFactory.Drone, new Vector3(-20f, 2.4f, 10f), 0f, _gameplay);
+            Place(PrefabFactory.Drone, new Vector3(-16f, 2.5f, 20f), 180f, _gameplay);
+            Place(PrefabFactory.Drone, new Vector3(-24f, 2.4f, 30f), -90f, _gameplay);
+            Place(PrefabFactory.Saboteur, new Vector3(-27f, 0, 12f), 90f, _gameplay);
+            Place(PrefabFactory.Saboteur, new Vector3(-13f, 0, 24f), -90f, _gameplay);
+
+            // Zone B (Rolling Room) combat reinforcement squad: 3 Sentinels + 3 Hunter Drones + 1 Saboteur
             Sentinel(new Vector3(-4f, 0, 28f), 0f, Patrol("PatrolB_North", new Vector3(-4, 0, 28), new Vector3(4, 0, 28), new Vector3(4, 0, 33), new Vector3(-4, 0, 33)));
             Sentinel(new Vector3(4f, 0, 8f), 180f, Patrol("PatrolB_South", new Vector3(4, 0, 8), new Vector3(-4, 0, 8), new Vector3(-4, 0, 4), new Vector3(4, 0, 4)));
             Sentinel(new Vector3(6f, 0, 18f), -90f, Patrol("PatrolB_East", new Vector3(6, 0, 18), new Vector3(6, 0, 12), new Vector3(8, 0, 16), new Vector3(8, 0, 24)));
             Place(PrefabFactory.Drone, new Vector3(-2f, 2.4f, 29f), 180f, _gameplay);
             Place(PrefabFactory.Drone, new Vector3(0f, 2.5f, 16f), -90f, _gameplay);
             Place(PrefabFactory.Drone, new Vector3(3f, 2.4f, 7f), 0f, _gameplay);
-
-            Sentinel(new Vector3(20f, 0, 6f), 0f, Patrol("PatrolC", new Vector3(20, 0, 3), new Vector3(20, 0, 22), new Vector3(28, 0, 22), new Vector3(12, 0, 3)));
-            Place(PrefabFactory.Drone, new Vector3(-20f, 2.4f, 30f), 180f, _gameplay);
-            Place(PrefabFactory.Drone, new Vector3(20f, 2.4f, 20f), 180f, _gameplay);
             Place(PrefabFactory.Saboteur, new Vector3(-6f, 0, 32f), 180f, _gameplay);
-            Place(PrefabFactory.Saboteur, new Vector3(26f, 0, 9f), -90f, _gameplay);
+
+            // Zone C (Drying Chamber - Keycard Room): 3 Sentinels, 3 Hunter Drones, 2 Saboteurs
+            Sentinel(new Vector3(14f, 0, 6f), 0f, Patrol("PatrolC1", new Vector3(14, 0, 4), new Vector3(18, 0, 4), new Vector3(18, 0, 10), new Vector3(14, 0, 10)));
+            Sentinel(new Vector3(20f, 0, 14f), 180f, Patrol("PatrolC2", new Vector3(20, 0, 8), new Vector3(20, 0, 20), new Vector3(25, 0, 20), new Vector3(25, 0, 8)));
+            Sentinel(new Vector3(26f, 0, 16f), -90f, Patrol("PatrolC3", new Vector3(26, 0, 12), new Vector3(28, 0, 12), new Vector3(28, 0, 20), new Vector3(26, 0, 20)));
+            Place(PrefabFactory.Drone, new Vector3(15f, 2.4f, 7f), 0f, _gameplay);
+            Place(PrefabFactory.Drone, new Vector3(20f, 2.5f, 14f), 180f, _gameplay);
+            Place(PrefabFactory.Drone, new Vector3(25f, 2.4f, 20f), -90f, _gameplay);
+            Place(PrefabFactory.Saboteur, new Vector3(18f, 0, 4f), 90f, _gameplay);
+            Place(PrefabFactory.Saboteur, new Vector3(26f, 0, 8f), -90f, _gameplay);
         }
 
         private static void ZoneContainment(Dictionary<string, PhysicsDoor> doors)
