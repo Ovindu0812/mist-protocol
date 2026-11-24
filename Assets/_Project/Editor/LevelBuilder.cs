@@ -286,7 +286,6 @@ namespace MistProtocol.EditorTools
             Prop("CargoContainer", new Vector3(22.0f, 0f, 1.8f), 0f);
             Prop("CargoContainer", new Vector3(21.0f, 2.59f, 1.8f), 0f);
             Prop("CargoContainer", new Vector3(11.6f, 0f, 13.5f), 90f);
-            Prop("CargoContainer", new Vector3(28.4f, 0f, 8.5f), 90f);
         }
 
         private static void ZoneControlRoom()
