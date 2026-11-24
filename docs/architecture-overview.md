@@ -95,3 +95,14 @@ Mismatches trigger an electrical short circuit discharge, room warning strobes, 
 
 ### 4.2 Dynamic Blast Door Emergence
 Upon Titan defeat, `GameManager` signals `FinalRescueMission` to trigger `SecretLaboratoryDoor.RevealDoor()`. The concealing perimeter wall plate (`Lab_WallCoverPlate`) retracts into the floor accompanied by procedural steam, dust particle bursts, and audio cues, exposing the Master Key swipe terminal.
+
+### 4.3 Zone 2 Drying Chamber Freight Container Architecture
+To transform the previously vacant Drying Chamber (Zone 2, $X \in [10, 30], Z \in [0, 24]$) into a tactical industrial staging yard:
+- **Parametric Container Assets:** 20ft and 40ft standard ISO intermodal shipping containers (`CargoContainer.fbx`) authored via Blender MCP pipeline with corrugated siding, corner castings, and dual lock-rod rear doors.
+- **Runtime Layout & Obstacles:** Managed by `DryingChamberContainers.cs` and `LevelBuilder.cs`, placing tactical container barricades with dynamic URP materials (`Container_MaritimeTeal` and `Container_OxideRed`).
+- **Tactical Cover & AI Navigation:** Dynamic `NavMeshObstacle` components with carving carve realistic patrol chokepoints and provide robust cover against hostile patrol units.
+
+### 4.4 Cybernetic Master Console & Floor Power Conduits
+The Secret Laboratory puzzle is unified into an ergonomic workstation console (`Master_PuzzleConsole`):
+- **Visual Feedback Hierarchy:** Overhead high-contrast CRT monitor displaying live slot status (`[ 1: RED (FIRE) ]`, etc.), neon LED halo indicator rings at switch bases, and 3D metallic element nameplates.
+- **Floor Conduit Network:** Dual high-voltage power conduits (`Console_Conduit_1` and `Console_Conduit_2`) route from the console along the laboratory floor into the prison stasis field, visually discharging spark overload bursts on incorrect sequences and conducting power deactivation cascades upon sequence completion.
