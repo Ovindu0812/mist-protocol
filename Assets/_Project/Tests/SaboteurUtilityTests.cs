@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using MistProtocol.AI.Saboteur;
+using MistProtocol.Core;
 using UnityEngine;
 
 namespace MistProtocol.Tests
@@ -14,7 +15,7 @@ namespace MistProtocol.Tests
             var brain = go.AddComponent<SaboteurBrain>();
 
             Assert.IsNotNull(brain, "SaboteurBrain component should initialize");
-            Assert.AreEqual(AI.Agents.AgentKind.Saboteur, brain.Kind);
+            Assert.AreEqual(AgentKind.Saboteur, brain.Kind);
 
             Object.DestroyImmediate(go);
         }
