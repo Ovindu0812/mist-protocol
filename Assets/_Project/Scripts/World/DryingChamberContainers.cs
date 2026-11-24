@@ -45,6 +45,12 @@ namespace MistProtocol.World
 
         public void BuildContainersIfMissing()
         {
+            // Remove any legacy door-blocking containers if they exist in the scene
+            var existingSW = GameObject.Find("Container_SW_Gate");
+            if (existingSW != null) Destroy(existingSW);
+            var existingN = GameObject.Find("Container_N_ControlBarrier_40ft");
+            if (existingN != null) Destroy(existingN);
+
             if (GameObject.Find("DryingChamber_Containers_Group") != null) return;
 
             var group = new GameObject("DryingChamber_Containers_Group");
@@ -75,23 +81,18 @@ namespace MistProtocol.World
 #endif
 
             // Layout specs for Drying Chamber (Zone 2: X=10 to 30, Z=0 to 24)
-            // 1. South-West Entrance Tactical Cover (Near Keycard Gate)
-            SpawnContainer(group.transform, "Container_SW_Gate", new Vector3(13.5f, 0f, 3.8f), 12f, ContainerType.Container20ft, ContainerColor.Teal, fbxPrefab, tealMat, redMat, metalMat);
-
-            // 2. South Wall Heavy Freight Line (Long 40ft container)
+            // Doorways at SW Gate (X=10, Z=4) and North Control Room (X=20, Z=24) are kept 100% CLEAR!
+            // 1. South Wall Heavy Freight Line (Long 40ft container against south wall)
             SpawnContainer(group.transform, "Container_S_Wall_40ft", new Vector3(22.0f, 0f, 1.8f), 0f, ContainerType.Container40ft, ContainerColor.Red, fbxPrefab, tealMat, redMat, metalMat);
 
-            // 3. Stacked Upper 20ft Container on South Wall
+            // 2. Stacked Upper 20ft Container on South Wall
             SpawnContainer(group.transform, "Container_S_Stacked_Upper", new Vector3(21.0f, 2.59f, 1.8f), 0f, ContainerType.Container20ft, ContainerColor.Teal, fbxPrefab, tealMat, redMat, metalMat);
 
-            // 4. West Flank Corridor (Between Dryer 1 and West Wall)
+            // 3. West Flank Corridor (Between Dryer 1 and West Wall, clear of door)
             SpawnContainer(group.transform, "Container_W_Flank", new Vector3(11.6f, 0f, 13.5f), 90f, ContainerType.Container20ft, ContainerColor.Teal, fbxPrefab, tealMat, redMat, metalMat);
 
-            // 5. East Sector E Staging Area (Near Sector E Wall)
+            // 4. East Sector E Staging Area (Near Sector E Wall)
             SpawnContainer(group.transform, "Container_E_VaultStaging", new Vector3(28.4f, 0f, 8.5f), 90f, ContainerType.Container20ft, ContainerColor.Red, fbxPrefab, tealMat, redMat, metalMat);
-
-            // 6. North Control Room Checkpoint Barrier (40ft Container)
-            SpawnContainer(group.transform, "Container_N_ControlBarrier_40ft", new Vector3(17.5f, 0f, 21.5f), -8f, ContainerType.Container40ft, ContainerColor.Red, fbxPrefab, tealMat, redMat, metalMat);
         }
 
         private GameObject SpawnContainer(Transform parent, string name, Vector3 pos, float yaw, ContainerType type, ContainerColor col, GameObject fbxPrefab, Material tealMat, Material redMat, Material metalMat)

@@ -16,7 +16,7 @@ namespace MistProtocol.Tests
 
             var group = GameObject.Find("DryingChamber_Containers_Group");
             Assert.IsNotNull(group, "Drying Chamber containers group must be created");
-            Assert.AreEqual(6, group.transform.childCount, "Drying Chamber should contain 6 tactical cargo containers");
+            Assert.AreEqual(4, group.transform.childCount, "Drying Chamber should contain 4 tactical cargo containers (doorways clear)");
 
             Object.DestroyImmediate(go);
             Object.DestroyImmediate(group);

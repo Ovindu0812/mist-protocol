@@ -282,13 +282,11 @@ namespace MistProtocol.EditorTools
             foreach (var z in new[] { 4f, 21f })
                 Block($"Pillar_C_{z:0}", new Vector3(20f, H * 0.5f, z), new Vector3(0.6f, H, 0.6f), MaterialFactory.Concrete, 1.5f);
 
-            // Industrial Shipping Cargo Containers (fills empty warehouse space with tactical cover)
-            Prop("CargoContainer", new Vector3(13.5f, 0f, 3.8f), 12f);
+            // Industrial Shipping Cargo Containers (placed against perimeter walls, keeping all doorways clear)
             Prop("CargoContainer", new Vector3(22.0f, 0f, 1.8f), 0f);
             Prop("CargoContainer", new Vector3(21.0f, 2.59f, 1.8f), 0f);
             Prop("CargoContainer", new Vector3(11.6f, 0f, 13.5f), 90f);
             Prop("CargoContainer", new Vector3(28.4f, 0f, 8.5f), 90f);
-            Prop("CargoContainer", new Vector3(17.5f, 0f, 21.5f), -8f);
         }
 
         private static void ZoneControlRoom()
