@@ -31,7 +31,7 @@ namespace MistProtocol.AI.Navigation
         /// Centripetal-style Catmull-Rom resampling of corner points into a smooth curve.
         /// Samples are only kept if they stay on walkable cells, so the curve can't clip walls.
         /// </summary>
-        public static void Smooth(NavGrid grid, List<Vector3> corners, List<Vector3> output, float spacing = 0.5f)
+        public static void Smooth(NavGrid grid, List<Vector3> corners, List<Vector3> output, float spacing = 0.5f, float tension = 0.5f)
         {
             output.Clear();
             if (corners.Count < 3) { output.AddRange(corners); return; }
@@ -46,17 +46,20 @@ namespace MistProtocol.AI.Navigation
                 for (int s = 1; s <= samples; s++)
                 {
                     float t = s / (float)samples;
-                    Vector3 p = CatmullRom(p0, p1, p2, p3, t);
+                    Vector3 p = CatmullRom(p0, p1, p2, p3, t, tension);
                     if (grid != null && !grid.IsWalkableWorld(p)) p = Vector3.Lerp(p1, p2, t);
                     output.Add(p);
                 }
             }
         }
 
-        public static Vector3 CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
+        public static Vector3 CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t, float tension = 0.5f)
         {
             float t2 = t * t, t3 = t2 * t;
-            return 0.5f * (2f * p1 + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t2 + (-p0 + 3f * p1 - 3f * p2 + p3) * t3);
+            float s = tension;
+            Vector3 m1 = s * (p2 - p0);
+            Vector3 m2 = s * (p3 - p1);
+            return (2f * t3 - 3f * t2 + 1f) * p1 + (t3 - 2f * t2 + t) * m1 + (-2f * t3 + 3f * t2) * p2 + (t3 - t2) * m2;
         }
     }
 }
