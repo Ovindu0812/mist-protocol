@@ -33,25 +33,58 @@ namespace MistProtocol.World
         {
             if (Instance == null) Instance = this;
             else if (Instance != this) { Destroy(gameObject); return; }
+            RemoveBlockingContainersAndCrates();
         }
 
         private void Start()
         {
+            RemoveBlockingContainersAndCrates();
             if (autoBuildOnStart)
             {
                 BuildContainersIfMissing();
             }
         }
 
+        public static void RemoveBlockingContainersAndCrates()
+        {
+            // Search all game objects in the scene and remove any containers or crates obstructing doorways or Titan's room
+            var allObjects = Object.FindObjectsByType<GameObject>();
+            foreach (var go in allObjects)
+            {
+                if (go == null) continue;
+                string n = go.name;
+                Vector3 pos = go.transform.position;
+
+                if (n.Contains("CargoContainer") || n.StartsWith("Container_"))
+                {
+                    // Titan entrance doorway is at X=30, Z=14. Titan chamber is X in [30, 54].
+                    bool nearTitanDoorOrInside = (pos.x >= 25f && pos.z >= 6f && pos.z <= 18f) || pos.x >= 29.5f;
+                    // SW Gate door is at X=10, Z=6
+                    bool nearSWDoor = (pos.x <= 16f && pos.z <= 8f);
+                    // North Control Room door is at X=20, Z=24
+                    bool nearNDoor = (pos.z >= 20f && pos.x >= 15f && pos.x <= 25f);
+
+                    if (nearTitanDoorOrInside || nearSWDoor || nearNDoor ||
+                        n == "Container_SW_Gate" || n == "Container_N_ControlBarrier_40ft" || 
+                        n == "Container_E_VaultStaging" || n == "Container_W_Flank")
+                    {
+                        Destroy(go);
+                    }
+                }
+                else if (n.Contains("Barricade") || n.Contains("TeaCrate") || n.Contains("SmallCrate"))
+                {
+                    // Remove crates right in the doorway corridor entering Titan's chamber
+                    if (pos.x >= 29f && pos.x <= 36f && pos.z >= 9f && pos.z <= 16f)
+                    {
+                        Destroy(go);
+                    }
+                }
+            }
+        }
+
         public void BuildContainersIfMissing()
         {
-            // Remove any legacy door-blocking containers if they exist in the scene
-            var existingSW = GameObject.Find("Container_SW_Gate");
-            if (existingSW != null) Destroy(existingSW);
-            var existingN = GameObject.Find("Container_N_ControlBarrier_40ft");
-            if (existingN != null) Destroy(existingN);
-            var existingE = GameObject.Find("Container_E_VaultStaging");
-            if (existingE != null) Destroy(existingE);
+            RemoveBlockingContainersAndCrates();
 
             var existingGroup = GameObject.Find("DryingChamber_Containers_Group");
             if (existingGroup != null)
@@ -62,6 +95,8 @@ namespace MistProtocol.World
                 if (sw != null) Destroy(sw.gameObject);
                 var n = existingGroup.transform.Find("Container_N_ControlBarrier_40ft");
                 if (n != null) Destroy(n.gameObject);
+                var w = existingGroup.transform.Find("Container_W_Flank");
+                if (w != null) Destroy(w.gameObject);
                 return;
             }
 
@@ -93,15 +128,12 @@ namespace MistProtocol.World
 #endif
 
             // Layout specs for Drying Chamber (Zone 2: X=10 to 30, Z=0 to 24)
-            // Doorways at SW Gate (X=10, Z=4), North Control Room (X=20, Z=24), and Titan's Chamber Door (X=30, Z=8-12) are 100% CLEAR!
+            // Doorways at SW Gate (X=10, Z=4), North Control Room (X=20, Z=24), and Titan's Chamber Door (X=30, Z=8-16) are 100% CLEAR!
             // 1. South Wall Heavy Freight Line (Long 40ft container against south wall)
             SpawnContainer(group.transform, "Container_S_Wall_40ft", new Vector3(22.0f, 0f, 1.8f), 0f, ContainerType.Container40ft, ContainerColor.Red, fbxPrefab, tealMat, redMat, metalMat);
 
             // 2. Stacked Upper 20ft Container on South Wall
             SpawnContainer(group.transform, "Container_S_Stacked_Upper", new Vector3(21.0f, 2.59f, 1.8f), 0f, ContainerType.Container20ft, ContainerColor.Teal, fbxPrefab, tealMat, redMat, metalMat);
-
-            // 3. West Flank Corridor (Between Dryer 1 and West Wall, clear of doors)
-            SpawnContainer(group.transform, "Container_W_Flank", new Vector3(11.6f, 0f, 13.5f), 90f, ContainerType.Container20ft, ContainerColor.Teal, fbxPrefab, tealMat, redMat, metalMat);
         }
 
         private GameObject SpawnContainer(Transform parent, string name, Vector3 pos, float yaw, ContainerType type, ContainerColor col, GameObject fbxPrefab, Material tealMat, Material redMat, Material metalMat)

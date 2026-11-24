@@ -282,10 +282,9 @@ namespace MistProtocol.EditorTools
             foreach (var z in new[] { 4f, 21f })
                 Block($"Pillar_C_{z:0}", new Vector3(20f, H * 0.5f, z), new Vector3(0.6f, H, 0.6f), MaterialFactory.Concrete, 1.5f);
 
-            // Industrial Shipping Cargo Containers (placed against perimeter walls, keeping all doorways clear)
+            // Industrial Shipping Cargo Containers (placed against south perimeter wall, keeping all doorways clear)
             Prop("CargoContainer", new Vector3(22.0f, 0f, 1.8f), 0f);
             Prop("CargoContainer", new Vector3(21.0f, 2.59f, 1.8f), 0f);
-            Prop("CargoContainer", new Vector3(11.6f, 0f, 13.5f), 90f);
         }
 
         private static void ZoneControlRoom()
@@ -692,18 +691,18 @@ namespace MistProtocol.EditorTools
             foreach (float z in new[] { 6f, 18f })
                 Block($"Pillar_E_{x:0}_{z:0}", new Vector3(x, H * 0.5f, z), new Vector3(0.8f, H, 0.8f), MaterialFactory.Concrete, 1.5f);
 
-            // Stacked tea crate barricades creating crouching cover and stealth hiding spots
-            Place(PrefabFactory.Barricade, new Vector3(34f, 0, 10.5f), 15f);
-            Place(PrefabFactory.Barricade, new Vector3(34.8f, 0, 10.5f), 0f);
-            Place(PrefabFactory.Barricade, new Vector3(34.4f, 0.8f, 10.5f), 5f);
+            // Stacked tea crate barricades creating crouching cover and stealth hiding spots (kept well clear of entrance door)
+            Place(PrefabFactory.Barricade, new Vector3(39f, 0, 6.5f), 15f);
+            Place(PrefabFactory.Barricade, new Vector3(39.8f, 0, 6.5f), 0f);
+            Place(PrefabFactory.Barricade, new Vector3(39.4f, 0.8f, 6.5f), 5f);
 
-            Place(PrefabFactory.Barricade, new Vector3(35f, 0, 19.5f), -10f);
-            Place(PrefabFactory.Barricade, new Vector3(35.9f, 0, 19.5f), 0f);
-            Place(PrefabFactory.Barricade, new Vector3(35.5f, 0.8f, 19.5f), 0f);
+            Place(PrefabFactory.Barricade, new Vector3(39f, 0, 19.5f), -10f);
+            Place(PrefabFactory.Barricade, new Vector3(39.9f, 0, 19.5f), 0f);
+            Place(PrefabFactory.Barricade, new Vector3(39.5f, 0.8f, 19.5f), 0f);
 
-            Place(PrefabFactory.Barricade, new Vector3(42f, 0, 12f), 45f);
-            Place(PrefabFactory.Barricade, new Vector3(42.7f, 0, 12.7f), 45f);
-            Place(PrefabFactory.Barricade, new Vector3(42.3f, 0.8f, 12.3f), 45f);
+            Place(PrefabFactory.Barricade, new Vector3(44f, 0, 12f), 45f);
+            Place(PrefabFactory.Barricade, new Vector3(44.7f, 0, 12.7f), 45f);
+            Place(PrefabFactory.Barricade, new Vector3(44.3f, 0.8f, 12.3f), 45f);
 
             Place(PrefabFactory.Barricade, new Vector3(50f, 0, 7f), 0f);
             Place(PrefabFactory.Barricade, new Vector3(50.8f, 0, 7f), 10f);
@@ -711,7 +710,7 @@ namespace MistProtocol.EditorTools
             Place(PrefabFactory.Barricade, new Vector3(50.8f, 0, 17f), 0f);
 
             // Small crates to throw and make noise to lure the Titan away
-            Place(PrefabFactory.SmallCrate, new Vector3(33f, 0.02f, 16f), 20f);
+            Place(PrefabFactory.SmallCrate, new Vector3(38f, 0.02f, 19f), 20f);
             Place(PrefabFactory.SmallCrate, new Vector3(45f, 0.02f, 5f), -30f);
             Place(PrefabFactory.SmallCrate, new Vector3(51f, 0.02f, 12f), 10f);
 

@@ -52,6 +52,30 @@ namespace MistProtocol.EditorTools
 
                     var showGridProp = annoType.GetProperty("showGrid", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
                     if (showGridProp != null && showGridProp.CanWrite) showGridProp.SetValue(null, false);
+
+                    // Turn off all individual icon and gizmo annotations across all Unity components
+                    var getAnno = annoType.GetMethod("GetAnnotations", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                    var setIcon = annoType.GetMethod("SetIconEnabled", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                    var setGizmo = annoType.GetMethod("SetGizmoEnabled", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                    if (getAnno != null && setIcon != null)
+                    {
+                        var list = getAnno.Invoke(null, null) as System.Collections.IEnumerable;
+                        if (list != null)
+                        {
+                            foreach (var item in list)
+                            {
+                                var cidField = item.GetType().GetField("classID");
+                                var scField = item.GetType().GetField("scriptClass");
+                                if (cidField != null && scField != null)
+                                {
+                                    int cid = (int)cidField.GetValue(item);
+                                    string sc = (string)scField.GetValue(item);
+                                    setIcon.Invoke(null, new object[] { cid, sc, 0 });
+                                    setGizmo?.Invoke(null, new object[] { cid, sc, 0 });
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // 2. Turn off PlayModeView / GameView Gizmos in Unity 6
@@ -67,17 +91,22 @@ namespace MistProtocol.EditorTools
                     var windows = Resources.FindObjectsOfTypeAll(vt);
                     foreach (var w in windows)
                     {
-                        foreach (var name in new[] { "drawGizmos", "gizmos", "showGizmos", "m_Gizmos" })
+                        // Set all gizmo-related properties to false
+                        var allProps = vt.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        foreach (var p in allProps)
                         {
-                            var prop = vt.GetProperty(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                            if (prop != null && prop.CanWrite)
+                            if (p.PropertyType == typeof(bool) && p.Name.IndexOf("gizmo", StringComparison.OrdinalIgnoreCase) >= 0 && p.CanWrite)
                             {
-                                prop.SetValue(w, false);
+                                p.SetValue(w, false);
                             }
-                            var field = vt.GetField(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                            if (field != null)
+                        }
+                        // Set all gizmo-related fields to false
+                        var allFields = vt.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        foreach (var f in allFields)
+                        {
+                            if (f.FieldType == typeof(bool) && f.Name.IndexOf("gizmo", StringComparison.OrdinalIgnoreCase) >= 0)
                             {
-                                field.SetValue(w, false);
+                                f.SetValue(w, false);
                             }
                         }
                         var repaint = vt.GetMethod("Repaint", BindingFlags.Public | BindingFlags.Instance);
@@ -114,8 +143,17 @@ namespace MistProtocol.EditorTools
                     }
                 }
 
-                // 5. Deselect Level if selected so NavMeshSurface doesn't show debug mesh
-                if (Selection.activeGameObject != null && Selection.activeGameObject.name == "Level")
+                // 5. Disable NavMesh visualization settings if active
+                var navVizType = typeof(Editor).Assembly.GetType("UnityEditor.AI.NavMeshVisualizationSettings") ??
+                                 typeof(Editor).Assembly.GetType("UnityEditor.NavMeshVisualizationSettings");
+                if (navVizType != null)
+                {
+                    var showNav = navVizType.GetProperty("showNavigation", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                    if (showNav != null && showNav.CanWrite) showNav.SetValue(null, 0);
+                }
+
+                // 6. Clear selection so no selected object renders gizmos / bounds
+                if (Selection.activeGameObject != null)
                 {
                     Selection.activeGameObject = null;
                 }
