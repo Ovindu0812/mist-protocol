@@ -146,7 +146,8 @@ namespace MistProtocol.Animation
             if (face.sqrMagnitude > 0.0025f)
             {
                 var rot = Quaternion.LookRotation(face.normalized, Vector3.up);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, rot, turnSpeed * dt);
+                float dynamicTurnRate = Mathf.Lerp(turnSpeed * 0.85f, turnSpeed * 1.2f, 1f - Speed01 * 0.35f);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, rot, dynamicTurnRate * dt);
             }
         }
 
