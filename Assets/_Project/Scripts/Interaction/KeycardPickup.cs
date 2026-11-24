@@ -7,7 +7,9 @@ namespace MistProtocol.Interaction
     public class KeycardPickup : MonoBehaviour, IInteractable
     {
         public string Prompt => "[E] Take Appa's keycard";
-        public bool CanInteract => true;
+        public bool CanInteract => !IsLocked;
+
+        public bool IsLocked { get; set; }
 
         private Vector3 _basePos;
         private Light _haloLight;
@@ -27,6 +29,8 @@ namespace MistProtocol.Interaction
 
         private void Update()
         {
+            if (IsLocked) return;
+
             transform.Rotate(0f, 65f * Time.deltaTime, 0f, Space.World);
             float newY = _basePos.y + Mathf.Sin(Time.time * 3f) * 0.04f;
             transform.position = new Vector3(_basePos.x, newY, _basePos.z);
@@ -36,8 +40,20 @@ namespace MistProtocol.Interaction
             }
         }
 
+        public void UnlockAndReveal()
+        {
+            IsLocked = false;
+            _basePos = transform.position;
+            if (_haloLight != null)
+            {
+                _haloLight.intensity = 1.6f;
+                _haloLight.range = 3.6f;
+            }
+        }
+
         public void Interact()
         {
+            if (IsLocked) return;
             Vfx.Burst(transform.position, Vector3.up, new Color(0.2f, 0.85f, 1f), 15, 2.5f, 0.08f, 0.45f);
             ProceduralAudio.PlayAt("success", transform.position, 0.9f, 1.2f);
             GameManager.Instance?.OnKeycardCollected();

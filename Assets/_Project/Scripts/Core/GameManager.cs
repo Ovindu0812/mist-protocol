@@ -114,6 +114,12 @@ namespace MistProtocol.Core
                 var encounterGo = new GameObject("RollingRoom_Encounter_Manager");
                 encounterGo.AddComponent<World.RollingRoomEncounter>();
             }
+
+            if (Interaction.WitheringLoftKeycardTask.Instance == null && FindAnyObjectByType<Interaction.WitheringLoftKeycardTask>() == null)
+            {
+                var keycardTaskGo = new GameObject("WitheringLoft_KeycardTask_Manager");
+                keycardTaskGo.AddComponent<Interaction.WitheringLoftKeycardTask>();
+            }
         }
 
         private void Update()
