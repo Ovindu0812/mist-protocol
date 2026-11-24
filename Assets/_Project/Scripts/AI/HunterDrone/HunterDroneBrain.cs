@@ -186,7 +186,8 @@ namespace MistProtocol.AI.HunterDrone
 
             // circle-strafe: orbit point at preferred range, A*-pathed so it never clips walls
             Motor.MaxSpeed = 4.5f;
-            _orbitAngle += 30f * _orbitDir / 8f;
+            _orbitAngle += 32f * _orbitDir / 8f;
+            if (Random.value < 0.015f) _orbitDir = -_orbitDir; // spontaneous orbit direction reversal to avoid player prediction
             Vector3 offset = Quaternion.Euler(0f, _orbitAngle, 0f) * Vector3.forward * engageRange;
             Vector3 orbit = player + offset;
             if (!NavGrid.Instance.IsWalkableWorld(orbit)) { _orbitDir = -_orbitDir; orbit = player + (transform.position - player).Flat().normalized * engageRange; }
