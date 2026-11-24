@@ -673,6 +673,14 @@ namespace MistProtocol.EditorTools
             Sentinel(new Vector3(-20f, 0, 20f), 0f, Patrol("PatrolA", new Vector3(-20, 0, 4), new Vector3(-20, 0, 31), new Vector3(-28, 0, 24), new Vector3(-12, 0, 24)));
             Sentinel(new Vector3(-2f, 0, 12f), 90f, Patrol("PatrolB1", new Vector3(-2, 0, 3), new Vector3(-2, 0, 31), new Vector3(8, 0, 31)));
             Sentinel(new Vector3(2f, 0, 22f), -90f, Patrol("PatrolB2", new Vector3(8, 0, 20), new Vector3(2, 0, 4), new Vector3(-8, 0, 28)));
+            // Rolling Room (Zone B) dedicated combat reinforcement squad: 3 Sentinels + 3 Hunter Drones
+            Sentinel(new Vector3(-4f, 0, 28f), 0f, Patrol("PatrolB_North", new Vector3(-4, 0, 28), new Vector3(4, 0, 28), new Vector3(4, 0, 33), new Vector3(-4, 0, 33)));
+            Sentinel(new Vector3(4f, 0, 8f), 180f, Patrol("PatrolB_South", new Vector3(4, 0, 8), new Vector3(-4, 0, 8), new Vector3(-4, 0, 4), new Vector3(4, 0, 4)));
+            Sentinel(new Vector3(6f, 0, 18f), -90f, Patrol("PatrolB_East", new Vector3(6, 0, 18), new Vector3(6, 0, 12), new Vector3(8, 0, 16), new Vector3(8, 0, 24)));
+            Place(PrefabFactory.Drone, new Vector3(-2f, 2.4f, 29f), 180f, _gameplay);
+            Place(PrefabFactory.Drone, new Vector3(0f, 2.5f, 16f), -90f, _gameplay);
+            Place(PrefabFactory.Drone, new Vector3(3f, 2.4f, 7f), 0f, _gameplay);
+
             Sentinel(new Vector3(20f, 0, 6f), 0f, Patrol("PatrolC", new Vector3(20, 0, 3), new Vector3(20, 0, 22), new Vector3(28, 0, 22), new Vector3(12, 0, 3)));
             Place(PrefabFactory.Drone, new Vector3(-20f, 2.4f, 30f), 180f, _gameplay);
             Place(PrefabFactory.Drone, new Vector3(20f, 2.4f, 20f), 180f, _gameplay);

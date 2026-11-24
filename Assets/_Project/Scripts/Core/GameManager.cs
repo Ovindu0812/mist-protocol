@@ -108,6 +108,12 @@ namespace MistProtocol.Core
                 var containerGo = new GameObject("DryingChamber_Containers_Manager");
                 containerGo.AddComponent<World.DryingChamberContainers>();
             }
+
+            if (World.RollingRoomEncounter.Instance == null && FindAnyObjectByType<World.RollingRoomEncounter>() == null)
+            {
+                var encounterGo = new GameObject("RollingRoom_Encounter_Manager");
+                encounterGo.AddComponent<World.RollingRoomEncounter>();
+            }
         }
 
         private void Update()
