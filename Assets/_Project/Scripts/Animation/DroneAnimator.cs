@@ -35,13 +35,16 @@ namespace MistProtocol.Animation
                 if (_rotors[i]) _rotors[i].Rotate(0f, i % 2 == 0 ? spin : -spin, 0f, Space.Self);
 
             if (_body == null) return;
-            // bank: pitch forward when accelerating forward, roll into turns
+            // bank: pitch forward when accelerating forward, roll smoothly into turns with aerodynamic damping
             Vector3 localAcc = transform.InverseTransformDirection(_smoothedAccel + Motor.Velocity * 0.6f);
             float pitch = Mathf.Clamp(localAcc.z * 4f, -maxBank, maxBank);
             float roll = Mathf.Clamp(-localAcc.x * 4f, -maxBank, maxBank);
             float scanYaw = Scanning ? Mathf.Sin(_t * 1.6f) * 60f : 0f;
+            
+            // smooth vertical hover oscillation with high-speed aerodynamic stabilization
+            float hoverBob = Mathf.Sin(_t * 2.3f) * Mathf.Lerp(0.08f, 0.03f, Motor.Speed01);
             _body.localRotation = Quaternion.Euler(pitch - Recoil * 8f + Flinch * 20f, scanYaw, roll);
-            _body.localPosition = new Vector3(0f, Mathf.Sin(_t * 2.3f) * 0.08f, 0f);
+            _body.localPosition = new Vector3(0f, hoverBob, 0f);
         }
     }
 }
