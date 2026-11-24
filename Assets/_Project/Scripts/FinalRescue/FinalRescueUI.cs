@@ -364,10 +364,20 @@ namespace MistProtocol.FinalRescue
         public void ShowHarvestPhaseAlert(int currentPhase, int totalPhases = 4, string phaseName = "")
         {
             if (_puzzleAlertGo == null) return;
-            _puzzleAlertBack.color = new Color(0.12f, 0.45f, 0.75f, 0.94f);
-            _puzzleAlertText.text = $"HARVEST CIPHER: Phase {currentPhase}/{totalPhases} Engaged - {phaseName}";
+
+            // Phase-adaptive neon accent colors matching Harvest cipher element
+            _puzzleAlertBack.color = currentPhase switch
+            {
+                1 => new Color(0.70f, 0.15f, 0.12f, 0.95f), // Phase 1: Kiln Fire (Crimson Red)
+                2 => new Color(0.12f, 0.45f, 0.85f, 0.95f), // Phase 2: Mountain Mist (Cyan Blue)
+                3 => new Color(0.75f, 0.55f, 0.10f, 0.95f), // Phase 3: Sunrise Gold (Amber Yellow)
+                4 => new Color(0.15f, 0.65f, 0.25f, 0.95f), // Phase 4: Ceylon Leaf (Emerald Green)
+                _ => new Color(0.12f, 0.45f, 0.75f, 0.95f)
+            };
+
+            _puzzleAlertText.text = $"HARVEST CIPHER [ {currentPhase}/{totalPhases} ] : {phaseName.ToUpperInvariant()} ENGAGED";
             _puzzleAlertGo.SetActive(true);
-            _puzzleAlertHideTime = Time.unscaledTime + 2.8f;
+            _puzzleAlertHideTime = Time.unscaledTime + 3.0f;
         }
 
         public void ShowPuzzleIncorrectAlert(string message = "Incorrect sequence. Check the clues and try again.")
