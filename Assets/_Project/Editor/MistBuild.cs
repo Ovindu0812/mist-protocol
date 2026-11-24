@@ -22,6 +22,39 @@ namespace MistProtocol.EditorTools
         [MenuItem("Mist Protocol/Build Everything + Bake Lighting")]
         public static void BuildAll() => Run(!System.Environment.GetCommandLineArgs().Contains("-skipBake"));
 
+        [MenuItem("Mist Protocol/Fix Cyan Floor (Turn Off Gizmos & Reload)")]
+        public static void FixCyanFloor()
+        {
+            try
+            {
+                var gameViewType = System.Type.GetType("UnityEditor.GameView,UnityEditor");
+                if (gameViewType != null)
+                {
+                    var gameViews = Resources.FindObjectsOfTypeAll(gameViewType);
+                    foreach (var gv in gameViews)
+                    {
+                        var prop = gameViewType.GetProperty("gizmos", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (prop != null) prop.SetValue(gv, false);
+                        var method = gameViewType.GetMethod("Repaint", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        method?.Invoke(gv, null);
+                    }
+                }
+                var sceneView = SceneView.lastActiveSceneView;
+                if (sceneView != null)
+                {
+                    sceneView.drawGizmos = false;
+                    sceneView.Repaint();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning("[Mist Protocol] Gizmo toggle notice: " + ex.Message);
+            }
+
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            Debug.Log("[Mist Protocol] Clean GlenmistFactory scene reloaded and Gizmos toggled off!");
+        }
+
         [MenuItem("Mist Protocol/Bake Lighting Only")]
         public static void BakeOnly()
         {
