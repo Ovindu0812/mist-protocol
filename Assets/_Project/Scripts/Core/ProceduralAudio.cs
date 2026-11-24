@@ -44,6 +44,8 @@ namespace MistProtocol.Core
                 "terminalBleep" => Tone(0.08f, 1850f, 0.25f, 28f),
                 "terminalBoot" => Tone(0.42f, 440f, 0.35f, 8f, true),
                 "shortCircuit" => Tone(0.28f, 130f, 0.6f, 32f, true),
+                "droneWhine" => Tone(0.5f, 620f, 0.22f, 1.5f),
+                "servoActuator" => Noise(0.12f, 25f, 0.4f, 1800f),
                 _ => Noise(0.1f, 30f, 0.3f, 800f),
             };
             c.name = name;
