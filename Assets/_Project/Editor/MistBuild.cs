@@ -51,8 +51,7 @@ namespace MistProtocol.EditorTools
                 Debug.LogWarning("[Mist Protocol] Gizmo toggle notice: " + ex.Message);
             }
 
-            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            Debug.Log("[Mist Protocol] Clean GlenmistFactory scene reloaded and Gizmos toggled off!");
+            Debug.Log("[Mist Protocol] Visuals restored and Gizmos toggled off!");
         }
 
         [MenuItem("Mist Protocol/Bake Lighting Only")]
