@@ -29,15 +29,15 @@ namespace MistProtocol.FinalRescue
 
         public string LoreTitle => switchColor switch
         {
-            SwitchColor.Red => "Kiln Flame (Red)",
-            SwitchColor.Blue => "Midnight Mist (Blue)",
-            SwitchColor.Yellow => "Sunrise Sun (Yellow)",
-            SwitchColor.Green => "Emerald Leaf (Green)",
+            SwitchColor.Red => "Phase 1: Kiln Fire (RED)",
+            SwitchColor.Blue => "Phase 2: Mountain Mist (BLUE)",
+            SwitchColor.Yellow => "Phase 3: Morning Sun (YELLOW)",
+            SwitchColor.Green => "Phase 4: Ceylon Leaf (GREEN)",
             _ => switchColor.ToString()
         };
 
         public string Prompt => IsActive
-            ? $"[{LoreTitle} Engaged]"
+            ? $"[{LoreTitle} - ENGAGED]"
             : $"[E] Activate {LoreTitle}";
 
         public void Configure(SwitchColor color, Renderer rend = null, Light light = null)

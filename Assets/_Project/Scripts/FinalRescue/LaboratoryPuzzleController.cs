@@ -118,11 +118,11 @@ namespace MistProtocol.FinalRescue
             {
                 screenStatusText.text = _currentSequence.Count switch
                 {
-                    0 => "<color=#FFAA33>PHASE 1: KINDLE WITHERING KILN FURNACE (RED)</color>",
-                    1 => "<color=#55CCFF>PHASE 2: HIGHLAND MOUNTAIN MIST (BLUE)</color>",
-                    2 => "<color=#FFEE44>PHASE 3: MORNING SUNRISE GOLD (YELLOW)</color>",
-                    3 => "<color=#66FF77>PHASE 4: HARVEST FRESH CEYLON LEAF (GREEN)</color>",
-                    _ => "<color=#55FF66>CIPHER VERIFIED: PRISON BARRIER DEACTIVATED</color>"
+                    0 => "<color=#FF5555>STEP 1/4: KINDLE WITHERING KILN FURNACE (RED: FIRE)</color>",
+                    1 => "<color=#44AAFF>STEP 2/4: CONDENSE HIGHLAND MOUNTAIN MIST (BLUE: MIST)</color>",
+                    2 => "<color=#FFAA22>STEP 3/4: BATHE IN MORNING SUNRISE GOLD (YELLOW: SUN)</color>",
+                    3 => "<color=#55FF66>STEP 4/4: HARVEST FRESH CEYLON LEAF (GREEN: LEAF)</color>",
+                    _ => "<color=#55FF66>CIPHER VERIFIED: PRISON STASIS BARRIER DEACTIVATED</color>"
                 };
             }
         }
@@ -142,11 +142,25 @@ namespace MistProtocol.FinalRescue
             if (FinalRescueMission.Instance != null) FinalRescueMission.Instance.IsPuzzleLocked = true;
 
             // 1. Play alarm sound, electrical short circuit & UI message
-            ProceduralAudio.PlayAt("alarm", transform.position, 1f, 1f);
+            ProceduralAudio.PlayAt("alarm", transform.position, 1.2f, 1f);
             ProceduralAudio.PlayAt("shortCircuit", transform.position, 0.85f, 0.9f);
 
+            // Announce Overseer Alarm Voice line
+            GameEvents.Overseer("SECURITY LOCKDOWN: Unauthorized override in Secret Laboratory! Defense squad, terminate the intruder!");
+
+            // 2. Alert and dispatch robot defense squad to attack player in Secret Laboratory
+            Vector3 alertPos = transform.position + new Vector3(-2.8f, 0f, 0f);
+            if (MistProtocol.AI.Director.OverseerDirector.Instance != null)
+            {
+                MistProtocol.AI.Director.OverseerDirector.Instance.DispatchSecurityReinforcements(alertPos, 2);
+            }
+            else
+            {
+                SpawnFallbackRobots(alertPos, 2);
+            }
+
             if (screenSlotsText != null) screenSlotsText.text = "<color=#FF2222>[ ERROR ]   [ ERROR ]   [ ERROR ]   [ ERROR ]</color>";
-            if (screenStatusText != null) screenStatusText.text = "<color=#FF3333>SEQUENCE MISMATCH: Circuit Overload! Resetting...</color>";
+            if (screenStatusText != null) screenStatusText.text = "<color=#FF3333>SEQUENCE MISMATCH: Circuit Overload! Robots Deployed!</color>";
             if (screenLight != null) screenLight.color = Color.red;
 
             // Emit electrical short-circuit spark bursts from switches
@@ -169,7 +183,7 @@ namespace MistProtocol.FinalRescue
 
             if (FinalRescueUI.Instance != null)
             {
-                FinalRescueUI.Instance.ShowPuzzleIncorrectAlert("INCORRECT CIPHER! Appa's Riddle: Fire (Red) -> Mist (Blue) -> Sun (Yellow) -> Leaf (Green)");
+                FinalRescueUI.Instance.ShowPuzzleIncorrectAlert("INCORRECT CIPHER! Security alarm triggered - Defense robots attacking!");
             }
 
             // 2. Flash red warning lights with balanced intensity
@@ -260,6 +274,33 @@ namespace MistProtocol.FinalRescue
             if (FinalRescueMission.Instance != null)
             {
                 FinalRescueMission.Instance.OnPuzzleSolved();
+            }
+        }
+
+        private void SpawnFallbackRobots(Vector3 spawnCenter, int count)
+        {
+            var resPrefab = Resources.Load<GameObject>("Agent_Sentinel") ?? Resources.Load<GameObject>("Agent_HunterDrone");
+            Vector3 target = PlayerLocator.Alive ? PlayerLocator.State.Root.position : transform.position;
+
+            if (resPrefab != null)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    Vector3 p = spawnCenter + new Vector3(-0.6f * i, 0f, (i % 2 == 0 ? -1f : 1f));
+                    var bot = Instantiate(resPrefab, p, Quaternion.LookRotation((target - p).Flat().normalized));
+                    bot.name = $"Alarm_Sentinel_{i + 1}";
+                    var agent = bot.GetComponent<MistProtocol.AI.Agents.AgentBase>();
+                    if (agent != null && agent.Sensor != null)
+                    {
+                        agent.Sensor.ReportPosition(target, 1.0f);
+                    }
+                }
+            }
+
+            // Alert any active agents across the facility
+            foreach (var a in MistProtocol.AI.Agents.AgentBase.Active)
+            {
+                if (a != null && a.Sensor != null) a.Sensor.ReportPosition(target, 1f);
             }
         }
     }

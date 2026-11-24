@@ -482,8 +482,8 @@ namespace MistProtocol.FinalRescue
             cRt.sizeDelta = new Vector2(700f, 350f);
             cRt.localScale = new Vector3(0.0025f, 0.0025f, 0.0025f);
 
-            var scrTitle = MakeScreenText(canvasGo.transform, "Title", "APPA'S HARVEST CIPHER OVERRIDE", 26, new Color(0.35f, 0.9f, 1f), new Vector2(0f, 120f), new Vector2(680f, 40f));
-            var scrSub = MakeScreenText(canvasGo.transform, "Sub", "RIDDLE: FIRE (RED) -> MIST (BLUE) -> SUN (YELLOW) -> LEAF (GREEN)", 15, new Color(1f, 0.85f, 0.35f), new Vector2(0f, 85f), new Vector2(680f, 30f));
+            var scrTitle = MakeScreenText(canvasGo.transform, "Title", "GLENMIST HARVEST CIPHER OVERRIDE", 25, new Color(0.35f, 0.95f, 1f), new Vector2(0f, 122f), new Vector2(680f, 36f));
+            var scrSub = MakeScreenText(canvasGo.transform, "Sub", "SOLUTION: <color=#FF5555>1.FIRE (RED)</color>  ➔  <color=#44AAFF>2.MIST (BLUE)</color>  ➔  <color=#FFAA22>3.SUN (YELLOW)</color>  ➔  <color=#55FF66>4.LEAF (GREEN)</color>", 15, Color.white, new Vector2(0f, 85f), new Vector2(680f, 30f));
             var scrSlots = MakeScreenText(canvasGo.transform, "Slots", "[  ???  ]    [  ???  ]    [  ???  ]    [  ???  ]", 28, Color.white, new Vector2(0f, 10f), new Vector2(680f, 50f));
             var scrStatus = MakeScreenText(canvasGo.transform, "Status", "PHASE 1: KINDLE WITHERING KILN FURNACE (RED)", 17, new Color(1f, 0.85f, 0.3f), new Vector2(0f, -65f), new Vector2(680f, 40f));
 

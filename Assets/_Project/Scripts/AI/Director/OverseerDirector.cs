@@ -50,6 +50,51 @@ namespace MistProtocol.AI.Director
         public static OverseerDirector Instance { get; private set; }
         public void PauseSpawns(float duration) => _pauseSpawnsUntil = Time.time + duration;
 
+        /// <summary>
+        /// Dispatches high-priority combat reinforcements to a security breach location.
+        /// Alerts all existing active agents and spawns fresh sentinel defense units.
+        /// </summary>
+        public void DispatchSecurityReinforcements(Vector3 alertPosition, int count = 2)
+        {
+            Intensity = 1.0f;
+            _enabled = true;
+
+            // 1. Alert all existing active agents directly to the breach location
+            foreach (var a in AgentBase.Active)
+            {
+                if (a != null && a.Sensor != null)
+                {
+                    a.Sensor.ReportPosition(alertPosition, 1f);
+                }
+            }
+
+            // 2. Spawn fresh reinforcement units
+            var prefab = sentinelPrefab != null ? sentinelPrefab : dronePrefab;
+            if (prefab == null)
+            {
+                var loaded = Resources.Load<GameObject>("Agent_Sentinel");
+                if (loaded != null) prefab = loaded.GetComponent<AgentBase>();
+            }
+
+            if (prefab != null)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    Vector3 offset = new Vector3(-1.2f - i * 0.8f, 0f, (i % 2 == 0 ? -1.2f : 1.2f));
+                    Vector3 spawnPos = alertPosition + offset;
+                    Quaternion rot = Quaternion.LookRotation((alertPosition - spawnPos).Flat().normalized);
+                    var agent = Instantiate(prefab, spawnPos, rot);
+                    agent.name = $"Alarm_Reinforcement_{i + 1}";
+                    if (agent.Sensor != null)
+                    {
+                        agent.Sensor.ReportPosition(alertPosition, 1f);
+                    }
+                    Vfx.Burst(spawnPos + Vector3.up * 0.6f, Vector3.up, new Color(1f, 0.25f, 0.1f), 24, 3f, 0.2f, 0.8f);
+                    ProceduralAudio.PlayAt("door", spawnPos, 0.8f, 1.4f);
+                }
+            }
+        }
+
         public void Configure(AgentBase drone, AgentBase sentinel, AgentBase saboteur, GameObject health)
         {
             dronePrefab = drone; sentinelPrefab = sentinel; saboteurPrefab = saboteur; healthPickupPrefab = health;
