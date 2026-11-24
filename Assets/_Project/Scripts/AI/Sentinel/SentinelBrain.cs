@@ -98,6 +98,7 @@ namespace MistProtocol.AI.Sentinel
         {
             const float dt = 1f / 8f;
             Sense();
+            if (Walker) Walker.Crouched = InCover;
             ChooseGoal(out var goal);
 
             Fact salient = _state & (Fact.KnowsPlayer | Fact.LowHealth | Fact.HasLead);
