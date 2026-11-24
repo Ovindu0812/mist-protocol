@@ -125,14 +125,12 @@ namespace MistProtocol.Core
         private void Update()
         {
             var kb = Keyboard.current;
-            if (kb == null) return;
+            var mouse = Mouse.current;
             switch (State)
             {
                 case Flow.Intro:
-                    // Start on any key so macOS Return/Enter layout differences cannot
-                    // leave the title screen stuck. A Game-view click is a fallback.
-                    bool startPressed = kb.anyKey.wasPressedThisFrame ||
-                                        (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame);
+                    bool startPressed = (kb != null && (kb.anyKey.wasPressedThisFrame || kb.spaceKey.isPressed || kb.enterKey.isPressed)) ||
+                                        (mouse != null && (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame || mouse.leftButton.isPressed));
                     if (startPressed) Begin();
                     break;
                 case Flow.Playing:
@@ -140,7 +138,7 @@ namespace MistProtocol.Core
                     {
                         break;
                     }
-                    if (kb.escapeKey.wasPressedThisFrame)
+                    if (kb != null && kb.escapeKey.wasPressedThisFrame)
                     {
                         if (UI.PauseMenu.Instance != null)
                         {
@@ -152,7 +150,7 @@ namespace MistProtocol.Core
                             Cursor.visible = true;
                         }
                     }
-                    else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    else if (mouse != null && mouse.leftButton.wasPressedThisFrame)
                     {
                         Cursor.lockState = CursorLockMode.Locked;
                         Cursor.visible = false;
@@ -160,8 +158,20 @@ namespace MistProtocol.Core
                     break;
                 case Flow.Won:
                 case Flow.Lost:
-                    if (kb.enterKey.wasPressedThisFrame) Restart();
+                    if (kb != null && kb.enterKey.wasPressedThisFrame) Restart();
                     break;
+            }
+        }
+
+        private void OnGUI()
+        {
+            if (State == Flow.Intro)
+            {
+                var e = Event.current;
+                if (e != null && (e.isKey || e.isMouse || e.type == EventType.MouseDown || e.type == EventType.KeyDown))
+                {
+                    Begin();
+                }
             }
         }
 
@@ -197,7 +207,18 @@ namespace MistProtocol.Core
 
         private IEnumerator FinishArrival()
         {
-            yield return new WaitForSecondsRealtime(5.15f);
+            float elapsed = 0f;
+            while (elapsed < 5.15f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                var kb = Keyboard.current;
+                var mouse = Mouse.current;
+                if (elapsed > 0.5f && ((kb != null && kb.anyKey.wasPressedThisFrame) || (mouse != null && mouse.leftButton.wasPressedThisFrame)))
+                {
+                    break; // Skip arrival cutscene on click/key
+                }
+                yield return null;
+            }
             if (_player != null)
             {
                 _player.SetCinematicPose(new Vector3(-20f, 0.05f, -5.5f), 0f);
