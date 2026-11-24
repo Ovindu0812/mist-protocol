@@ -143,7 +143,8 @@ namespace MistProtocol.World
             }
 
             // Box Collider for bullet and character collision cover
-            var boxCol = root.GetComponent<BoxCollider>() ?? root.AddComponent<BoxCollider>();
+            var boxCol = root.GetComponent<BoxCollider>();
+            if (boxCol == null) boxCol = root.AddComponent<BoxCollider>();
             boxCol.size = new Vector3(len, hei, wid);
             boxCol.center = new Vector3(0f, hei * 0.5f, 0f);
 

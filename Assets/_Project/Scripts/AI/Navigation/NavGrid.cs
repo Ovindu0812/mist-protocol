@@ -49,7 +49,16 @@ namespace MistProtocol.AI.Navigation
 
         // Start, not Awake: NavMeshSurface registers its baked data in OnEnable, which
         // runs after this object's Awake. Execution order -200 keeps this Start first.
-        private void Start() => Build();
+        private void Start()
+        {
+            Build();
+            // Disable NavMeshSurface components at runtime to suppress editor cyan mesh drawing
+            var surfaces = FindObjectsByType<Unity.AI.Navigation.NavMeshSurface>();
+            foreach (var s in surfaces)
+            {
+                s.enabled = false;
+            }
+        }
 
         public void Build()
         {
