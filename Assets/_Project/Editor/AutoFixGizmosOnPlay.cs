@@ -40,28 +40,52 @@ namespace MistProtocol.EditorTools
         {
             try
             {
-                // 1. Turn off GameView Gizmos (this removes cyan NavMesh and yellow light icons)
-                var gameViewType = typeof(Editor).Assembly.GetType("UnityEditor.GameView");
-                if (gameViewType != null)
+                // 1. Shrink 3D Gizmo icons to 0 so they completely disappear
+                var annoType = typeof(Editor).Assembly.GetType("UnityEditor.AnnotationUtility");
+                if (annoType != null)
                 {
-                    var gameViews = Resources.FindObjectsOfTypeAll(gameViewType);
-                    foreach (var gv in gameViews)
+                    var iconSizeProp = annoType.GetProperty("iconSize", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                    if (iconSizeProp != null && iconSizeProp.CanWrite) iconSizeProp.SetValue(null, 0f);
+
+                    var use3dProp = annoType.GetProperty("use3dGizmos", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                    if (use3dProp != null && use3dProp.CanWrite) use3dProp.SetValue(null, false);
+
+                    var showGridProp = annoType.GetProperty("showGrid", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                    if (showGridProp != null && showGridProp.CanWrite) showGridProp.SetValue(null, false);
+                }
+
+                // 2. Turn off PlayModeView / GameView Gizmos in Unity 6
+                var viewTypes = new[]
+                {
+                    typeof(Editor).Assembly.GetType("UnityEditor.PlayModeView"),
+                    typeof(Editor).Assembly.GetType("UnityEditor.GameView")
+                };
+
+                foreach (var vt in viewTypes)
+                {
+                    if (vt == null) continue;
+                    var windows = Resources.FindObjectsOfTypeAll(vt);
+                    foreach (var w in windows)
                     {
-                        var prop = gameViewType.GetProperty("gizmos", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                        if (prop != null)
+                        foreach (var name in new[] { "drawGizmos", "gizmos", "showGizmos", "m_Gizmos" })
                         {
-                            bool isGizmosOn = (bool)prop.GetValue(gv);
-                            if (isGizmosOn)
+                            var prop = vt.GetProperty(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                            if (prop != null && prop.CanWrite)
                             {
-                                prop.SetValue(gv, false);
-                                var repaint = gameViewType.GetMethod("Repaint", BindingFlags.Public | BindingFlags.Instance);
-                                repaint?.Invoke(gv, null);
+                                prop.SetValue(w, false);
+                            }
+                            var field = vt.GetField(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                            if (field != null)
+                            {
+                                field.SetValue(w, false);
                             }
                         }
+                        var repaint = vt.GetMethod("Repaint", BindingFlags.Public | BindingFlags.Instance);
+                        repaint?.Invoke(w, null);
                     }
                 }
 
-                // 2. Turn off SceneView Gizmos
+                // 3. Turn off SceneView Gizmos
                 var sceneViews = Resources.FindObjectsOfTypeAll<SceneView>();
                 foreach (var sv in sceneViews)
                 {
@@ -72,7 +96,7 @@ namespace MistProtocol.EditorTools
                     }
                 }
 
-                // 3. Close Navigation Window if it is open (prevents blue navmesh overlay)
+                // 4. Close Navigation Window if it is open
                 var navWindowTypes = new[]
                 {
                     typeof(Editor).Assembly.GetType("UnityEditor.NavMeshEditorWindow"),
@@ -90,15 +114,15 @@ namespace MistProtocol.EditorTools
                     }
                 }
 
-                // 4. Deselect Level if selected so NavMeshSurface doesn't show debug mesh
+                // 5. Deselect Level if selected so NavMeshSurface doesn't show debug mesh
                 if (Selection.activeGameObject != null && Selection.activeGameObject.name == "Level")
                 {
                     Selection.activeGameObject = null;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore any internal reflection errors gracefully
+                Debug.LogWarning("[Mist Protocol] Gizmo disable notice: " + ex.Message);
             }
         }
     }
