@@ -35,6 +35,7 @@ namespace MistProtocol.AI.Agents
         public VisionSensor Sensor => Vision;
         public AgentMotor Body => Motor;
         public Health HealthComponent => Health;
+        public bool InCombatReadiness => Vision != null && (Vision.Awareness > 0.5f || Vision.CanSeePlayer);
 
         public virtual Vector3 ListenPosition => transform.position;
         public float HearingThreshold => hearingThreshold;
