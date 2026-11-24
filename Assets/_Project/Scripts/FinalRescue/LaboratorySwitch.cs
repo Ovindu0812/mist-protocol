@@ -63,18 +63,18 @@ namespace MistProtocol.FinalRescue
             IsActive = true;
             UpdateVisuals();
 
-            // Play tactile mechanical relay click and sound based on color pitch
+            // Calibrated tactile mechanical relay feedback & resonant harmonic acoustics
             float pitch = switchColor switch
             {
-                SwitchColor.Blue => 1.0f,
-                SwitchColor.Yellow => 1.15f,
-                SwitchColor.Green => 1.30f,
-                SwitchColor.Red => 1.50f,
+                SwitchColor.Blue => 1.00f,   // Highland Mountain Mist: deep foundational bass resonance
+                SwitchColor.Yellow => 1.15f, // Morning Sunrise Gold: mid-high harmonic chime
+                SwitchColor.Green => 1.30f,  // Emerald Ceylon Leaf: vibrant mid-frequency click
+                SwitchColor.Red => 1.50f,    // Kiln Flame: high-frequency crisp energization
                 _ => 1.0f
             };
             ProceduralAudio.PlayAt("beep", transform.position, 0.85f, pitch);
-            ProceduralAudio.PlayAt("pickup", transform.position, 0.65f, 1.6f);
-            ProceduralAudio.PlayAt("zap", transform.position, 0.35f, pitch);
+            ProceduralAudio.PlayAt("pickup", transform.position, 0.70f, 1.65f);
+            ProceduralAudio.PlayAt("zap", transform.position, 0.40f, pitch * 1.1f);
 
             // Notify puzzle controller
             if (LaboratoryPuzzleController.Instance != null)
@@ -87,7 +87,9 @@ namespace MistProtocol.FinalRescue
         {
             if (IsActive)
             {
-                ProceduralAudio.PlayAt("click", transform.position, 0.45f, 0.8f);
+                // Mechanical relay de-energize release sound and circuit fizzle cue
+                ProceduralAudio.PlayAt("click", transform.position, 0.60f, 0.75f);
+                ProceduralAudio.PlayAt("shortCircuit", transform.position, 0.35f, 1.25f);
             }
             IsActive = false;
             UpdateVisuals();
