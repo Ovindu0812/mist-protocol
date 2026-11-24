@@ -51,7 +51,8 @@ namespace MistProtocol.Animation
             if (_torso)
             {
                 float bob = Mathf.Abs(Mathf.Cos(_phase)) * 0.04f * amount;
-                _torso.localPosition = _torsoBase + new Vector3(0, bob - _crouch * 0.25f, 0);
+                float recoilSpring = Recoil * 0.06f;
+                _torso.localPosition = _torsoBase + new Vector3(0, bob - _crouch * 0.25f - recoilSpring, -recoilSpring * 0.5f);
                 _torso.localRotation = Quaternion.Euler(-Flinch * 18f + amount * 6f + _crouch * 10f, 0, Mathf.Sin(_phase * 0.5f) * 3f * amount);
             }
             if (_head && aiming)
